@@ -20,25 +20,45 @@ Supabase (Postgres, Auth, RLS, Edge Functions) · Resend · Vercel
 
 ```bash
 npm install          # installs the workspace (apps/web)
+cp .env.example .env.local   # then fill it in — see below
 npm run dev          # → http://localhost:5173
 ```
 
-The app runs immediately with placeholder screens (no backend needed yet).
+Supabase credentials are required: the app throws on boot without them, and every
+route except `/login` is behind an auth guard.
 
-### Connect Supabase (task INF-02)
+### Option A — local Supabase (needs Docker Desktop running)
 
-1. Create a free project at supabase.com
-2. `cp .env.example .env.local` (repo root) and fill in the URL + anon key
-3. Follow task INF-02 in `docs/03-task-sheet.md`
+```bash
+npx supabase start   # first run pulls the containers; prints API URL + anon key
+npx supabase stop
+```
+
+Copy the printed `API URL` → `VITE_SUPABASE_URL` and `anon key` → `VITE_SUPABASE_ANON_KEY`
+into `.env.local`. Local mail (magic links, signup confirmations) is caught by Mailpit at
+the `MAILPIT_URL` from the same output — nothing is sent to real inboxes.
+
+### Option B — Supabase cloud
+
+1. Create a free project at [supabase.com](https://supabase.com)
+2. Project Settings → API → copy the **Project URL** and **anon public** key into `.env.local`
+3. Authentication → URL Configuration → add `http://localhost:5173` as a redirect URL,
+   so magic links and signup confirmations come back to the dev server
+
+### Auth
+
+`/login` supports email + password sign-in, signup, and magic link. Sessions persist in
+localStorage and refresh automatically; sign out lives on the Settings tab.
 
 ## Repo layout
 
 ```
 apps/web/        React app (Vite)
-  src/screens/   Today · Areas · Progress · Settings
+  src/screens/   Login · Today · Areas · Progress · Settings
   src/components/ Shared UI (TabBar, QuickAddSheet, ...)
+  src/auth/      AuthProvider · useAuth · RequireAuth guard
   src/lib/       supabase client · XP rules
-supabase/        migrations & edge functions (filled by Phase 1 tasks)
+supabase/        config.toml, migrations & edge functions (filled by Phase 1 tasks)
 docs/            the three project documents
 .github/         CI: lint + typecheck + build on every PR
 ```

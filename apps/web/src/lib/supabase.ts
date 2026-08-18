@@ -1,12 +1,14 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+const url = import.meta.env.VITE_SUPABASE_URL
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-/**
- * Supabase client. Null until you copy .env.example to .env.local and fill in
- * your project's URL + anon key (task INF-02 wires auth and real data).
- */
-export const supabase: SupabaseClient | null = url && anonKey ? createClient(url, anonKey) : null
+if (!url || !anonKey) {
+  throw new Error(
+    'Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. Copy .env.example to .env.local ' +
+      'in the repo root and fill it in (see README → Getting started).',
+  )
+}
 
-export const supabaseConfigured = supabase !== null
+/** Sessions are persisted in localStorage and auto-refreshed by supabase-js. */
+export const supabase = createClient(url, anonKey)
