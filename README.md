@@ -101,7 +101,19 @@ refresh while `/assets/*` still serves the real bundles.
 
 CLI alternative: `npx vercel link` once, then `npx vercel --prod`.
 
-### 3. Edge functions (from BE-05 onwards)
+### 3. Error reporting & PWA install
+
+Set `VITE_SENTRY_DSN` in Vercel to turn on Sentry — it stays off in dev and when the DSN is
+empty, so nothing is reported from local work. A `Crashed` fallback screen catches render
+errors either way.
+
+The build emits a service worker (`autoUpdate`) that precaches the app shell only; Supabase
+REST/auth calls are network-first with a 5s timeout. To test install: open the production
+URL on Android Chrome → menu → _Install app_; on iOS Safari → Share → _Add to Home Screen_.
+Service workers need HTTPS (or localhost), so `npm run preview` is the local check —
+`npm run dev` does not register one.
+
+### 4. Edge functions (from BE-05 onwards)
 
 ```bash
 npx supabase functions deploy <name>       # add --no-verify-jwt only for public webhooks
