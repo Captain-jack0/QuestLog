@@ -1,5 +1,7 @@
 # QuestLog 🧭
 
+[![CI](https://github.com/Captain-jack0/QuestLog/actions/workflows/ci.yml/badge.svg)](https://github.com/Captain-jack0/QuestLog/actions/workflows/ci.yml)
+
 A gamified personal life & work tracker — never lose the thread again.
 
 Every project and task always carries two pieces of context: **where I left off** and
@@ -76,4 +78,5 @@ Claude Code prompt. Suggested first session: INF-02 → INF-03 → FE-01.
 | `npm run build`     | Typecheck + production build                        |
 | `npm run typecheck` | TypeScript check only                               |
 | `npm run lint`      | ESLint over `apps/web/src`                          |
+| `npm run test`      | Vitest unit tests (`vitest` for watch mode)         |
 | `npm run format`    | Prettier write over the repo (`format:check` in CI) |

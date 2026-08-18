@@ -10,6 +10,7 @@
     "build": "npm run build -w apps/web",
     "typecheck": "npm run typecheck -w apps/web",
     "lint": "npm run lint -w apps/web",
+    "test": "npm run test -w apps/web",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "npm run preview -w apps/web"
