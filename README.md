@@ -62,7 +62,50 @@ apps/web/        React app (Vite)
   src/lib/       supabase client · XP rules
 supabase/        config.toml, migrations & edge functions (filled by Phase 1 tasks)
 docs/            the three project documents
-.github/         CI: lint + typecheck + build on every PR
+.github/         CI: lint + typecheck + test + build on every PR
+vercel.json      SPA build + fallback rewrite for the Vercel deploy
+```
+
+## Deployment
+
+Frontend on Vercel, database and auth on Supabase cloud. Both are free-tier friendly.
+
+### 1. Supabase cloud project
+
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>   # ref is in the project URL / dashboard
+npm run deploy:db                                    # = supabase db push, applies supabase/migrations
+```
+
+In the dashboard: **Authentication → URL Configuration** → set Site URL to your Vercel
+production URL and add it (plus `http://localhost:5173`) to the redirect allow-list, or
+magic links will bounce back to the wrong origin.
+
+### 2. Frontend on Vercel
+
+Import the GitHub repo at [vercel.com/new](https://vercel.com/new) and keep the **root**
+directory — `vercel.json` already points the build at the workspace:
+
+| Setting          | Value                                                                |
+| ---------------- | -------------------------------------------------------------------- |
+| Install command  | `npm ci`                                                             |
+| Build command    | `npm run build`                                                      |
+| Output directory | `apps/web/dist`                                                      |
+| Env vars         | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Production + Preview) |
+
+Env vars are baked in at build time, so re-deploy after changing them. Use the **cloud**
+project's URL + anon key here, not the local ones. The rewrite in `vercel.json` sends any
+path with no matching file to `index.html`, so deep links like `/settings` survive a hard
+refresh while `/assets/*` still serves the real bundles.
+
+CLI alternative: `npx vercel link` once, then `npx vercel --prod`.
+
+### 3. Edge functions (from BE-05 onwards)
+
+```bash
+npx supabase functions deploy <name>       # add --no-verify-jwt only for public webhooks
+npx supabase secrets set RESEND_API_KEY=...
 ```
 
 ## Building it
@@ -72,11 +115,12 @@ Claude Code prompt. Suggested first session: INF-02 → INF-03 → FE-01.
 
 ## Scripts
 
-| Command             | What it does                                        |
-| ------------------- | --------------------------------------------------- |
-| `npm run dev`       | Start the dev server                                |
-| `npm run build`     | Typecheck + production build                        |
-| `npm run typecheck` | TypeScript check only                               |
-| `npm run lint`      | ESLint over `apps/web/src`                          |
-| `npm run test`      | Vitest unit tests (`vitest` for watch mode)         |
-| `npm run format`    | Prettier write over the repo (`format:check` in CI) |
+| Command             | What it does                                                      |
+| ------------------- | ----------------------------------------------------------------- |
+| `npm run dev`       | Start the dev server                                              |
+| `npm run build`     | Typecheck + production build                                      |
+| `npm run typecheck` | TypeScript check only                                             |
+| `npm run lint`      | ESLint over `apps/web/src`                                        |
+| `npm run test`      | Vitest unit tests (`vitest` for watch mode)                       |
+| `npm run format`    | Prettier write over the repo (`format:check` in CI)               |
+| `npm run deploy:db` | `supabase db push` — apply migrations to the linked cloud project |
