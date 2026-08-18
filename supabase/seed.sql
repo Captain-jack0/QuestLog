@@ -1,0 +1,7 @@
+-- Local-only seed data (runs on `supabase db reset`, never in the cloud).
+--
+-- The badge catalogue is NOT here on purpose: it ships in
+-- 20260818120200_gamification.sql so production gets it from `supabase db push`.
+--
+-- Add throwaway demo rows below when you need them; keep them user-agnostic or
+-- create the auth user first, since every table is user-scoped.

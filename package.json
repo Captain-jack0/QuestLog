@@ -11,6 +11,8 @@
     "typecheck": "npm run typecheck -w apps/web",
     "lint": "npm run lint -w apps/web",
     "test": "npm run test -w apps/web",
+    "test:db": "npx --yes supabase test db",
+    "db:reset": "npx --yes supabase db reset",
     "deploy:db": "npx --yes supabase db push",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

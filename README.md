@@ -52,6 +52,17 @@ the `MAILPIT_URL` from the same output — nothing is sent to real inboxes.
 `/login` supports email + password sign-in, signup, and magic link. Sessions persist in
 localStorage and refresh automatically; sign out lives on the Settings tab.
 
+### Database
+
+`supabase/migrations` holds the whole schema; `npm run db:reset` rebuilds the local database
+from scratch and `npm run test:db` runs the pgTAP suite against it (RLS isolation, XP,
+streaks, freeze tokens, badge idempotency). Both need the local stack running.
+
+Clients only ever **read** `xp_events`, `streaks` and `user_badges` — every write goes
+through the security-definer RPCs (`rpc_update_status`, `rpc_pick_focus`, `rpc_groom_stale`,
+`rpc_snooze`), so XP cannot be minted from the browser. `progress_logs` has no update or
+delete path at all.
+
 ## Repo layout
 
 ```
@@ -60,7 +71,7 @@ apps/web/        React app (Vite)
   src/components/ Shared UI (TabBar, QuickAddSheet, ...)
   src/auth/      AuthProvider · useAuth · RequireAuth guard
   src/lib/       supabase client · XP rules
-supabase/        config.toml, migrations & edge functions (filled by Phase 1 tasks)
+supabase/        config.toml, migrations, pgTAP tests & edge functions
 docs/            the three project documents
 .github/         CI: lint + typecheck + test + build on every PR
 vercel.json      SPA build + fallback rewrite for the Vercel deploy
@@ -135,4 +146,6 @@ Claude Code prompt. Suggested first session: INF-02 → INF-03 → FE-01.
 | `npm run lint`      | ESLint over `apps/web/src`                                        |
 | `npm run test`      | Vitest unit tests (`vitest` for watch mode)                       |
 | `npm run format`    | Prettier write over the repo (`format:check` in CI)               |
+| `npm run test:db`   | pgTAP tests against the local database                            |
+| `npm run db:reset`  | Rebuild the local database from migrations + seed                 |
 | `npm run deploy:db` | `supabase db push` — apply migrations to the linked cloud project |
