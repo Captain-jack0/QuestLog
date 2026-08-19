@@ -1,14 +1,46 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import { OPEN_STATUSES, type Project, type ProjectInput } from '../../lib/schemas'
+import { OPEN_STATUSES, type ProgressLog, type Project, type ProjectInput } from '../../lib/schemas'
 import { aggregateProjectStats, type ProjectStats } from './stats'
 
 export type { ProjectStats }
 
 export const projectKeys = {
   byArea: (areaId: string) => ['projects', areaId] as const,
+  detail: (id: string) => ['project', id] as const,
+  logs: (id: string) => ['project', id, 'logs'] as const,
   stats: (areaId: string) => ['projects', areaId, 'stats'] as const,
   openCounts: ['projects', 'open-counts'] as const,
+}
+
+export function useProject(id: string | undefined) {
+  return useQuery({
+    queryKey: projectKeys.detail(id ?? ''),
+    enabled: Boolean(id),
+    queryFn: async (): Promise<Project> => {
+      const { data, error } = await supabase.from('projects').select('*').eq('id', id!).single()
+      if (error) throw error
+      return data
+    },
+  })
+}
+
+/** The append-only timeline, newest first. */
+export function useProgressLogs(projectId: string | undefined) {
+  return useQuery({
+    queryKey: projectKeys.logs(projectId ?? ''),
+    enabled: Boolean(projectId),
+    queryFn: async (): Promise<ProgressLog[]> => {
+      const { data, error } = await supabase
+        .from('progress_logs')
+        .select('*')
+        .eq('project_id', projectId!)
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return data
+    },
+  })
 }
 
 /** Empty strings from the form are stored as null, not as ''. */

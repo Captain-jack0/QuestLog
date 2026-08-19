@@ -5,6 +5,7 @@ import { LoginScreen } from './screens/Login'
 import { TodayScreen } from './screens/Today'
 import { AreasScreen } from './screens/Areas'
 import { AreaDetailScreen } from './screens/AreaDetail'
+import { ProjectDetailScreen } from './screens/ProjectDetail'
 import { ProgressScreen } from './screens/Progress'
 import { SettingsScreen } from './screens/Settings'
 
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/" element={<TodayScreen />} />
         <Route path="/areas" element={<AreasScreen />} />
         <Route path="/areas/:areaId" element={<AreaDetailScreen />} />
+        <Route path="/projects/:projectId" element={<ProjectDetailScreen />} />
         <Route path="/progress" element={<ProgressScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
       </Route>

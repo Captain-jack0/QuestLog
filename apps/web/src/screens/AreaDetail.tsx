@@ -9,13 +9,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
 import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/queries'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
-import {
-  useCreateProject,
-  useProjectStats,
-  useProjects,
-  useUpdateProject,
-} from '../features/projects/queries'
-import type { Project } from '../lib/schemas'
+import { useCreateProject, useProjectStats, useProjects } from '../features/projects/queries'
 
 export function AreaDetailScreen() {
   const { areaId = '' } = useParams()
@@ -29,10 +23,8 @@ export function AreaDetailScreen() {
   const updateArea = useUpdateArea()
   const archiveArea = useArchiveArea()
   const createProject = useCreateProject(areaId, session?.user.id)
-  const updateProject = useUpdateProject(areaId)
 
   const [areaSheet, setAreaSheet] = useState(false)
-  const [editing, setEditing] = useState<Project | null>(null)
   const [creating, setCreating] = useState(false)
 
   return (
@@ -74,11 +66,7 @@ export function AreaDetailScreen() {
           const stat = stats.data?.[project.id]
           return (
             <Card key={project.id} edgeColor={area.data?.color} className="pl-5">
-              <button
-                type="button"
-                onClick={() => setEditing(project)}
-                className="block w-full text-left"
-              >
+              <Link to={`/projects/${project.id}`} className="block w-full text-left">
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-semibold leading-tight">{project.title}</span>
                   <StatusChip status={project.status} />
@@ -97,7 +85,7 @@ export function AreaDetailScreen() {
                     </p>
                   </div>
                 )}
-              </button>
+              </Link>
             </Card>
           )
         })}
@@ -143,26 +131,6 @@ export function AreaDetailScreen() {
             },
             onError: (error) => toast(error.message, 'error'),
           })
-        }
-      />
-
-      <ProjectSheet
-        open={editing !== null}
-        project={editing}
-        onClose={() => setEditing(null)}
-        saving={updateProject.isPending}
-        onSubmit={(values) =>
-          editing &&
-          updateProject.mutate(
-            { ...values, id: editing.id },
-            {
-              onSuccess: () => {
-                setEditing(null)
-                toast('Project updated')
-              },
-              onError: (error) => toast(error.message, 'error'),
-            },
-          )
         }
       />
     </div>

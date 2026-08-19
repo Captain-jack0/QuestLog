@@ -70,9 +70,9 @@ delete path at all.
 
 ```
 apps/web/        React app (Vite)
-  src/screens/   Login · Today · Areas · AreaDetail · Progress · Settings
+  src/screens/   Login · Today · Areas · AreaDetail · ProjectDetail · Progress · Settings
   src/components/ui/  Card · Button · StatusChip · ProgressBar · BottomSheet · Toast
-  src/features/  areas/ · projects/ (TanStack Query hooks + sheets)
+  src/features/  areas/ · projects/ · tasks/ · status/ (query hooks + sheets)
   src/auth/      AuthProvider · useAuth · RequireAuth guard
   src/lib/       supabase client · generated DB types · zod schemas · XP rules
 supabase/        config.toml, migrations, pgTAP tests & edge functions

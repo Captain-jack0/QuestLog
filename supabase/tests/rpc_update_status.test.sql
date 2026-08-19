@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(20);
+select plan(24);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'a@example.com'),
@@ -152,6 +152,16 @@ select is(
   (select next_step from v_hanging_threads
     where item_id = 'aaaa0000-0000-0000-0000-000000000003'),
   'resume tomorrow', 'the paused task hangs with its latest next step');
+
+-- ---- level curve & the payload the client reads --------------------------------------
+select is(level_for_xp(0), 1, 'no XP is level 1');
+select is(level_for_xp(282), 1, 'one XP short of level 2 is still level 1');
+select is(level_for_xp(283), 2, 'level 2 lands exactly on the curve');
+
+select is(
+  (rpc_update_status('task', 'aaaa0000-0000-0000-0000-000000000004', 'in_progress',
+                     'reopened', 'polish it') ->> 'leveled_up')::boolean,
+  false, 'leveled_up is false while the total stays under the next threshold');
 
 select * from finish();
 rollback;
