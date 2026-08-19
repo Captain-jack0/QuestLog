@@ -58,6 +58,9 @@ localStorage and refresh automatically; sign out lives on the Settings tab.
 from scratch and `npm run test:db` runs the pgTAP suite against it (RLS isolation, XP,
 streaks, freeze tokens, badge idempotency). Both need the local stack running.
 
+`src/lib/database.types.ts` is generated — after changing a migration, refresh it with
+`npx supabase gen types typescript --local > apps/web/src/lib/database.types.ts`.
+
 Clients only ever **read** `xp_events`, `streaks` and `user_badges` — every write goes
 through the security-definer RPCs (`rpc_update_status`, `rpc_pick_focus`, `rpc_groom_stale`,
 `rpc_snooze`), so XP cannot be minted from the browser. `progress_logs` has no update or
@@ -67,10 +70,11 @@ delete path at all.
 
 ```
 apps/web/        React app (Vite)
-  src/screens/   Login · Today · Areas · Progress · Settings
-  src/components/ Shared UI (TabBar, QuickAddSheet, ...)
+  src/screens/   Login · Today · Areas · AreaDetail · Progress · Settings
+  src/components/ui/  Card · Button · StatusChip · ProgressBar · BottomSheet · Toast
+  src/features/  areas/ · projects/ (TanStack Query hooks + sheets)
   src/auth/      AuthProvider · useAuth · RequireAuth guard
-  src/lib/       supabase client · XP rules
+  src/lib/       supabase client · generated DB types · zod schemas · XP rules
 supabase/        config.toml, migrations, pgTAP tests & edge functions
 docs/            the three project documents
 .github/         CI: lint + typecheck + test + build on every PR

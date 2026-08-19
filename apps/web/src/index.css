@@ -9,3 +9,19 @@ html {
 body {
   @apply bg-paper text-ink font-sans antialiased;
 }
+
+/* XP numbers line up in lists */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}

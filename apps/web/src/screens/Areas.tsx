@@ -1,32 +1,71 @@
-const placeholderAreas = [
-  { name: 'Work', icon: '💼', color: '#A5B4FC' },
-  { name: 'Home', icon: '🏡', color: '#FBCFE8' },
-  { name: 'Projects', icon: '🛠️', color: '#BBF7D0' },
-  { name: 'Learning', icon: '📚', color: '#FDE68A' },
-  { name: 'Career', icon: '🧭', color: '#BAE6FD' },
-]
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Card } from '../components/ui/Card'
+import { Button } from '../components/ui/Button'
+import { useToast } from '../components/ui/Toast'
+import { useAuth } from '../auth/AuthProvider'
+import { AreaSheet } from '../features/areas/AreaSheet'
+import { useAreas, useCreateArea } from '../features/areas/queries'
+import { useOpenProjectCounts } from '../features/projects/queries'
 
 export function AreasScreen() {
+  const { session } = useAuth()
+  const toast = useToast()
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const areas = useAreas()
+  const counts = useOpenProjectCounts()
+  const createArea = useCreateArea(session?.user.id)
+
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold">Life Areas</h1>
+      <header className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Areas</h1>
+        <Button onClick={() => setSheetOpen(true)} className="px-3 py-2">
+          + New
+        </Button>
+      </header>
+
+      {areas.isPending && <p className="text-muted">Loading your areas…</p>}
+      {areas.isError && <p className="text-flame">Could not load areas. Pull down to retry.</p>}
+
+      {areas.data?.length === 0 && (
+        <Card className="text-center">
+          <p className="font-medium">No areas yet 🧭</p>
+          <p className="mt-1 text-sm text-muted">
+            Areas are your big buckets — Work, Home, Learning. Start with one.
+          </p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
-        {placeholderAreas.map((a) => (
-          <div
-            key={a.name}
-            className="rounded-card border-l-4 bg-surface p-4 shadow-sm"
-            style={{ borderLeftColor: a.color }}
-          >
-            <div className="text-2xl">{a.icon}</div>
-            <div className="mt-1 font-semibold">{a.name}</div>
-            <div className="text-xs text-muted">0 open · Lv 1</div>
-          </div>
+        {areas.data?.map((area) => (
+          <Link key={area.id} to={`/areas/${area.id}`} className="block">
+            <Card edgeColor={area.color} className="h-full pl-5">
+              <div className="text-2xl">{area.icon}</div>
+              <div className="mt-1 font-semibold leading-tight">{area.name}</div>
+              <div className="mt-1 text-sm text-muted">
+                {counts.data?.[area.id] ?? 0} open project
+                {(counts.data?.[area.id] ?? 0) === 1 ? '' : 's'}
+              </div>
+            </Card>
+          </Link>
         ))}
-        <button className="rounded-card border border-dashed border-gray-300 p-4 text-muted">
-          + New area
-        </button>
       </div>
-      <p className="mt-4 text-center text-xs text-muted">Real CRUD arrives in task FE-02</p>
+
+      <AreaSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        saving={createArea.isPending}
+        onSubmit={(values) =>
+          createArea.mutate(values, {
+            onSuccess: () => {
+              setSheetOpen(false)
+              toast('Area created')
+            },
+            onError: (error) => toast(error.message, 'error'),
+          })
+        }
+      />
     </div>
   )
 }
