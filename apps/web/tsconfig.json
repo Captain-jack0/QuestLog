@@ -15,5 +15,7 @@
     "skipLibCheck": true,
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  // the service worker needs the WebWorker lib instead of DOM — see tsconfig.sw.json
+  "exclude": ["src/sw.ts"]
 }

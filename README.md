@@ -159,6 +159,37 @@ skipped rather than mailed. Every email carries a signed unsubscribe link that f
 | `UNSUBSCRIBE_SECRET` | Random string signing the unsubscribe links |
 | `DIGEST_FROM`        | Verified sender address                     |
 
+### 5. Push reminders (NT-02)
+
+```bash
+npx web-push generate-vapid-keys        # prints a public/private pair
+```
+
+Put the **public** half in `VITE_VAPID_PUBLIC_KEY` (Vercel env + your `.env.local`) and keep
+the private half server-side:
+
+```bash
+npx supabase secrets set VAPID_PUBLIC_KEY=B... VAPID_PRIVATE_KEY=... \
+  VAPID_SUBJECT="mailto:you@your-domain"
+
+npx supabase functions deploy send-push
+```
+
+```sql
+select schedule_push(
+  'https://<project-ref>.functions.supabase.co',
+  '<service-role-key>'
+);
+```
+
+The nudge goes out **10 hours after the digest time** and only to people who have not earned
+any XP yet that day — checking in makes it disappear. Subscriptions the browser has thrown
+away (404/410 from the push service) are deleted on the spot. Tapping the notification
+focuses an open tab or opens Today.
+
+Push needs HTTPS and a real install: use `npm run preview` or the deployed site, not
+`npm run dev`.
+
 ## Building it
 
 Work through `docs/03-task-sheet.md` top to bottom. Each task has a ready-to-paste

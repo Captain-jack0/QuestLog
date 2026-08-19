@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Card } from '../components/ui/Card'
@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase'
 import { useProfile } from '../features/gamification/queries'
 import { downloadJson, fetchExportBundle, useUpdateProfile } from '../features/settings/queries'
 import { timeZones } from '../features/settings/timezones'
+import { pushSupported, subscribeToPush, unsubscribeFromPush } from '../features/settings/push'
 import { localDateKey } from '../lib/time'
 import { profileSchema, type ProfileInput } from '../lib/schemas'
 
@@ -27,6 +28,7 @@ export function SettingsScreen() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema),
@@ -42,6 +44,22 @@ export function SettingsScreen() {
   })
 
   const staleDays = watch('stale_days')
+
+  /** The browser has to agree before the toggle means anything. */
+  async function togglePush(enabled: boolean) {
+    try {
+      if (enabled) {
+        if (!session?.user.id) throw new Error('Not signed in')
+        await subscribeToPush(session.user.id)
+        toast('Push reminders on')
+      } else {
+        await unsubscribeFromPush()
+      }
+    } catch (error) {
+      setValue('push_enabled', false)
+      toast(error instanceof Error ? error.message : 'Could not enable push', 'error')
+    }
+  }
 
   async function sendTestDigest() {
     setSendingTest(true)
@@ -137,11 +155,19 @@ export function SettingsScreen() {
           <label className="mt-3 flex min-h-[44px] items-center justify-between gap-3">
             <span>
               Push reminders
-              <span className="block text-xs text-muted">Wiring arrives with task NT-02</span>
+              <span className="block text-xs text-muted">
+                {pushSupported()
+                  ? 'A nudge later in the day, only if you have not checked in yet'
+                  : 'This browser cannot do web push'}
+              </span>
             </span>
             <input
               type="checkbox"
-              {...register('push_enabled')}
+              disabled={!pushSupported()}
+              {...register('push_enabled', {
+                onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                  void togglePush(event.target.checked),
+              })}
               className="h-6 w-6 accent-accent"
             />
           </label>

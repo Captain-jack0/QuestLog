@@ -420,3 +420,7 @@ verify_jwt = true
 [functions.unsubscribe]
 # clicked straight from an inbox: the signed token in the URL is the authorisation
 verify_jwt = false
+
+[functions.send-push]
+# cron only, authorised by the service-role key inside the function
+verify_jwt = true

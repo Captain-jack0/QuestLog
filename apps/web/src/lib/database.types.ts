@@ -277,6 +277,30 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          keys: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          keys: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          keys?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       streaks: {
         Row: {
           best: number
@@ -488,11 +512,31 @@ export type Database = {
         }
         Returns: number
       }
+      digest_payload: { Args: { p_user: string }; Returns: Json }
+      digest_recipients: {
+        Args: { p_now?: string }
+        Returns: {
+          display_name: string
+          email: string
+          timezone: string
+          user_id: string
+        }[]
+      }
       grant_badge: {
         Args: { p_code: string; p_user: string }
         Returns: boolean
       }
       level_for_xp: { Args: { total_xp: number }; Returns: number }
+      push_recipients: {
+        Args: { p_now?: string; p_offset_hours?: number }
+        Returns: {
+          display_name: string
+          endpoint: string
+          keys: Json
+          streak_current: number
+          user_id: string
+        }[]
+      }
       rpc_groom_stale: {
         Args: { p_item_id: string; p_item_type: string }
         Returns: Json
@@ -513,6 +557,14 @@ export type Database = {
           p_source?: string
         }
         Returns: Json
+      }
+      schedule_digest: {
+        Args: { p_functions_url: string; p_service_key: string }
+        Returns: string
+      }
+      schedule_push: {
+        Args: { p_functions_url: string; p_service_key: string }
+        Returns: string
       }
     }
     Enums: {

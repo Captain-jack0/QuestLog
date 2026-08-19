@@ -7,6 +7,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // injectManifest, not generateSW: the worker also handles push and notificationclick.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       includeAssets: ['pwa-192.png', 'pwa-512.png', 'pwa-maskable-512.png'],
       manifest: {
         name: 'QuestLog',
@@ -29,22 +33,9 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        // App shell only — precache the build output, never the data.
+      // Caching strategies live in src/sw.ts now; this only decides what gets precached.
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
-        navigateFallback: '/index.html',
-        runtimeCaching: [
-          {
-            // Supabase REST/auth/functions: always try the network first, cache is the fallback.
-            urlPattern: /\/(rest|auth|functions)\/v1\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-api',
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
-            },
-          },
-        ],
       },
     }),
   ],
