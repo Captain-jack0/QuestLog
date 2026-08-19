@@ -1,33 +1,174 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Card } from '../components/ui/Card'
+import { Button } from '../components/ui/Button'
+import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabase'
+import { useProfile } from '../features/gamification/queries'
+import { downloadJson, fetchExportBundle, useUpdateProfile } from '../features/settings/queries'
+import { timeZones } from '../features/settings/timezones'
+import { localDateKey } from '../lib/time'
+import { profileSchema, type ProfileInput } from '../lib/schemas'
+
+const field =
+  'w-full rounded-xl border border-gray-200 bg-paper px-4 py-3 text-base outline-none focus:border-accent'
 
 export function SettingsScreen() {
   const { session } = useAuth()
+  const toast = useToast()
+  const profile = useProfile()
+  const updateProfile = useUpdateProfile()
+  const [exporting, setExporting] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isDirty },
+  } = useForm<ProfileInput>({
+    resolver: zodResolver(profileSchema),
+    values: {
+      display_name: profile.data?.display_name ?? '',
+      timezone: profile.data?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      digest_enabled: profile.data?.digest_enabled ?? true,
+      // the column is a postgres time; the input wants HH:MM
+      digest_time: (profile.data?.digest_time ?? '08:00').slice(0, 5),
+      push_enabled: profile.data?.push_enabled ?? false,
+      stale_days: profile.data?.stale_days ?? 14,
+    },
+  })
+
+  const staleDays = watch('stale_days')
+
+  async function exportData() {
+    setExporting(true)
+    try {
+      downloadJson(await fetchExportBundle(), `questlog-export-${localDateKey()}.json`)
+      toast('Export downloaded')
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Export failed', 'error')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">Settings</h1>
-      <div className="space-y-3">
-        <div className="rounded-card bg-surface p-4 shadow-sm">
-          <div className="font-semibold">Profile</div>
-          <div className="text-sm text-muted">{session?.user.email}</div>
-          <button
-            type="button"
-            onClick={() => void supabase.auth.signOut()}
-            className="mt-3 min-h-[44px] w-full rounded-xl border border-gray-200 py-2 font-semibold text-flame active:scale-[0.99]"
-          >
-            Sign out
-          </button>
-        </div>
-        <div className="rounded-card bg-surface p-4 shadow-sm">
-          <div className="font-semibold">Daily digest</div>
-          <div className="text-sm text-muted">Email settings arrive with task NT-01</div>
-        </div>
-        <div className="rounded-card bg-surface p-4 shadow-sm">
-          <div className="font-semibold">Push reminders</div>
-          <div className="text-sm text-muted">Arrives with task NT-02</div>
-        </div>
-      </div>
+
+      <form
+        className="space-y-3"
+        onSubmit={handleSubmit((values) =>
+          updateProfile.mutate(values, {
+            onSuccess: () => toast('Settings saved'),
+            onError: (error) => toast(error.message, 'error'),
+          }),
+        )}
+      >
+        <Card>
+          <h2 className="mb-3 font-semibold">Profile</h2>
+          <p className="mb-3 text-sm text-muted">{session?.user.email}</p>
+
+          <label htmlFor="display-name" className="mb-1 block text-sm font-medium">
+            Display name
+          </label>
+          <input id="display-name" {...register('display_name')} className={field} />
+          {errors.display_name && (
+            <p className="mt-1 text-sm text-flame">{errors.display_name.message}</p>
+          )}
+
+          <label htmlFor="timezone" className="mb-1 mt-3 block text-sm font-medium">
+            Timezone
+          </label>
+          <select id="timezone" {...register('timezone')} className={field}>
+            {timeZones(profile.data?.timezone).map((zone) => (
+              <option key={zone} value={zone}>
+                {zone}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-muted">
+            Sets when your day rolls over for streaks, XP and the daily digest.
+          </p>
+        </Card>
+
+        <Card>
+          <h2 className="mb-3 font-semibold">Notifications</h2>
+
+          <label className="flex min-h-[44px] items-center justify-between gap-3">
+            <span>Daily email digest</span>
+            <input
+              type="checkbox"
+              {...register('digest_enabled')}
+              className="h-6 w-6 accent-accent"
+            />
+          </label>
+
+          <label htmlFor="digest-time" className="mb-1 mt-2 block text-sm font-medium">
+            Digest time
+          </label>
+          <input id="digest-time" type="time" {...register('digest_time')} className={field} />
+          {errors.digest_time && (
+            <p className="mt-1 text-sm text-flame">{errors.digest_time.message}</p>
+          )}
+
+          <label className="mt-3 flex min-h-[44px] items-center justify-between gap-3">
+            <span>
+              Push reminders
+              <span className="block text-xs text-muted">Wiring arrives with task NT-02</span>
+            </span>
+            <input
+              type="checkbox"
+              {...register('push_enabled')}
+              className="h-6 w-6 accent-accent"
+            />
+          </label>
+        </Card>
+
+        <Card>
+          <h2 className="mb-3 font-semibold">Preferences</h2>
+          <label htmlFor="stale-days" className="mb-1 block text-sm font-medium">
+            Call a thread stale after <span className="tabular">{staleDays}</span> days
+          </label>
+          <input
+            id="stale-days"
+            type="range"
+            min={7}
+            max={30}
+            step={1}
+            {...register('stale_days', { valueAsNumber: true })}
+            className="w-full accent-accent"
+          />
+          <p className="text-xs text-muted">Grooming a stale thread is worth 15 ✨.</p>
+        </Card>
+
+        <Button type="submit" block disabled={updateProfile.isPending || !isDirty}>
+          {updateProfile.isPending ? 'Saving…' : 'Save settings'}
+        </Button>
+      </form>
+
+      <Card className="mt-3">
+        <h2 className="mb-1 font-semibold">Your data</h2>
+        <p className="mb-3 text-sm text-muted">
+          One JSON file with every area, project, task, log, XP event and badge you own.
+        </p>
+        <Button variant="ghost" block onClick={exportData} disabled={exporting}>
+          {exporting ? 'Preparing…' : 'Export my data'}
+        </Button>
+      </Card>
+
+      <Card className="mt-3">
+        <h2 className="mb-1 font-semibold">Account</h2>
+        <p className="mb-3 text-sm text-muted">
+          Deleting your account removes every row above. It is not self-service yet — email support
+          and it is done by hand, after you export.
+        </p>
+        <Button variant="danger" block onClick={() => void supabase.auth.signOut()}>
+          Sign out
+        </Button>
+      </Card>
     </div>
   )
 }

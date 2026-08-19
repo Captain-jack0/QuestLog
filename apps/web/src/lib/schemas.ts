@@ -61,3 +61,14 @@ export const projectSchema = z.object({
 })
 
 export type ProjectInput = z.infer<typeof projectSchema>
+
+export const profileSchema = z.object({
+  display_name: z.string().trim().min(1, 'What should QuestLog call you?').max(60),
+  timezone: z.string().min(1, 'Pick a timezone'),
+  digest_enabled: z.boolean(),
+  digest_time: z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM'),
+  push_enabled: z.boolean(),
+  stale_days: z.number().int().min(7, 'At least 7 days').max(30, 'At most 30 days'),
+})
+
+export type ProfileInput = z.infer<typeof profileSchema>
