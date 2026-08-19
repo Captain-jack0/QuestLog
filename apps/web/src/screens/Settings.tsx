@@ -21,6 +21,7 @@ export function SettingsScreen() {
   const profile = useProfile()
   const updateProfile = useUpdateProfile()
   const [exporting, setExporting] = useState(false)
+  const [sendingTest, setSendingTest] = useState(false)
 
   const {
     register,
@@ -41,6 +42,25 @@ export function SettingsScreen() {
   })
 
   const staleDays = watch('stale_days')
+
+  async function sendTestDigest() {
+    setSendingTest(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('send-digest', {
+        body: { mode: 'test' },
+      })
+      if (error) throw error
+      toast(
+        (data as { result?: string })?.result === 'skipped'
+          ? 'Nothing to report yet — no email sent'
+          : 'Test digest on its way',
+      )
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not send the digest', 'error')
+    } finally {
+      setSendingTest(false)
+    }
+  }
 
   async function exportData() {
     setExporting(true)
@@ -125,6 +145,17 @@ export function SettingsScreen() {
               className="h-6 w-6 accent-accent"
             />
           </label>
+
+          <Button
+            type="button"
+            variant="ghost"
+            block
+            className="mt-3"
+            disabled={sendingTest}
+            onClick={sendTestDigest}
+          >
+            {sendingTest ? 'Sending…' : 'Send me a test digest'}
+          </Button>
         </Card>
 
         <Card>

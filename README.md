@@ -128,12 +128,36 @@ URL on Android Chrome → menu → _Install app_; on iOS Safari → Share → _A
 Service workers need HTTPS (or localhost), so `npm run preview` is the local check —
 `npm run dev` does not register one.
 
-### 4. Edge functions (from BE-05 onwards)
+### 4. Daily email digest (NT-01)
 
 ```bash
-npx supabase functions deploy <name>       # add --no-verify-jwt only for public webhooks
-npx supabase secrets set RESEND_API_KEY=...
+npx supabase secrets set RESEND_API_KEY=re_xxx \
+  UNSUBSCRIBE_SECRET="$(openssl rand -hex 32)" \
+  DIGEST_FROM="QuestLog <digest@your-domain>"
+
+npx supabase functions deploy send-digest
+npx supabase functions deploy unsubscribe --no-verify-jwt   # clicked from an inbox, no session
 ```
+
+Then schedule the hourly run once, from the SQL editor of the linked project:
+
+```sql
+select schedule_digest(
+  'https://<project-ref>.functions.supabase.co',
+  '<service-role-key>'   -- stays in the database, never in the repo
+);
+```
+
+`digest_recipients()` picks the users whose **local** hour matches their `digest_time`, so
+the job runs hourly and each person gets one mail a day. Accounts with nothing waiting are
+skipped rather than mailed. Every email carries a signed unsubscribe link that flips
+`digest_enabled` off; Settings has a **Send me a test digest** button that mails only you.
+
+| Secret               | What it is                                  |
+| -------------------- | ------------------------------------------- |
+| `RESEND_API_KEY`     | Resend API key (free tier: 100 mails/day)   |
+| `UNSUBSCRIBE_SECRET` | Random string signing the unsubscribe links |
+| `DIGEST_FROM`        | Verified sender address                     |
 
 ## Building it
 

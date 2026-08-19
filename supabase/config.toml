@@ -412,3 +412,11 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+[functions.send-digest]
+# cron sends the service-role key; the test-send button sends the user's JWT
+verify_jwt = true
+
+[functions.unsubscribe]
+# clicked straight from an inbox: the signed token in the URL is the authorisation
+verify_jwt = false
