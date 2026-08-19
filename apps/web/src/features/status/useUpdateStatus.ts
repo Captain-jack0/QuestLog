@@ -63,10 +63,11 @@ export function useUpdateStatus(projectId?: string) {
     },
     onError: (error: Error) => toast(error.message, 'error'),
     onSettled: () => {
-      // The RPC touches items, logs, XP and streaks at once — refetch the lot.
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: ['gamification'] })
+      // The RPC touches items, logs, XP and streaks at once — refetch the lot. Threads and
+      // focus derive from the item's status too, so they go stale on every call as well.
+      for (const key of [['tasks'], ['projects'], ['gamification'], ['threads'], ['focus']]) {
+        queryClient.invalidateQueries({ queryKey: key })
+      }
       if (projectId) {
         queryClient.invalidateQueries({ queryKey: ['project', projectId] })
       }
