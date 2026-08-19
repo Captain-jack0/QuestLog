@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { aggregateProjectStats } from './queries'
+import { aggregateProjectStats } from './stats'
 import { areaSchema, projectSchema } from '../../lib/schemas'
 
 describe('aggregateProjectStats', () => {
