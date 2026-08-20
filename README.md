@@ -190,10 +190,23 @@ focuses an open tab or opens Today.
 Push needs HTTPS and a real install: use `npm run preview` or the deployed site, not
 `npm run dev`.
 
+## Status
+
+Every v1 task in `docs/03-task-sheet.md` is built: infrastructure (INF-01…05), the database
+and its rules (BE-01…05), all screens (FE-01…08), digest and push (NT-01, NT-02) and the
+release pass (REL-01, REL-02).
+
+What is **not** done, on purpose:
+
+- the cloud deploy itself — it needs your Supabase, Vercel, Resend and VAPID credentials
+  (all steps are in [Deployment](#deployment))
+- Phase 5, the AI layer (AI-01 personal access tokens + REST facade, AI-02 MCP server),
+  which the task sheet says to start once v1 is in daily use
+
 ## Building it
 
 Work through `docs/03-task-sheet.md` top to bottom. Each task has a ready-to-paste
-Claude Code prompt. Suggested first session: INF-02 → INF-03 → FE-01.
+Claude Code prompt. Phase 5 is the only one left.
 
 ## Scripts
 
