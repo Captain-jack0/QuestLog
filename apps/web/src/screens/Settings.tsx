@@ -97,7 +97,7 @@ export function SettingsScreen() {
       <h1 className="mb-4 text-2xl font-bold">Settings</h1>
 
       <form
-        className="space-y-3"
+        className="grid gap-3 md:grid-cols-2"
         onSubmit={handleSubmit((values) =>
           updateProfile.mutate(values, {
             onSuccess: () => toast('Settings saved'),
@@ -201,31 +201,38 @@ export function SettingsScreen() {
           <p className="text-xs text-muted">Grooming a stale thread is worth 15 ✨.</p>
         </Card>
 
-        <Button type="submit" block disabled={updateProfile.isPending || !isDirty}>
+        <Button
+          type="submit"
+          block
+          className="md:col-span-2"
+          disabled={updateProfile.isPending || !isDirty}
+        >
           {updateProfile.isPending ? 'Saving…' : 'Save settings'}
         </Button>
       </form>
 
-      <Card className="mt-3">
-        <h2 className="mb-1 font-semibold">Your data</h2>
-        <p className="mb-3 text-sm text-muted">
-          One JSON file with every area, project, task, log, XP event and badge you own.
-        </p>
-        <Button variant="ghost" block onClick={exportData} disabled={exporting}>
-          {exporting ? 'Preparing…' : 'Export my data'}
-        </Button>
-      </Card>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <Card>
+          <h2 className="mb-1 font-semibold">Your data</h2>
+          <p className="mb-3 text-sm text-muted">
+            One JSON file with every area, project, task, log, XP event and badge you own.
+          </p>
+          <Button variant="ghost" block onClick={exportData} disabled={exporting}>
+            {exporting ? 'Preparing…' : 'Export my data'}
+          </Button>
+        </Card>
 
-      <Card className="mt-3">
-        <h2 className="mb-1 font-semibold">Account</h2>
-        <p className="mb-3 text-sm text-muted">
-          Deleting your account removes every row above. It is not self-service yet — email support
-          and it is done by hand, after you export.
-        </p>
-        <Button variant="danger" block onClick={() => void supabase.auth.signOut()}>
-          Sign out
-        </Button>
-      </Card>
+        <Card>
+          <h2 className="mb-1 font-semibold">Account</h2>
+          <p className="mb-3 text-sm text-muted">
+            Deleting your account removes every row above. It is not self-service yet — email
+            support and it is done by hand, after you export.
+          </p>
+          <Button variant="danger" block onClick={() => void supabase.auth.signOut()}>
+            Sign out
+          </Button>
+        </Card>
+      </div>
     </div>
   )
 }

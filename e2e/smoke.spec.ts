@@ -37,11 +37,11 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('heading', { name: 'Test project' })).toBeVisible()
     await page.getByRole('textbox', { name: 'New task' }).fill('First task')
     await page.getByRole('button', { name: 'Add', exact: true }).click()
-    await expect(page.getByLabel('Status for First task')).toBeVisible()
+    await expect(page.getByRole('radiogroup', { name: 'Status for First task' })).toBeVisible()
   })
 
   await test.step('complete it with resume context and collect XP', async () => {
-    await page.getByLabel('Status for First task').selectOption('done')
+    await page.getByRole('radio', { name: 'Status for First task: Done' }).click()
     await page.getByLabel('Where did you leave off?').fill('task finished')
     await page.getByLabel("What's the next step?").fill('review it tomorrow')
     await page.getByRole('button', { name: /Mark as done/i }).click()
@@ -52,7 +52,7 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
   })
 
   await test.step('park the project so it hangs', async () => {
-    await page.getByLabel('Project status').selectOption('paused')
+    await page.getByRole('radio', { name: 'Project status: Paused' }).click()
     await page.getByLabel('Where did you leave off?').fill('first task done')
     await page.getByLabel("What's the next step?").fill('plan the second one')
     await page.getByRole('button', { name: /Mark as paused/i }).click()

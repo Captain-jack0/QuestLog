@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { RequireAuth } from './auth/AuthProvider'
 import { TabBar } from './components/TabBar'
+import { SideNav } from './components/SideNav'
+import { QuickAddSheet } from './components/QuickAddSheet'
 import { LoginScreen } from './screens/Login'
 import { TodayScreen } from './screens/Today'
 import { AreasScreen } from './screens/Areas'
@@ -32,13 +35,23 @@ export default function App() {
   )
 }
 
+/**
+ * Mobile keeps the bottom tab bar; from md the navigation moves to a rail and the content
+ * gets the rest of the width instead of a phone-sized column stranded in the middle.
+ */
 function AppShell() {
+  const [addOpen, setAddOpen] = useState(false)
+
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col">
-      <main className="flex-1 px-4 pb-24 pt-6">
+    <div className="flex min-h-dvh">
+      <SideNav onQuickAdd={() => setAddOpen(true)} />
+
+      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-24 pt-6 md:max-w-5xl md:px-8 md:pb-10 lg:max-w-6xl">
         <Outlet />
       </main>
-      <TabBar />
+
+      <TabBar onQuickAdd={() => setAddOpen(true)} />
+      <QuickAddSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   )
 }

@@ -38,7 +38,7 @@ export function AreasScreen() {
         </Card>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {areas.data?.map((area) => (
           <Link key={area.id} to={`/areas/${area.id}`} className="block">
             <Card edgeColor={area.color} className="h-full pl-5">

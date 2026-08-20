@@ -62,7 +62,7 @@ export function AreaDetailScreen() {
         </Card>
       )}
 
-      <div className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {projects.data?.map((project) => {
           const stat = stats.data?.[project.id]
           return (

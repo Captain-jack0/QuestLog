@@ -31,7 +31,7 @@ export function ProgressScreen() {
   const grid = calendarWeeks(CALENDAR_WEEKS)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:mx-auto md:max-w-4xl">
       <header>
         <h1 className="text-2xl font-bold">Progress</h1>
       </header>
@@ -130,7 +130,7 @@ export function ProgressScreen() {
 
       <section>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Badges</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {badges.data?.map((badge) => {
             const earned = badge.earned_at !== null
             return (

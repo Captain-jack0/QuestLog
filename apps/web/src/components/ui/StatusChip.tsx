@@ -20,3 +20,6 @@ export function StatusChip({ status }: { status: ItemStatus }) {
 }
 
 export const statusLabel = (status: ItemStatus) => styles[status].label
+
+/** The chip's colour pair, so pickers can reuse it without re-deriving the palette. */
+export const statusTone = (status: ItemStatus) => styles[status].className

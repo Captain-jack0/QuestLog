@@ -3,7 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
-import { StatusChip, statusLabel } from '../components/ui/StatusChip'
+import { StatusChip } from '../components/ui/StatusChip'
+import { StatusPicker } from '../components/ui/StatusPicker'
+import { EditableText } from '../components/ui/EditableText'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
@@ -12,10 +14,11 @@ import { ProjectSheet } from '../features/projects/ProjectSheet'
 import { useProgressLogs, useProject, useUpdateProject } from '../features/projects/queries'
 import { useCreateTask, useTasks, useUpdateTask } from '../features/tasks/queries'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
+import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
 import { relativeTime } from '../lib/time'
 import { isOptimistic } from '../lib/optimistic'
-import { ITEM_STATUSES, type Difficulty, type ItemStatus } from '../lib/schemas'
+import { type Difficulty, type ItemStatus } from '../lib/schemas'
 
 const DIFFICULTIES: Difficulty[] = ['S', 'M', 'L']
 
@@ -98,46 +101,32 @@ export function ProjectDetailScreen() {
         )}
       </header>
 
-      <Card className="mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Where you left off
-        </h2>
-        {latest ? (
-          <>
-            <p className="mt-1 text-lg leading-snug">{latest.left_off || '—'}</p>
-            <h2 className="mt-4 text-sm font-semibold uppercase tracking-wide text-muted">
-              Next step
-            </h2>
-            <p className="mt-1 text-lg font-medium leading-snug">{latest.next_step || '—'}</p>
-            <p className="mt-3 text-xs text-muted">
-              {relativeTime(latest.created_at)}
-              {latest.source === 'ai' && ' · via AI'}
-            </p>
-          </>
-        ) : (
-          <p className="mt-1 text-muted">
-            No resume context yet — pause or update this project to leave yourself a note.
-          </p>
-        )}
-      </Card>
-
-      <label htmlFor="project-status-select" className="mb-1 block text-sm font-medium">
-        Project status
-      </label>
-      <select
-        id="project-status-select"
-        value={project.data.status}
-        onChange={(e) =>
-          requestStatus('project', projectId, project.data!.title, e.target.value as ItemStatus)
+      <ResumeCard
+        leftOff={latest?.left_off ?? null}
+        nextStep={latest?.next_step ?? null}
+        loggedAt={latest?.created_at ?? null}
+        fromAi={latest?.source === 'ai'}
+        saving={updateStatus.isPending}
+        onSave={({ leftOff, nextStep }) =>
+          updateStatus.mutate({
+            itemType: 'project',
+            itemId: projectId,
+            // an edit is a progress update, not a status change
+            status: project.data!.status,
+            leftOff,
+            nextStep,
+          })
         }
-        className="mb-6 w-full rounded-xl border border-gray-200 bg-surface px-4 py-3 text-base outline-none focus:border-accent"
-      >
-        {ITEM_STATUSES.map((status) => (
-          <option key={status} value={status}>
-            {statusLabel(status)}
-          </option>
-        ))}
-      </select>
+      />
+
+      <div className="mb-6">
+        <p className="mb-2 text-sm font-medium">Project status</p>
+        <StatusPicker
+          label="Project status"
+          value={project.data.status}
+          onChange={(status) => requestStatus('project', projectId, project.data!.title, status)}
+        />
+      </div>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
@@ -156,13 +145,15 @@ export function ProjectDetailScreen() {
           {tasks.data?.map((task) => (
             <Card key={task.id} className="p-3">
               <div className="flex items-start justify-between gap-2">
-                <span
+                <EditableText
+                  label={`Task title: ${task.title}`}
+                  value={task.title}
+                  disabled={isOptimistic(task.id)}
+                  onSave={(title) => updateTask.mutate({ id: task.id, title })}
                   className={`font-medium leading-tight ${
                     task.status === 'done' ? 'text-muted line-through' : ''
                   }`}
-                >
-                  {task.title}
-                </span>
+                />
                 <select
                   aria-label={`Difficulty for ${task.title}`}
                   disabled={isOptimistic(task.id)}
@@ -179,22 +170,16 @@ export function ProjectDetailScreen() {
                   ))}
                 </select>
               </div>
-              <select
-                aria-label={`Status for ${task.title}`}
-                // a row that has not come back from the database yet has no real id to send
-                disabled={isOptimistic(task.id)}
-                value={task.status}
-                onChange={(e) =>
-                  requestStatus('task', task.id, task.title, e.target.value as ItemStatus)
-                }
-                className="mt-2 w-full rounded-lg border border-gray-200 bg-paper px-3 py-2 text-sm outline-none focus:border-accent"
-              >
-                {ITEM_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {statusLabel(status)}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-2">
+                <StatusPicker
+                  compact
+                  label={`Status for ${task.title}`}
+                  value={task.status}
+                  // a row that has not come back from the database yet has no real id to send
+                  disabled={isOptimistic(task.id)}
+                  onChange={(status) => requestStatus('task', task.id, task.title, status)}
+                />
+              </div>
             </Card>
           ))}
         </div>
