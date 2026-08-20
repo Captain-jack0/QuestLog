@@ -1,6 +1,6 @@
 /** Placeholder blocks that keep the layout still while data lands. */
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div aria-hidden className={`animate-pulse rounded-xl bg-gray-100 ${className}`} />
+  return <div aria-hidden className={`animate-pulse rounded-xl bg-line/50 ${className}`} />
 }
 
 export function CardSkeleton({ rows = 3 }: { rows?: number }) {

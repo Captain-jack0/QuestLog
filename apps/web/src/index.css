@@ -2,17 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Two themes, one set of class names. "quest" is the gamified night sky the product leads
+ * with; "calm" is the quiet daylight palette from docs/02 §3 for people who want the tool
+ * to disappear. Values are "R G B" so Tailwind's /alpha modifiers keep working.
+ */
+:root,
+[data-theme='quest'] {
+  --paper: 26 20 61;
+  --surface: 39 30 84;
+  --ink: 243 240 255;
+  --muted: 176 166 224;
+  --line: 71 58 134;
+  --accent: 139 124 255;
+  --success: 62 213 152;
+  --flame: 255 168 76;
+  --success-ink: 126 235 190;
+  --flame-ink: 255 191 128;
+  --alert: 255 107 129;
+  --alert-ink: 255 158 172;
+}
+
+[data-theme='calm'] {
+  --paper: 250 250 247;
+  --surface: 255 255 255;
+  --ink: 31 41 51;
+  --muted: 107 114 128;
+  --line: 233 233 228;
+  --accent: 91 91 214;
+  --success: 47 158 105;
+  --flame: 232 131 58;
+  --success-ink: 31 122 80;
+  --flame-ink: 180 83 10;
+  --alert: 225 29 72;
+  --alert-ink: 159 18 57;
+}
+
 html {
   -webkit-tap-highlight-color: transparent;
+  color-scheme: dark;
+}
+
+[data-theme='calm'] {
+  color-scheme: light;
 }
 
 body {
   @apply bg-paper text-ink font-sans antialiased;
 }
 
+/* The night sky: layers of static "stars", drawn in CSS so there is nothing to load.
+   The calm theme switches it off below. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgb(255 255 255 / 0.9), transparent 100%),
+    radial-gradient(1.5px 1.5px at 78% 12%, rgb(255 255 255 / 0.7), transparent 100%),
+    radial-gradient(1px 1px at 42% 32%, rgb(255 255 255 / 0.6), transparent 100%),
+    radial-gradient(1.5px 1.5px at 88% 46%, rgb(255 255 255 / 0.8), transparent 100%),
+    radial-gradient(1px 1px at 24% 62%, rgb(255 255 255 / 0.5), transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 74%, rgb(255 255 255 / 0.7), transparent 100%),
+    radial-gradient(1px 1px at 8% 88%, rgb(255 255 255 / 0.5), transparent 100%),
+    radial-gradient(1.5px 1.5px at 92% 90%, rgb(255 255 255 / 0.6), transparent 100%),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgb(var(--accent) / 0.18), transparent 70%);
+  background-repeat: repeat;
+  background-size:
+    420px 420px,
+    420px 420px,
+    300px 300px,
+    520px 520px,
+    380px 380px,
+    460px 460px,
+    340px 340px,
+    500px 500px,
+    100% 100%;
+}
+
+[data-theme='calm'] body::before {
+  opacity: 0;
+}
+
 /* Keyboard users get a visible ring everywhere; pointer users never see it. */
 :focus-visible {
-  outline: 2px solid #5b5bd6;
+  outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
   border-radius: 0.5rem;
 }

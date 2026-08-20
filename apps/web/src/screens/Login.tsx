@@ -77,10 +77,21 @@ export function LoginScreen() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
-      <h1 className="text-3xl font-bold">QuestLog 🧭</h1>
-      <p className="mt-1 mb-8 text-muted">Never lose the thread again.</p>
+      <div className="mb-8 text-center">
+        <span aria-hidden className="text-5xl">
+          🧭
+        </span>
+        <h1 className="mt-2 text-3xl font-bold">QuestLog</h1>
+        <p className="mt-1 text-muted">
+          Never lose the thread again. Log the quest, keep the streak.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-3">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="space-y-3 rounded-card bg-surface p-5 shadow-quest"
+      >
         <div>
           <label htmlFor="email" className="mb-1 block text-sm font-medium">
             Email
@@ -90,7 +101,7 @@ export function LoginScreen() {
             type="email"
             autoComplete="email"
             {...register('email')}
-            className="w-full rounded-xl border border-gray-200 bg-surface px-4 py-3 text-base outline-none focus:border-accent"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base outline-none focus:border-accent"
           />
           {errors.email && <p className="mt-1 text-sm text-flame-ink">{errors.email.message}</p>}
         </div>
@@ -105,7 +116,7 @@ export function LoginScreen() {
               type="password"
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               {...register('password')}
-              className="w-full rounded-xl border border-gray-200 bg-surface px-4 py-3 text-base outline-none focus:border-accent"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base outline-none focus:border-accent"
             />
             {errors.password && (
               <p className="mt-1 text-sm text-flame-ink">{errors.password.message}</p>

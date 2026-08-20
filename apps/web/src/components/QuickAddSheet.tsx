@@ -111,7 +111,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
           ref={inputRef}
           aria-label="What's on your mind?"
           placeholder="What's on your mind, Captain?"
-          className="w-full rounded-xl border border-gray-200 bg-paper px-4 py-3 text-base outline-none focus:border-accent"
+          className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent"
         />
 
         <div className="grid grid-cols-2 gap-2">
@@ -122,7 +122,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
               setAreaId(e.target.value)
               setProjectId('')
             }}
-            className="min-h-[44px] rounded-xl border border-gray-200 bg-paper px-3 text-sm"
+            className="min-h-[44px] rounded-xl border border-line bg-paper px-3 text-sm"
           >
             <option value="">Area…</option>
             {areas.data?.map((area) => (
@@ -137,7 +137,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             disabled={!areaId}
-            className="min-h-[44px] rounded-xl border border-gray-200 bg-paper px-3 text-sm disabled:opacity-50"
+            className="min-h-[44px] rounded-xl border border-line bg-paper px-3 text-sm disabled:opacity-50"
           >
             <option value="">Project…</option>
             {projects.data?.map((project) => (

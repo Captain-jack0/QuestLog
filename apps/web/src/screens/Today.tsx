@@ -60,7 +60,7 @@ export function TodayScreen() {
 
           {focus.data?.length === 0 ? (
             <button type="button" onClick={() => setPickerOpen(true)} className="block w-full">
-              <Card className="border border-dashed border-gray-300 text-center text-muted">
+              <Card className="border border-dashed border-line text-center text-muted">
                 Pick up to 3 things to focus on today
                 <span className="mt-1 block text-xs">+5 ✨ for choosing</span>
               </Card>

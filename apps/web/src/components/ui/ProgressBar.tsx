@@ -7,7 +7,7 @@ export function ProgressBar({ done, total }: { done: number; total: number }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={`${done} of ${total} tasks done`}
-      className="h-1 w-full overflow-hidden rounded-full bg-gray-100"
+      className="h-1 w-full overflow-hidden rounded-full bg-line/50"
     >
       <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
     </div>

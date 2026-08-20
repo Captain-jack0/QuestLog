@@ -41,7 +41,7 @@ export function StatusPicker({
             className={`min-h-[36px] rounded-full px-3 text-xs font-semibold transition disabled:opacity-40 ${
               active
                 ? `${statusTone(status)} ring-2 ring-accent ring-offset-1`
-                : 'bg-paper text-muted hover:bg-gray-100'
+                : 'bg-paper text-muted hover:bg-line/40'
             }`}
           >
             {statusLabel(status)}

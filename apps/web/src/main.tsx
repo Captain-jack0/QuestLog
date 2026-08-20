@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@sentry/react'
 import { AuthProvider } from './auth/AuthProvider'
 import { ToastProvider } from './components/ui/Toast'
 import { initSentry } from './lib/sentry'
+import { applyTheme, storedTheme } from './lib/theme'
 import App from './App'
 import '@fontsource/inter/400.css'
 import '@fontsource/inter/600.css'
@@ -13,6 +14,8 @@ import '@fontsource/inter/700.css'
 import './index.css'
 
 initSentry()
+// Paint before the first render so there is no flash of the other theme.
+applyTheme(storedTheme())
 
 const queryClient = new QueryClient({
   defaultOptions: {

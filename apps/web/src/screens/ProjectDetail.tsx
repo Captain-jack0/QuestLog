@@ -204,13 +204,13 @@ export function ProjectDetailScreen() {
             placeholder="Add a task…"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="min-h-[44px] flex-1 rounded-xl border border-gray-200 bg-surface px-4 text-base outline-none focus:border-accent"
+            className="min-h-[44px] flex-1 rounded-xl border border-line bg-surface px-4 text-base outline-none focus:border-accent"
           />
           <select
             aria-label="New task difficulty"
             value={newDifficulty}
             onChange={(e) => setNewDifficulty(e.target.value as Difficulty)}
-            className="min-h-[44px] rounded-xl border border-gray-200 bg-surface px-2 text-sm"
+            className="min-h-[44px] rounded-xl border border-line bg-surface px-2 text-sm"
           >
             {DIFFICULTIES.map((d) => (
               <option key={d} value={d}>
@@ -228,7 +228,7 @@ export function ProjectDetailScreen() {
         <summary className="cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted">
           History ({logs.data?.length ?? 0})
         </summary>
-        <ol className="mt-3 space-y-3 border-l border-gray-200 pl-4">
+        <ol className="mt-3 space-y-3 border-l border-line pl-4">
           {logs.data?.map((log) => (
             <li key={log.id}>
               <p className="text-xs text-muted">

@@ -1,25 +1,37 @@
 /** @type {import('tailwindcss').Config} */
+
+// Every colour is a CSS variable holding an "R G B" triplet, so switching the theme on
+// <html data-theme> repaints the whole app without touching a single class name.
+const themed = (name) => `rgb(var(--${name}) / <alpha-value>)`
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        paper: '#FAFAF7',
-        surface: '#FFFFFF',
-        ink: '#1F2933',
-        muted: '#6B7280',
-        accent: '#5B5BD6',
-        success: '#2F9E69',
-        flame: '#E8833A',
-        // The bright pair fails WCAG AA as small text on paper/surface, so text uses these.
-        'success-ink': '#1F7A50',
-        'flame-ink': '#B4530A',
+        paper: themed('paper'),
+        surface: themed('surface'),
+        ink: themed('ink'),
+        muted: themed('muted'),
+        line: themed('line'),
+        accent: themed('accent'),
+        success: themed('success'),
+        flame: themed('flame'),
+        alert: themed('alert'),
+        'alert-ink': themed('alert-ink'),
+        // The bright pair fails contrast as small text, so text uses these.
+        'success-ink': themed('success-ink'),
+        'flame-ink': themed('flame-ink'),
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['"Press Start 2P"', 'Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         card: '1rem',
+      },
+      boxShadow: {
+        quest: '0 0 0 1px rgb(var(--line) / 1), 0 8px 24px -12px rgb(var(--accent) / 0.55)',
       },
     },
   },

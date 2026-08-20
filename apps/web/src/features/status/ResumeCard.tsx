@@ -13,7 +13,7 @@ interface ResumeCardProps {
 }
 
 const field =
-  'w-full rounded-xl border border-gray-200 bg-paper px-3 py-2 text-base outline-none focus:border-accent'
+  'w-full rounded-xl border border-line bg-paper px-3 py-2 text-base outline-none focus:border-accent'
 
 /**
  * The resume context, editable in place. Saving appends a new progress log rather than

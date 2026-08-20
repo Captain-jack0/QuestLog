@@ -52,7 +52,7 @@ export function ProgressScreen() {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={`Progress to level ${level + 1}`}
-          className="mt-3 h-1 w-full overflow-hidden rounded-full bg-gray-100"
+          className="mt-3 h-1 w-full overflow-hidden rounded-full bg-line/50"
         >
           <div
             className="h-full rounded-full bg-accent transition-all"
@@ -113,11 +113,7 @@ export function ProgressScreen() {
                     title={day ?? undefined}
                     aria-label={day ? `${day}: ${active.has(day) ? 'active' : 'quiet'}` : undefined}
                     className={`h-3 w-3 rounded-sm ${
-                      day === null
-                        ? 'bg-transparent'
-                        : active.has(day)
-                          ? 'bg-accent'
-                          : 'bg-gray-100'
+                      day === null ? 'bg-transparent' : active.has(day) ? 'bg-accent' : 'bg-line/50'
                     }`}
                   />
                 ))}

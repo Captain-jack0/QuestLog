@@ -9,12 +9,13 @@ import { supabase } from '../lib/supabase'
 import { useProfile } from '../features/gamification/queries'
 import { downloadJson, fetchExportBundle, useUpdateProfile } from '../features/settings/queries'
 import { timeZones } from '../features/settings/timezones'
+import { ThemePicker } from '../features/settings/ThemePicker'
 import { pushSupported, subscribeToPush, unsubscribeFromPush } from '../features/settings/push'
 import { localDateKey } from '../lib/time'
 import { profileSchema, type ProfileInput } from '../lib/schemas'
 
 const field =
-  'w-full rounded-xl border border-gray-200 bg-paper px-4 py-3 text-base outline-none focus:border-accent'
+  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent'
 
 export function SettingsScreen() {
   const { session } = useAuth()
@@ -182,6 +183,11 @@ export function SettingsScreen() {
           >
             {sendingTest ? 'Sending…' : 'Send me a test digest'}
           </Button>
+        </Card>
+
+        <Card>
+          <h2 className="mb-3 font-semibold">Appearance</h2>
+          <ThemePicker />
         </Card>
 
         <Card>
