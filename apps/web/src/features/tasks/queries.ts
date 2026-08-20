@@ -93,6 +93,7 @@ export function useUpdateTask(projectId: string) {
     }: {
       id: string
       title?: string
+      description?: string
       difficulty?: Difficulty
     }) => {
       const { error } = await supabase.from('tasks').update(fields).eq('id', id)
@@ -113,5 +114,20 @@ export function useUpdateTask(projectId: string) {
       if (context?.previous) queryClient.setQueryData(key, context.previous)
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  })
+}
+
+/** Moves a task into another project; both task lists are refetched. */
+export function useMoveTask() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, projectId }: { id: string; projectId: string }) => {
+      const { error } = await supabase.from('tasks').update({ project_id: projectId }).eq('id', id)
+      if (error) throw error
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
   })
 }

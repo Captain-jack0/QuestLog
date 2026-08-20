@@ -184,3 +184,43 @@ export function useUpdateProject(areaId: string) {
       current.map((p) => (p.id === vars.id ? { ...p, ...toRow(vars), id: vars.id } : p)),
   )
 }
+
+/**
+ * Moves a project into another area. Both area lists go stale, so this invalidates the
+ * whole projects branch rather than one key.
+ */
+export function useMoveProject() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, areaId }: { id: string; areaId: string }) => {
+      const { error } = await supabase.from('projects').update({ area_id: areaId }).eq('id', id)
+      if (error) throw error
+    },
+    onSettled: (_data, _error, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(vars.id) })
+      queryClient.invalidateQueries({ queryKey: ['gamification'] })
+    },
+  })
+}
+
+/** Every open project with its area, for the "move a task" picker. */
+export function useProjectOptions() {
+  return useQuery({
+    queryKey: ['projects', 'options'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, title, area_id, life_areas(name, icon)')
+        .in('status', OPEN_STATUSES)
+        .order('updated_at', { ascending: false })
+      if (error) throw error
+      return data as unknown as {
+        id: string
+        title: string
+        area_id: string | null
+        life_areas: { name: string; icon: string | null } | null
+      }[]
+    },
+  })
+}

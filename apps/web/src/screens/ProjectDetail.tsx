@@ -6,13 +6,20 @@ import { Button } from '../components/ui/Button'
 import { StatusChip } from '../components/ui/StatusChip'
 import { StatusPicker } from '../components/ui/StatusPicker'
 import { EditableText } from '../components/ui/EditableText'
+import { PickerSheet } from '../components/ui/PickerSheet'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
-import { useArea } from '../features/areas/queries'
+import { useArea, useAreas } from '../features/areas/queries'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
-import { useProgressLogs, useProject, useUpdateProject } from '../features/projects/queries'
-import { useCreateTask, useTasks, useUpdateTask } from '../features/tasks/queries'
+import {
+  useMoveProject,
+  useProgressLogs,
+  useProject,
+  useProjectOptions,
+  useUpdateProject,
+} from '../features/projects/queries'
+import { useCreateTask, useMoveTask, useTasks, useUpdateTask } from '../features/tasks/queries'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
 import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
@@ -37,11 +44,17 @@ export function ProjectDetailScreen() {
   const createTask = useCreateTask(projectId, session?.user.id)
   const updateTask = useUpdateTask(projectId)
   const updateStatus = useUpdateStatus(projectId)
+  const areas = useAreas()
+  const moveProject = useMoveProject()
+  const moveTask = useMoveTask()
+  const projectOptions = useProjectOptions()
 
   const [editing, setEditing] = useState(false)
   const [pending, setPending] = useState<PendingStatusChange | null>(null)
   const [newTitle, setNewTitle] = useState('')
   const [newDifficulty, setNewDifficulty] = useState<Difficulty>('M')
+  const [movingProject, setMovingProject] = useState(false)
+  const [movingTask, setMovingTask] = useState<{ id: string; title: string } | null>(null)
 
   const latest = logs.data?.[0]
   const done = tasks.data?.filter((t) => t.status === 'done').length ?? 0
@@ -79,9 +92,14 @@ export function ProjectDetailScreen() {
       <header className="mb-4 mt-2">
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-2xl font-bold leading-tight">{project.data.title}</h1>
-          <Button variant="ghost" className="shrink-0 px-3 py-2" onClick={() => setEditing(true)}>
-            Edit
-          </Button>
+          <span className="flex shrink-0 gap-2">
+            <Button variant="ghost" className="px-3 py-2" onClick={() => setMovingProject(true)}>
+              Move
+            </Button>
+            <Button variant="ghost" className="px-3 py-2" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+          </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
           {area.data && (
@@ -187,25 +205,18 @@ export function ProjectDetailScreen() {
           </Button>
         </form>
 
-        <div className="space-y-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {tasks.data?.map((task) => (
-            <Card key={task.id} className="p-3">
-              <div className="flex items-start justify-between gap-2">
+            <Card key={task.id} className="flex min-h-[190px] flex-col p-3">
+              <div className="flex items-start justify-between gap-1">
                 <EditableText
                   label={`Task title: ${task.title}`}
                   value={task.title}
                   disabled={isOptimistic(task.id)}
                   onSave={(title) => updateTask.mutate({ id: task.id, title })}
-                  className={`font-medium leading-tight ${
+                  className={`font-semibold leading-tight ${
                     task.status === 'done' ? 'text-muted line-through' : ''
                   }`}
-                />
-                <TimerButton
-                  itemType="task"
-                  itemId={task.id}
-                  title={task.title}
-                  withPomodoro
-                  disabled={isOptimistic(task.id)}
                 />
                 <select
                   aria-label={`Difficulty for ${task.title}`}
@@ -223,6 +234,18 @@ export function ProjectDetailScreen() {
                   ))}
                 </select>
               </div>
+
+              <EditableText
+                multiline
+                allowEmpty
+                label={`Description for ${task.title}`}
+                placeholder="+ Add a description"
+                value={task.description ?? ''}
+                disabled={isOptimistic(task.id)}
+                onSave={(description) => updateTask.mutate({ id: task.id, description })}
+                className="mt-1 flex-1 text-sm text-muted"
+              />
+
               <div className="mt-2">
                 <StatusPicker
                   compact
@@ -231,6 +254,25 @@ export function ProjectDetailScreen() {
                   // a row that has not come back from the database yet has no real id to send
                   disabled={isOptimistic(task.id)}
                   onChange={(status) => requestStatus('task', task.id, task.title, status)}
+                />
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  aria-label={`Move ${task.title} to another project`}
+                  disabled={isOptimistic(task.id)}
+                  onClick={() => setMovingTask({ id: task.id, title: task.title })}
+                  className="min-h-[36px] rounded-full px-2 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
+                >
+                  ⇄ Move
+                </button>
+                <TimerButton
+                  itemType="task"
+                  itemId={task.id}
+                  title={task.title}
+                  withPomodoro
+                  disabled={isOptimistic(task.id)}
                 />
               </div>
             </Card>
@@ -265,6 +307,59 @@ export function ProjectDetailScreen() {
           ))}
         </ol>
       </details>
+
+      <PickerSheet
+        open={movingProject}
+        title="Move project to…"
+        loading={areas.isPending}
+        onClose={() => setMovingProject(false)}
+        options={(areas.data ?? []).map((option) => ({
+          id: option.id,
+          label: `${option.icon ?? ''} ${option.name}`.trim(),
+          current: option.id === project.data?.area_id,
+        }))}
+        onPick={(areaId) =>
+          moveProject.mutate(
+            { id: projectId, areaId },
+            {
+              onSuccess: () => {
+                setMovingProject(false)
+                toast('Project moved')
+              },
+              onError: (error) => toast(error.message, 'error'),
+            },
+          )
+        }
+      />
+
+      <PickerSheet
+        open={movingTask !== null}
+        title={movingTask ? `Move "${movingTask.title}" to…` : 'Move task to…'}
+        loading={projectOptions.isPending}
+        emptyText="No other open project to move into."
+        onClose={() => setMovingTask(null)}
+        options={(projectOptions.data ?? []).map((option) => ({
+          id: option.id,
+          label: option.title,
+          hint: option.life_areas
+            ? `${option.life_areas.icon ?? ''} ${option.life_areas.name}`.trim()
+            : undefined,
+          current: option.id === projectId,
+        }))}
+        onPick={(targetProjectId) =>
+          movingTask &&
+          moveTask.mutate(
+            { id: movingTask.id, projectId: targetProjectId },
+            {
+              onSuccess: () => {
+                setMovingTask(null)
+                toast('Task moved')
+              },
+              onError: (error) => toast(error.message, 'error'),
+            },
+          )
+        }
+      />
 
       <ProjectSheet
         open={editing}

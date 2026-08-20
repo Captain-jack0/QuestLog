@@ -1,4 +1,4 @@
-﻿export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   graphql_public: {
@@ -329,6 +329,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          description: string | null
           difficulty: Database['public']['Enums']['difficulty']
           id: string
           project_id: string
@@ -342,6 +343,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          description?: string | null
           difficulty?: Database['public']['Enums']['difficulty']
           id?: string
           project_id: string
@@ -355,6 +357,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          description?: string | null
           difficulty?: Database['public']['Enums']['difficulty']
           id?: string
           project_id?: string
