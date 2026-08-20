@@ -10,9 +10,26 @@ body {
   @apply bg-paper text-ink font-sans antialiased;
 }
 
+/* Keyboard users get a visible ring everywhere; pointer users never see it. */
+:focus-visible {
+  outline: 2px solid #5b5bd6;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
 /* XP numbers line up in lists */
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes slide-up {

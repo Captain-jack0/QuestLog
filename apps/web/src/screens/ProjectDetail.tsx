@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
+import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { StatusChip, statusLabel } from '../components/ui/StatusChip'
 import { ProgressBar } from '../components/ui/ProgressBar'
@@ -13,6 +14,7 @@ import { useCreateTask, useTasks, useUpdateTask } from '../features/tasks/querie
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
 import { relativeTime } from '../lib/time'
+import { isOptimistic } from '../lib/optimistic'
 import { ITEM_STATUSES, type Difficulty, type ItemStatus } from '../lib/schemas'
 
 const DIFFICULTIES: Difficulty[] = ['S', 'M', 'L']
@@ -61,8 +63,8 @@ export function ProjectDetailScreen() {
     updateStatus.mutate({ itemType, itemId, status, leftOff: '', nextStep: '' })
   }
 
-  if (project.isPending) return <p className="text-muted">Loading project…</p>
-  if (project.isError || !project.data) return <p className="text-flame">Project not found.</p>
+  if (project.isPending) return <CardSkeleton rows={3} />
+  if (project.isError || !project.data) return <p className="text-flame-ink">Project not found.</p>
 
   return (
     <div>
@@ -163,6 +165,7 @@ export function ProjectDetailScreen() {
                 </span>
                 <select
                   aria-label={`Difficulty for ${task.title}`}
+                  disabled={isOptimistic(task.id)}
                   value={task.difficulty}
                   onChange={(e) =>
                     updateTask.mutate({ id: task.id, difficulty: e.target.value as Difficulty })
@@ -178,6 +181,8 @@ export function ProjectDetailScreen() {
               </div>
               <select
                 aria-label={`Status for ${task.title}`}
+                // a row that has not come back from the database yet has no real id to send
+                disabled={isOptimistic(task.id)}
                 value={task.status}
                 onChange={(e) =>
                   requestStatus('task', task.id, task.title, e.target.value as ItemStatus)

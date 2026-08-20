@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import { OPEN_STATUSES, type ProgressLog, type Project, type ProjectInput } from '../../lib/schemas'
 import { aggregateProjectStats, type ProjectStats } from './stats'
 
@@ -139,19 +140,27 @@ function useProjectMutation<TVars>(
 }
 
 export function useCreateProject(areaId: string, userId: string | undefined) {
+  const queryClient = useQueryClient()
+
   return useProjectMutation(
     areaId,
     async (input: ProjectInput) => {
       if (!userId) throw new Error('Not signed in')
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .insert({ ...toRow(input), area_id: areaId, user_id: userId })
+        .select()
+        .single()
       if (error) throw error
+      // The card links to /projects/:id — it must be the real one, not the placeholder.
+      queryClient.setQueryData<Project[]>(projectKeys.byArea(areaId), (current) =>
+        replaceOptimistic(current ?? [], data),
+      )
     },
     (current, input) => [
       {
         ...toRow(input),
-        id: `optimistic-${current.length}`,
+        id: optimisticId(current.length),
         area_id: areaId,
         user_id: userId ?? '',
         created_at: new Date().toISOString(),

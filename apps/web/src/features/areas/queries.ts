@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import type { AreaInput, LifeArea } from '../../lib/schemas'
 
 export const areaKeys = {
@@ -57,16 +58,26 @@ function useAreaMutation<TVars>(
 }
 
 export function useCreateArea(userId: string | undefined) {
+  const queryClient = useQueryClient()
+
   return useAreaMutation(
     async (input: AreaInput) => {
       if (!userId) throw new Error('Not signed in')
-      const { error } = await supabase.from('life_areas').insert({ ...input, user_id: userId })
+      const { data, error } = await supabase
+        .from('life_areas')
+        .insert({ ...input, user_id: userId })
+        .select()
+        .single()
       if (error) throw error
+      // The grid links to /areas/:id, so the placeholder id has to go straight away.
+      queryClient.setQueryData<LifeArea[]>(areaKeys.all, (current) =>
+        replaceOptimistic(current ?? [], data),
+      )
     },
     (current, input) => [
       ...current,
       {
-        id: `optimistic-${current.length}`,
+        id: optimisticId(current.length),
         user_id: userId ?? '',
         archived: false,
         created_at: new Date().toISOString(),

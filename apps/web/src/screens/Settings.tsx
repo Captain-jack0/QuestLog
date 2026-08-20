@@ -114,7 +114,7 @@ export function SettingsScreen() {
           </label>
           <input id="display-name" {...register('display_name')} className={field} />
           {errors.display_name && (
-            <p className="mt-1 text-sm text-flame">{errors.display_name.message}</p>
+            <p className="mt-1 text-sm text-flame-ink">{errors.display_name.message}</p>
           )}
 
           <label htmlFor="timezone" className="mb-1 mt-3 block text-sm font-medium">
@@ -149,7 +149,7 @@ export function SettingsScreen() {
           </label>
           <input id="digest-time" type="time" {...register('digest_time')} className={field} />
           {errors.digest_time && (
-            <p className="mt-1 text-sm text-flame">{errors.digest_time.message}</p>
+            <p className="mt-1 text-sm text-flame-ink">{errors.digest_time.message}</p>
           )}
 
           <label className="mt-3 flex min-h-[44px] items-center justify-between gap-3">

@@ -92,7 +92,7 @@ export function LoginScreen() {
             {...register('email')}
             className="w-full rounded-xl border border-gray-200 bg-surface px-4 py-3 text-base outline-none focus:border-accent"
           />
-          {errors.email && <p className="mt-1 text-sm text-flame">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-sm text-flame-ink">{errors.email.message}</p>}
         </div>
 
         {mode !== 'magic' && (
@@ -108,17 +108,17 @@ export function LoginScreen() {
               className="w-full rounded-xl border border-gray-200 bg-surface px-4 py-3 text-base outline-none focus:border-accent"
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-flame">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-flame-ink">{errors.password.message}</p>
             )}
           </div>
         )}
 
         {error && (
-          <p role="alert" className="text-sm text-flame">
+          <p role="alert" className="text-sm text-flame-ink">
             {error}
           </p>
         )}
-        {notice && <p className="text-sm text-success">{notice}</p>}
+        {notice && <p className="text-sm text-success-ink">{notice}</p>}
 
         <button
           type="submit"

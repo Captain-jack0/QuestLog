@@ -4,9 +4,9 @@ const styles: Record<ItemStatus, { label: string; className: string }> = {
   idea: { label: 'Idea', className: 'bg-gray-100 text-muted' },
   planned: { label: 'Planned', className: 'bg-blue-50 text-blue-700' },
   in_progress: { label: 'In progress', className: 'bg-accent/10 text-accent' },
-  paused: { label: 'Paused', className: 'bg-flame/10 text-flame' },
+  paused: { label: 'Paused', className: 'bg-flame/10 text-flame-ink' },
   blocked: { label: 'Blocked', className: 'bg-rose-50 text-rose-700' },
-  done: { label: 'Done', className: 'bg-success/10 text-success' },
+  done: { label: 'Done', className: 'bg-success/10 text-success-ink' },
   dropped: { label: 'Dropped', className: 'bg-gray-100 text-gray-400' },
 }
 

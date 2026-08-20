@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import type { Difficulty, Task } from '../../lib/schemas'
 
 export const taskKeys = {
@@ -31,14 +32,19 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
     mutationFn: async ({ title, difficulty }: { title: string; difficulty: Difficulty }) => {
       if (!userId) throw new Error('Not signed in')
       const sortOrder = queryClient.getQueryData<Task[]>(key)?.length ?? 0
-      const { error } = await supabase.from('tasks').insert({
-        project_id: projectId,
-        user_id: userId,
-        title,
-        difficulty,
-        sort_order: sortOrder,
-      })
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          project_id: projectId,
+          user_id: userId,
+          title,
+          difficulty,
+          sort_order: sortOrder,
+        })
+        .select()
+        .single()
       if (error) throw error
+      return data
     },
     onMutate: async ({ title, difficulty }) => {
       await queryClient.cancelQueries({ queryKey: key })
@@ -47,7 +53,7 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
         queryClient.setQueryData(key, [
           ...previous,
           {
-            id: `optimistic-${previous.length}`,
+            id: optimisticId(previous.length),
             project_id: projectId,
             user_id: userId ?? '',
             title,
@@ -62,6 +68,11 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
         ])
       }
       return { previous }
+    },
+    // Swap the placeholder for the saved row at once: its real id is what every later
+    // action (status change, difficulty edit) has to send.
+    onSuccess: (row) => {
+      queryClient.setQueryData<Task[]>(key, (current) => replaceOptimistic(current ?? [], row))
     },
     onError: (_error, _vars, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous)

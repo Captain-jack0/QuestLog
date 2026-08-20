@@ -3,6 +3,9 @@ import confetti from 'canvas-confetti'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
 import type { ItemStatus } from '../../lib/schemas'
+import { statusFeedback, type StatusResult } from './feedback'
+
+export type { StatusResult }
 
 export interface StatusChange {
   itemType: 'task' | 'project'
@@ -11,18 +14,6 @@ export interface StatusChange {
   leftOff: string
   nextStep: string
   note?: string
-}
-
-/** Shape of rpc_update_status' json return (BE-04). */
-export interface StatusResult {
-  xp_awarded: number
-  total_xp: number
-  level: number
-  leveled_up: boolean
-  streak_current: number
-  streak_best: number
-  freeze_tokens: number
-  new_badges: string[]
 }
 
 /**
@@ -47,18 +38,19 @@ export function useUpdateStatus(projectId?: string) {
       return data as unknown as StatusResult
     },
     onSuccess: (result) => {
-      toast(`+${result.xp_awarded} ✨`, 'xp')
-      if (result.leveled_up) {
+      const feedback = statusFeedback(result)
+      toast(feedback.xpToast, 'xp')
+      if (feedback.confetti) {
         confetti({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.7 },
           disableForReducedMotion: true,
         })
-        setTimeout(() => toast(`Level ${result.level}!`, 'xp'), 400)
+        setTimeout(() => toast(feedback.levelToast!, 'xp'), 400)
       }
-      for (const badge of result.new_badges ?? []) {
-        setTimeout(() => toast(`Badge earned: ${badge.replace(/_/g, ' ')} 🏅`), 800)
+      for (const badgeToast of feedback.badgeToasts) {
+        setTimeout(() => toast(badgeToast), 800)
       }
     },
     onError: (error: Error) => toast(error.message, 'error'),

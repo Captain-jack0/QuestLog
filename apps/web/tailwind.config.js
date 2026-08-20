@@ -11,6 +11,9 @@ export default {
         accent: '#5B5BD6',
         success: '#2F9E69',
         flame: '#E8833A',
+        // The bright pair fails WCAG AA as small text on paper/surface, so text uses these.
+        'success-ink': '#1F7A50',
+        'flame-ink': '#B4530A',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

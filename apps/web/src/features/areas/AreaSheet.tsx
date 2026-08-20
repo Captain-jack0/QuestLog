@@ -52,7 +52,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
             {...register('name')}
             className="w-full rounded-xl border border-gray-200 bg-paper px-4 py-3 text-base outline-none focus:border-accent"
           />
-          {errors.name && <p className="mt-1 text-sm text-flame">{errors.name.message}</p>}
+          {errors.name && <p className="mt-1 text-sm text-flame-ink">{errors.name.message}</p>}
         </div>
 
         <fieldset>

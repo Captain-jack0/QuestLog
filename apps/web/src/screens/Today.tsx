@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
+import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { useToast } from '../components/ui/Toast'
 import { FocusPickerSheet } from '../features/focus/FocusPickerSheet'
@@ -42,7 +43,7 @@ export function TodayScreen() {
         <p className="text-sm text-muted">{weekday}</p>
         <h1 className="text-2xl font-bold">Welcome back, {name}</h1>
         <div className="mt-2 flex items-center gap-3 text-sm">
-          <span className="rounded-full bg-flame/10 px-3 py-1 font-semibold text-flame tabular">
+          <span className="rounded-full bg-flame/10 px-3 py-1 font-semibold text-flame-ink tabular">
             🔥 {streak.data?.current ?? 0}-day streak
           </span>
           <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent tabular">
@@ -96,7 +97,7 @@ export function TodayScreen() {
           Hanging threads
         </h2>
 
-        {threads.isPending && <p className="text-muted">Looking for loose ends…</p>}
+        {threads.isPending && <CardSkeleton rows={2} />}
 
         {threads.data?.length === 0 && (
           <Card>

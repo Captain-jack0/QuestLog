@@ -139,7 +139,7 @@ export function ProgressScreen() {
                 <p className="mt-1 font-semibold leading-tight">{badge.name}</p>
                 <p className="mt-1 text-xs text-muted">{badge.description}</p>
                 {earned && (
-                  <p className="mt-2 text-xs font-semibold text-success">
+                  <p className="mt-2 text-xs font-semibold text-success-ink">
                     Earned {new Date(badge.earned_at!).toLocaleDateString()}
                   </p>
                 )}

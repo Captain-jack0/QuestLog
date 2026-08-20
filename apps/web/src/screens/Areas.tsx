@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
+import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
@@ -25,8 +26,8 @@ export function AreasScreen() {
         </Button>
       </header>
 
-      {areas.isPending && <p className="text-muted">Loading your areas…</p>}
-      {areas.isError && <p className="text-flame">Could not load areas. Pull down to retry.</p>}
+      {areas.isPending && <CardSkeleton rows={2} />}
+      {areas.isError && <p className="text-flame-ink">Could not load areas. Pull down to retry.</p>}
 
       {areas.data?.length === 0 && (
         <Card className="text-center">

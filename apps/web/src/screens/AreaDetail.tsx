@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
+import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { StatusChip } from '../components/ui/StatusChip'
 import { ProgressBar } from '../components/ui/ProgressBar'
@@ -51,7 +52,7 @@ export function AreaDetailScreen() {
         + New project
       </Button>
 
-      {projects.isPending && <p className="text-muted">Loading projects…</p>}
+      {projects.isPending && <CardSkeleton rows={2} />}
       {projects.data?.length === 0 && (
         <Card className="text-center">
           <p className="font-medium">Nothing here yet</p>
