@@ -6,8 +6,15 @@ import {
   useTotalXp,
   useXpHistory,
 } from '../features/gamification/queries'
-import { activeDayKeys, calendarWeeks, weeklyXp } from '../features/gamification/aggregate'
+import {
+  activeDayKeys,
+  calendarWeeks,
+  weeklyFocus,
+  weeklyXp,
+} from '../features/gamification/aggregate'
 import { WeeklyXpChart } from '../features/gamification/WeeklyXpChart'
+import { useDailyFocus } from '../features/timer/queries'
+import { formatMinutes } from '../features/timer/pomodoro'
 import { levelForXp, xpForLevel } from '../lib/xp'
 
 const CALENDAR_WEEKS = 12
@@ -18,6 +25,7 @@ export function ProgressScreen() {
   const areas = useAreaStats()
   const badges = useBadges()
   const history = useXpHistory(CALENDAR_WEEKS)
+  const focus = useDailyFocus(CALENDAR_WEEKS * 7)
 
   const total = totalXp.data ?? 0
   const level = levelForXp(total)
@@ -29,6 +37,9 @@ export function ProgressScreen() {
 
   const active = activeDayKeys(history.data ?? [])
   const grid = calendarWeeks(CALENDAR_WEEKS)
+  const focusWeeks = weeklyFocus(focus.data ?? [], 8)
+  const focusPeak = Math.max(...focusWeeks.map((w) => w.seconds), 1)
+  const totalFocus = focusWeeks.reduce((sum, w) => sum + w.seconds, 0)
 
   return (
     <div className="space-y-6 md:mx-auto md:max-w-4xl">
@@ -96,6 +107,39 @@ export function ProgressScreen() {
         </h2>
         <Card>
           <WeeklyXpChart weeks={weeklyXp(history.data ?? [], 8)} />
+        </Card>
+      </section>
+
+      <section>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          Focus time per week
+        </h2>
+        <Card>
+          <div className="flex h-32 items-end gap-1.5">
+            {focusWeeks.map((week) => (
+              <div key={week.weekStart} className="flex flex-1 flex-col items-center gap-1">
+                <span className="tabular text-[10px] text-muted">
+                  {week.seconds > 0 ? formatMinutes(week.seconds) : ''}
+                </span>
+                <div
+                  role="img"
+                  aria-label={`Week of ${week.label}: ${formatMinutes(week.seconds)} focused`}
+                  className="w-full rounded-t bg-success/80"
+                  style={{
+                    height: `${Math.max((week.seconds / focusPeak) * 100, week.seconds > 0 ? 4 : 2)}%`,
+                  }}
+                />
+                <span className="text-[10px] leading-none text-muted">
+                  {week.label.split(' ')[0]}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            {totalFocus > 0
+              ? `${formatMinutes(totalFocus)} tracked in the last 8 weeks · 10 ✨ per 25 minutes, up to 60 a day`
+              : 'Start a timer on a task to see your focus here.'}
+          </p>
         </Card>
       </section>
 

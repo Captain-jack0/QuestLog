@@ -18,6 +18,6 @@ export function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute('content', theme === 'quest' ? '#1A143D' : '#FAFAF7')
+    ?.setAttribute('content', theme === 'quest' ? '#081230' : '#FAFAF7')
   localStorage.setItem(STORAGE_KEY, theme)
 }

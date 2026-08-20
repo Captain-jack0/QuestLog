@@ -77,3 +77,32 @@ export function calendarWeeks(weeks = 12, now: Date = new Date()): (string | nul
   }
   return grid
 }
+
+export interface FocusWeek {
+  weekStart: string
+  label: string
+  seconds: number
+}
+
+/** Focus seconds per week, same window and shape as weeklyXp so the two charts line up. */
+export function weeklyFocus(
+  days: { day: string; seconds: number }[],
+  weeks = 8,
+  now: Date = new Date(),
+): FocusWeek[] {
+  const buckets = weeklyXp([], weeks, now).map((bucket) => ({
+    weekStart: bucket.weekStart,
+    label: bucket.label,
+    seconds: 0,
+  }))
+  const index = new Map(buckets.map((bucket, i) => [bucket.weekStart, i]))
+
+  for (const entry of days) {
+    // "2026-08-19" is a local calendar day already; parse it as such, not as UTC
+    const [year, month, day] = entry.day.split('-').map(Number)
+    const key = localDateKey(startOfWeek(new Date(year, month - 1, day)))
+    const at = index.get(key)
+    if (at !== undefined) buckets[at].seconds += entry.seconds
+  }
+  return buckets
+}

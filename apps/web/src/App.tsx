@@ -4,6 +4,7 @@ import { RequireAuth } from './auth/AuthProvider'
 import { TabBar } from './components/TabBar'
 import { SideNav } from './components/SideNav'
 import { QuickAddSheet } from './components/QuickAddSheet'
+import { TimerBar } from './features/timer/TimerBar'
 import { LoginScreen } from './screens/Login'
 import { TodayScreen } from './screens/Today'
 import { AreasScreen } from './screens/Areas'
@@ -50,6 +51,7 @@ function AppShell() {
         <Outlet />
       </main>
 
+      <TimerBar />
       <TabBar onQuickAdd={() => setAddOpen(true)} />
       <QuickAddSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>

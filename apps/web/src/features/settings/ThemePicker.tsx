@@ -6,13 +6,13 @@ const OPTIONS: { value: Theme; label: string; hint: string; swatch: string }[] =
     value: 'quest',
     label: 'Quest',
     hint: 'Night sky, gamified',
-    swatch: 'linear-gradient(140deg,#1A143D 0%,#3B2E86 60%,#8B7CFF 100%)',
+    swatch: 'linear-gradient(140deg,#081230 0%,#173A7A 60%,#4C8DFF 100%)',
   },
   {
     value: 'calm',
     label: 'Calm',
     hint: 'Daylight, quiet',
-    swatch: 'linear-gradient(140deg,#FAFAF7 0%,#FFFFFF 60%,#5B5BD6 100%)',
+    swatch: 'linear-gradient(140deg,#FAFAF7 0%,#FFFFFF 60%,#2F4FB5 100%)',
   },
 ]
 

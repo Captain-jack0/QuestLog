@@ -18,6 +18,7 @@ import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
 import { relativeTime } from '../lib/time'
 import { isOptimistic } from '../lib/optimistic'
+import { TimerButton } from '../features/timer/TimerButton'
 import { type Difficulty, type ItemStatus } from '../lib/schemas'
 
 const DIFFICULTIES: Difficulty[] = ['S', 'M', 'L']
@@ -95,6 +96,12 @@ export function ProjectDetailScreen() {
           )}
           <StatusChip status={project.data.status} />
           <span className="text-muted">{project.data.priority} priority</span>
+          <TimerButton
+            itemType="project"
+            itemId={projectId}
+            title={project.data.title}
+            withPomodoro
+          />
         </div>
         {project.data.description && (
           <p className="mt-2 text-sm text-muted">{project.data.description}</p>
@@ -141,51 +148,8 @@ export function ProjectDetailScreen() {
           </div>
         )}
 
-        <div className="space-y-2">
-          {tasks.data?.map((task) => (
-            <Card key={task.id} className="p-3">
-              <div className="flex items-start justify-between gap-2">
-                <EditableText
-                  label={`Task title: ${task.title}`}
-                  value={task.title}
-                  disabled={isOptimistic(task.id)}
-                  onSave={(title) => updateTask.mutate({ id: task.id, title })}
-                  className={`font-medium leading-tight ${
-                    task.status === 'done' ? 'text-muted line-through' : ''
-                  }`}
-                />
-                <select
-                  aria-label={`Difficulty for ${task.title}`}
-                  disabled={isOptimistic(task.id)}
-                  value={task.difficulty}
-                  onChange={(e) =>
-                    updateTask.mutate({ id: task.id, difficulty: e.target.value as Difficulty })
-                  }
-                  className="shrink-0 rounded-lg bg-paper px-2 py-1 text-xs font-semibold text-muted"
-                >
-                  {DIFFICULTIES.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mt-2">
-                <StatusPicker
-                  compact
-                  label={`Status for ${task.title}`}
-                  value={task.status}
-                  // a row that has not come back from the database yet has no real id to send
-                  disabled={isOptimistic(task.id)}
-                  onChange={(status) => requestStatus('task', task.id, task.title, status)}
-                />
-              </div>
-            </Card>
-          ))}
-        </div>
-
         <form
-          className="mt-3 flex gap-2"
+          className="mb-3 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault()
             const title = newTitle.trim()
@@ -222,6 +186,56 @@ export function ProjectDetailScreen() {
             Add
           </Button>
         </form>
+
+        <div className="space-y-2">
+          {tasks.data?.map((task) => (
+            <Card key={task.id} className="p-3">
+              <div className="flex items-start justify-between gap-2">
+                <EditableText
+                  label={`Task title: ${task.title}`}
+                  value={task.title}
+                  disabled={isOptimistic(task.id)}
+                  onSave={(title) => updateTask.mutate({ id: task.id, title })}
+                  className={`font-medium leading-tight ${
+                    task.status === 'done' ? 'text-muted line-through' : ''
+                  }`}
+                />
+                <TimerButton
+                  itemType="task"
+                  itemId={task.id}
+                  title={task.title}
+                  withPomodoro
+                  disabled={isOptimistic(task.id)}
+                />
+                <select
+                  aria-label={`Difficulty for ${task.title}`}
+                  disabled={isOptimistic(task.id)}
+                  value={task.difficulty}
+                  onChange={(e) =>
+                    updateTask.mutate({ id: task.id, difficulty: e.target.value as Difficulty })
+                  }
+                  className="shrink-0 rounded-lg bg-paper px-2 py-1 text-xs font-semibold text-muted"
+                >
+                  {DIFFICULTIES.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mt-2">
+                <StatusPicker
+                  compact
+                  label={`Status for ${task.title}`}
+                  value={task.status}
+                  // a row that has not come back from the database yet has no real id to send
+                  disabled={isOptimistic(task.id)}
+                  onChange={(status) => requestStatus('task', task.id, task.title, status)}
+                />
+              </div>
+            </Card>
+          ))}
+        </div>
       </section>
 
       <details className="mt-6">

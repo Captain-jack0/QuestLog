@@ -375,6 +375,57 @@ export type Database = {
           },
         ]
       }
+      time_entries: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          mode: string
+          project_id: string
+          seconds: number | null
+          started_at: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          mode?: string
+          project_id: string
+          seconds?: number | null
+          started_at?: string
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          mode?: string
+          project_id?: string
+          seconds?: number | null
+          started_at?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'time_entries_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'time_entries_task_id_fkey'
+            columns: ['task_id']
+            isOneToOne: false
+            referencedRelation: 'tasks'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -499,6 +550,35 @@ export type Database = {
         }
         Relationships: []
       }
+      v_running_timer: {
+        Row: {
+          area_color: string | null
+          id: string | null
+          mode: string | null
+          project_id: string | null
+          project_title: string | null
+          started_at: string | null
+          task_id: string | null
+          task_title: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'time_entries_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'time_entries_task_id_fkey'
+            columns: ['task_id']
+            isOneToOne: false
+            referencedRelation: 'tasks'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Functions: {
       award_xp: {
@@ -511,6 +591,13 @@ export type Database = {
           p_xp: number
         }
         Returns: number
+      }
+      daily_focus_seconds: {
+        Args: { p_days?: number }
+        Returns: {
+          day: string
+          seconds: number
+        }[]
       }
       digest_payload: { Args: { p_user: string }; Returns: Json }
       digest_recipients: {
@@ -546,6 +633,11 @@ export type Database = {
         Args: { p_item_id: string; p_item_type: string; p_until: string }
         Returns: Json
       }
+      rpc_start_timer: {
+        Args: { p_item_id: string; p_item_type: string; p_mode?: string }
+        Returns: Json
+      }
+      rpc_stop_timer: { Args: never; Returns: Json }
       rpc_update_status: {
         Args: {
           p_item_id: string

@@ -153,8 +153,11 @@ Version 1 is a web application (React + Supabase). Version 2 adds an AI integrat
 | Complete a project                                 | 100          |
 | Pick today's focus items                           | 5            |
 | Groom a stale item (update or consciously drop it) | 15           |
+| Focused time (per completed 25 min, max 60/day)    | 10           |
 
 **Levels:** XP needed for level _n_ = `100 × n^1.5` (rounded) — fast early levels, slowing curve. Global level + per-area levels from the same events.
+
+**Time tracking:** a timer runs on one task or project at a time; a 25/5 pomodoro mode counts the same seconds. Sessions under a minute are discarded as mis-taps, and focus XP is capped at 60 a day so a timer left running overnight cannot buy a level.
 
 **Streaks:** a day counts with ≥1 XP-earning action. 1 streak-freeze token earned per full 7-day week (max 2 held). Streak display: current / best.
 

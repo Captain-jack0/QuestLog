@@ -162,6 +162,37 @@ Each task lists: what it needs (dependencies), acceptance criteria, and a **read
 
 > **Claude Code prompt:** Implement Web Push: generate VAPID keys (document in README, store private key as function secret), extend the service worker to handle push and notificationclick (open /). In Settings, wire the push toggle to request Notification permission, subscribe via pushManager, and save the subscription to push_subscriptions. Create Edge Function send-push scheduled hourly: for users with push_enabled whose local time matches their reminder hour AND who have no xp_events yet today, send "🔥 Your {n}-day streak is waiting — 2-minute check-in?" via web-push. Handle expired subscriptions by deleting them.
 
+### TM-01 · Time tracking, pomodoro and focus XP
+
+**Needs:** BE-04, FE-03. **Est:** 3–4h · **Status:** built
+**Accept:** one timer at a time (enforced by the database); start/stop on any task or project;
+25/5 pomodoro mode; the running clock is visible from every screen; 10 XP per completed
+25 minutes capped at 60 a day; sessions under a minute discarded; weekly focus chart on Progress.
+
+> **Claude Code prompt:** Add a `time_entries` table (user_id, project_id, task_id null,
+> started_at, ended_at, seconds, mode timer/pomodoro) with owner-only RLS and a partial unique
+> index so only one entry per user can have `ended_at is null`. Write `rpc_start_timer(item_type,
+item_id, mode)` which stops any running entry first, `rpc_stop_timer()` which stores the
+> duration and awards `focus_time` XP (10 per completed 1500 seconds, capped at 60 per local
+> day, discarding runs under 60 seconds), a `v_running_timer` view and a `daily_focus_seconds`
+> function for reporting. On the client: a TimerBar pinned above the tab bar that derives
+> elapsed time from `started_at`, ▶/🍅 buttons on project headers and task rows, and a weekly
+> focus-time chart on Progress.
+
+### UX-01 · Responsive shell, two themes, tap-to-edit
+
+**Needs:** FE-01. **Est:** 3–4h · **Status:** built
+**Accept:** navigation rail and fluid multi-column grids from `md` up; Quest (navy night sky)
+and Calm themes switchable from Settings and remembered; status changed by chips rather than a
+dropdown; resume context and task titles editable in place; add-task form above the list.
+
+> **Claude Code prompt:** Move every colour behind CSS variables switched by `<html data-theme>`,
+> add Quest (deep navy + CSS starfield) and Calm palettes with a Settings picker that paints
+> before first render. Replace the fixed mobile column with a responsive shell: bottom tabs on
+> phones, a left rail and 2–4 column grids from md. Replace status dropdowns with a chip
+> radiogroup, make the resume box and task titles editable in place (an edit appends a progress
+> log, never rewrites one), and move the add-task form above the task list.
+
 ---
 
 ## Phase 4 — Hardening & Release

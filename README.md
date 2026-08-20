@@ -54,17 +54,35 @@ localStorage and refresh automatically; sign out lives on the Settings tab.
 
 ### Database
 
-`supabase/migrations` holds the whole schema; `npm run db:reset` rebuilds the local database
-from scratch and `npm run test:db` runs the pgTAP suite against it (RLS isolation, XP,
+`supabase/migrations` holds the whole schema. Apply new ones with `npm run db:migrate`,
+which keeps the data you already have. **`npm run db:reset` wipes the local database** —
+accounts included — so only reach for it when you want a clean slate.
+`npm run test:db` runs the pgTAP suite (RLS isolation, XP,
 streaks, freeze tokens, badge idempotency). Both need the local stack running.
 
 `src/lib/database.types.ts` is generated — after changing a migration, refresh it with
 `npx supabase gen types typescript --local > apps/web/src/lib/database.types.ts`.
 
-Clients only ever **read** `xp_events`, `streaks` and `user_badges` — every write goes
-through the security-definer RPCs (`rpc_update_status`, `rpc_pick_focus`, `rpc_groom_stale`,
-`rpc_snooze`), so XP cannot be minted from the browser. `progress_logs` has no update or
-delete path at all.
+Clients only ever **read** `xp_events`, `streaks`, `user_badges` and `time_entries` — every
+write goes through the security-definer RPCs (`rpc_update_status`, `rpc_pick_focus`,
+`rpc_groom_stale`, `rpc_snooze`, `rpc_start_timer`, `rpc_stop_timer`), so XP cannot be minted
+from the browser. `progress_logs` has no update or delete path at all.
+
+### Themes
+
+Colours are CSS variables switched by `<html data-theme>`: **Quest** (deep navy night sky, the
+default) and **Calm** (daylight). Settings → Appearance switches them and the choice is painted
+before the first render. To restyle, edit the two blocks at the top of `apps/web/src/index.css` —
+no class names change. Your own artwork goes in `apps/web/public/`; reference it from the CSS or
+swap `pwa-192.png` / `pwa-512.png` for the icons.
+
+### Timer
+
+A timer runs on one task or project at a time — the database enforces it with a partial unique
+index, not the client. `▶ Timer` runs open-ended, `🍅 25m` runs a 25/5 pomodoro; the clock rides
+above the tab bar on every screen and derives its elapsed time from `started_at`, so a sleeping
+tab never drifts. Stopping pays 10 ✨ per completed 25 minutes, capped at 60 a day, and anything
+under a minute is discarded rather than logged. Progress shows the weekly focus chart.
 
 ## Repo layout
 
@@ -72,7 +90,7 @@ delete path at all.
 apps/web/        React app (Vite)
   src/screens/   Login · Today · Areas · AreaDetail · ProjectDetail · Progress · Settings
   src/components/ui/  Card · Button · StatusChip · ProgressBar · BottomSheet · Toast
-  src/features/  areas/ · projects/ · tasks/ · status/ (query hooks + sheets)
+  src/features/  areas/ · projects/ · tasks/ · status/ · timer/ (query hooks + sheets)
   src/auth/      AuthProvider · useAuth · RequireAuth guard
   src/lib/       supabase client · generated DB types · zod schemas · XP rules
 supabase/        config.toml, migrations, pgTAP tests & edge functions
@@ -210,14 +228,16 @@ Claude Code prompt. Phase 5 is the only one left.
 
 ## Scripts
 
-| Command             | What it does                                                      |
-| ------------------- | ----------------------------------------------------------------- |
-| `npm run dev`       | Start the dev server                                              |
-| `npm run build`     | Typecheck + production build                                      |
-| `npm run typecheck` | TypeScript check only                                             |
-| `npm run lint`      | ESLint over `apps/web/src`                                        |
-| `npm run test`      | Vitest unit tests (`vitest` for watch mode)                       |
-| `npm run format`    | Prettier write over the repo (`format:check` in CI)               |
-| `npm run test:db`   | pgTAP tests against the local database                            |
-| `npm run db:reset`  | Rebuild the local database from migrations + seed                 |
-| `npm run deploy:db` | `supabase db push` — apply migrations to the linked cloud project |
+| Command              | What it does                                                      |
+| -------------------- | ----------------------------------------------------------------- |
+| `npm run dev`        | Start the dev server                                              |
+| `npm run build`      | Typecheck + production build                                      |
+| `npm run typecheck`  | TypeScript check only                                             |
+| `npm run lint`       | ESLint over `apps/web/src`                                        |
+| `npm run test`       | Vitest unit tests (`vitest` for watch mode)                       |
+| `npm run format`     | Prettier write over the repo (`format:check` in CI)               |
+| `npm run test:e2e`   | Playwright smoke test against the local stack                     |
+| `npm run test:db`    | pgTAP tests against the local database                            |
+| `npm run db:migrate` | Apply pending migrations, keeping your data                       |
+| `npm run db:reset`   | Rebuild the local database from migrations + seed                 |
+| `npm run deploy:db`  | `supabase db push` — apply migrations to the linked cloud project |

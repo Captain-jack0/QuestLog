@@ -9,12 +9,12 @@
  */
 :root,
 [data-theme='quest'] {
-  --paper: 26 20 61;
-  --surface: 39 30 84;
-  --ink: 243 240 255;
-  --muted: 176 166 224;
-  --line: 71 58 134;
-  --accent: 139 124 255;
+  --paper: 8 18 48;
+  --surface: 17 31 71;
+  --ink: 232 238 255;
+  --muted: 148 168 214;
+  --line: 32 51 104;
+  --accent: 76 141 255;
   --success: 62 213 152;
   --flame: 255 168 76;
   --success-ink: 126 235 190;
@@ -29,7 +29,7 @@
   --ink: 31 41 51;
   --muted: 107 114 128;
   --line: 233 233 228;
-  --accent: 91 91 214;
+  --accent: 47 79 181;
   --success: 47 158 105;
   --flame: 232 131 58;
   --success-ink: 31 122 80;

@@ -23,21 +23,26 @@ Bottom tabs:  [Today]  [Areas]  [+ Quick Add]  [Progress]  [Settings]
 
 **S2 — Areas.** Grid of Life Area cards (colour, icon, level, open-item count). Tapping opens the area's project list. Projects show status chip + latest next step + progress bar (tasks done/total).
 
+**S3 — Project detail.** Header carries a ▶ Timer / 🍅 25m pair, and so does every task row; the running clock rides above the tab bar on every screen with one tap to stop.
+
 **S3 — Project detail.** Header (title, area, status, priority). **Resume box** at top: latest "where I left off" + "next step" in large type. Task list below with status chips and S/M/L difficulty. Progress log (append-only timeline) collapsed at the bottom.
 
 **S4 — Quick Add (modal).** One text field + optional area/project pickers with smart defaults. Enter → saved → toast. Ten seconds max.
 
 **S5 — Update flow (modal).** When status changes to Paused/Blocked (and optionally on any update): two fields — "Where did you leave off?" / "What's the next step?" — then XP toast.
 
-**S6 — Progress.** Current level + XP bar; per-area levels; weekly XP chart; badge shelf; streak calendar (GitHub-style dots).
+**S6 — Progress.** Current level + XP bar; per-area levels; weekly XP chart; **weekly focus-time chart**; badge shelf; streak calendar (GitHub-style dots).
 
 **S7 — Settings.** Profile, digest time & toggle, push toggle, stale threshold, snooze defaults, data export, (v2) API tokens.
 
 ## 3. Visual Design
 
 - **Typography:** Inter (UI) — clean, free, excellent at small sizes. Numbers in tabular figures for XP.
+- **Two themes, one set of tokens:** every colour is a CSS variable, switched by `<html data-theme>`. **Quest** (default) is a deep navy night sky with a CSS starfield — the gamified identity; **Calm** is the daylight palette below, for when the tool should disappear. Settings → Appearance switches them instantly.
 - **Palette (calm, one accent):** Background `#FAFAF7` (paper), surface `#FFFFFF`, ink `#1F2933`, muted `#6B7280`, accent **indigo `#5B5BD6`**, success `#2F9E69`, warm highlight for streak flame `#E8833A`. Dark mode later (C2).
 - **Per-area colours:** user-picked from an 8-colour pastel set — used only as thin card edges/dots, so the UI stays quiet.
+- **Layout:** mobile-first single column with a bottom tab bar; from `md` the navigation becomes a left rail and the content spreads into 2–4 fluid columns, so a desktop window is never a phone strip between two empty margins.
+- **Status is one tap:** a row of chips, never a dropdown. Resume context and task titles are editable in place.
 - **Components:** rounded-2xl cards, soft shadows, status as small tinted chips, progress bars 4px, oversized touch targets (min 44px).
 - **Motion:** XP toast slides up (+10 ✨), level-up gets a single confetti burst; everything else instant. No parallax, no noise.
 - **Tone of voice:** friendly captain's-log. "Welcome back, Captain. 3 threads are waiting."
@@ -98,6 +103,12 @@ focus_items     (id PK, user_id FK, date date, task_id null, project_id null,
 
 push_subscriptions (id PK, user_id FK, endpoint, keys jsonb, created_at)
 
+time_entries    (id PK, user_id FK, project_id FK, task_id null,
+                 started_at, ended_at null, seconds null,
+                 mode enum(timer/pomodoro))
+                 -- partial unique index on (user_id) where ended_at is null:
+                 -- the database itself allows only one running clock per user
+
 status enum: idea | planned | in_progress | paused | blocked | done | dropped
 ```
 
@@ -106,7 +117,8 @@ status enum: idea | planned | in_progress | paused | blocked | done | dropped
 - Every table carries `user_id` with **RLS: `user_id = auth.uid()`** on all operations — full isolation by default, multi-user-ready later.
 - `progress_logs` is append-only (no update/delete policy) — the honest history is a feature.
 - XP/level/streak are **derived from `xp_events`** (single source of truth); levels computed, never stored.
-- Views: `v_hanging_threads` (active items ordered by last update, respecting snooze), `v_area_stats` (per-area XP/level/open counts).
+- Views: `v_hanging_threads` (active items ordered by last update, respecting snooze), `v_area_stats` (per-area XP/level/open counts), `v_running_timer` (the clock that is running now).
+- Time is **derived from `started_at`**, never ticked in the client, so a sleeping tab, a reload or a phone lock cannot drift the count.
 
 ## 6. API & Logic Design
 
