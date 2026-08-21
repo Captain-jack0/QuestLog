@@ -12,3 +12,8 @@ supabase/functions/.env.local
 
 test-results/
 playwright-report/
+.vercel-env
+
+.vercel
+.env*
+.cloud-service-key
