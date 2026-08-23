@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    # once a day, so a key expiring or being revoked surfaces before the user finds it
+    - cron: '17 6 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -61,3 +65,28 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  # Vercel deploys from the same push; give it a moment, then check the real site the way a
+  # visitor would. Catches the failure mode unit tests cannot see: a build that ships without
+  # its Supabase credentials, or with a key that has been revoked.
+  verify-production:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Wait for the deploy, then verify
+        run: |
+          sleep 60
+          for attempt in 1 2 3 4 5; do
+            if node scripts/verify-deploy.mjs; then
+              exit 0
+            fi
+            echo "attempt $attempt failed, retrying in 30s"
+            sleep 30
+          done
+          echo "production check still failing after 5 attempts"
+          exit 1

@@ -12,6 +12,7 @@
     "lint": "npm run lint -w apps/web",
     "test": "npm run test -w apps/web",
     "test:e2e": "playwright test",
+    "verify:deploy": "node scripts/verify-deploy.mjs",
     "test:db": "npx --yes supabase test db",
     "db:migrate": "npx --yes supabase migration up",
     "db:reset": "npx --yes supabase db reset",

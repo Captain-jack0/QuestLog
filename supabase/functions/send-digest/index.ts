@@ -56,8 +56,7 @@ async function sendOne(recipient: Recipient): Promise<'sent' | 'skipped'> {
 Deno.serve(async (request) => {
   const authorization = request.headers.get('Authorization') ?? ''
   // The scheduler proves itself with a secret that can do nothing else.
-  const isCron =
-    CRON_SECRET.length > 0 && request.headers.get('X-Cron-Secret') === CRON_SECRET
+  const isCron = CRON_SECRET.length > 0 && request.headers.get('X-Cron-Secret') === CRON_SECRET
 
   try {
     // Test send: the caller's own JWT decides who gets the mail, never a body parameter.
