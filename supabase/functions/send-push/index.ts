@@ -2,7 +2,9 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 import webpush from 'npm:web-push@3.6.7'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+// Prefer the new-style secret key; the legacy service_role is the fallback until it is revoked.
+const SERVICE_KEY = Deno.env.get('SB_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? ''
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:hello@questlog.app'
@@ -48,8 +50,8 @@ async function pushOne(recipient: Recipient): Promise<'sent' | 'expired'> {
 }
 
 Deno.serve(async (request) => {
-  if (request.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
-    return Response.json({ error: 'service role only' }, { status: 401 })
+  if (CRON_SECRET.length === 0 || request.headers.get('X-Cron-Secret') !== CRON_SECRET) {
+    return Response.json({ error: 'scheduler only' }, { status: 401 })
   }
 
   try {

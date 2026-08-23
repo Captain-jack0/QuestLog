@@ -17,3 +17,7 @@ playwright-report/
 .vercel
 .env*
 .cloud-service-key
+.vapid-prod
+.newkeys
+backups/
+.cron-secret

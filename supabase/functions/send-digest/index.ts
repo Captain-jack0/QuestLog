@@ -3,7 +3,9 @@ import { renderDigest, subjectFor, type DigestPayload } from './render.ts'
 import { signUserId } from '../_shared/unsubscribe-token.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+// Prefer the new-style secret key; the legacy service_role is the fallback until it is revoked.
+const SERVICE_KEY = Deno.env.get('SB_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? ''
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const DIGEST_FROM = Deno.env.get('DIGEST_FROM') ?? 'QuestLog <digest@questlog.app>'
 const UNSUBSCRIBE_SECRET = Deno.env.get('UNSUBSCRIBE_SECRET')!
@@ -53,7 +55,9 @@ async function sendOne(recipient: Recipient): Promise<'sent' | 'skipped'> {
 
 Deno.serve(async (request) => {
   const authorization = request.headers.get('Authorization') ?? ''
-  const isCron = authorization === `Bearer ${SERVICE_KEY}`
+  // The scheduler proves itself with a secret that can do nothing else.
+  const isCron =
+    CRON_SECRET.length > 0 && request.headers.get('X-Cron-Secret') === CRON_SECRET
 
   try {
     // Test send: the caller's own JWT decides who gets the mail, never a body parameter.
