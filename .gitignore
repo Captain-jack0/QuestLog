@@ -21,3 +21,4 @@ playwright-report/
 .newkeys
 backups/
 .cron-secret
+.last-deploy
