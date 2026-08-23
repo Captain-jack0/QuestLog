@@ -221,6 +221,35 @@ What is **not** done, on purpose:
 - Phase 5, the AI layer (AI-01 personal access tokens + REST facade, AI-02 MCP server),
   which the task sheet says to start once v1 is in daily use
 
+## Backups
+
+`npm run backup` writes every row the account owns to one JSON file, through the REST API —
+no database password needed. `npm run restore <file>` puts it back: rows are upserted parent
+first, nothing is ever deleted, and `--dry-run` shows what would happen. The round trip is
+tested, not assumed.
+
+A nightly GitHub Action (`.github/workflows/backup.yml`) does the same and uploads to Google
+Cloud Storage. It needs four repository secrets:
+
+| Secret                | Value                                                         |
+| --------------------- | ------------------------------------------------------------- |
+| `SUPABASE_URL`        | `https://<project-ref>.supabase.co`                           |
+| `SUPABASE_SECRET_KEY` | a secret key from Settings → API Keys (never the publishable) |
+| `GCS_BUCKET`          | bucket name, e.g. `questlog-backups`                          |
+| `GCP_SA_KEY`          | JSON key of a service account with Storage Object Admin on it |
+
+Retention is the bucket's job, not the workflow's — one lifecycle rule keeps the last 30 days:
+
+```bash
+gcloud storage buckets update gs://questlog-backups   --lifecycle-file=infra/gcs-lifecycle.json
+```
+
+To recover: download the day you want, then
+
+```bash
+SUPABASE_URL=… SUPABASE_SECRET_KEY=… npm run restore -- questlog-2026-08-23.json --dry-run
+```
+
 ## Building it
 
 Work through `docs/03-task-sheet.md` top to bottom. Each task has a ready-to-paste

@@ -1,0 +1,49 @@
+name: Backup
+
+on:
+  schedule:
+    # every night, off the hour so it does not pile onto everyone else's midnight jobs
+    - cron: '41 1 * * *'
+  workflow_dispatch:
+
+# Never let two backups race for the same object name.
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Dump every table
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          NAME="questlog-$(date -u +%Y-%m-%d).json"
+          node scripts/backup.mjs "$NAME"
+          echo "BACKUP_FILE=$NAME" >> "$GITHUB_ENV"
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Upload to Cloud Storage
+        run: |
+          gcloud storage cp "$BACKUP_FILE" "gs://${{ secrets.GCS_BUCKET }}/$BACKUP_FILE"
+          echo "uploaded gs://${{ secrets.GCS_BUCKET }}/$BACKUP_FILE"
+
+      - name: Report what is stored
+        run: |
+          echo "Most recent backups in the bucket:"
+          gcloud storage ls --long "gs://${{ secrets.GCS_BUCKET }}/" | tail -5
