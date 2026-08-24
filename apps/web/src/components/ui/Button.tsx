@@ -5,10 +5,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   block?: boolean
 }
 
+// Hover tints come from the palette (see index.css), so they follow the theme instead of
+// falling back to a browser grey that fights the navy.
 const variants = {
-  primary: 'bg-accent text-white active:scale-[0.99]',
-  ghost: 'border border-line bg-surface text-ink active:scale-[0.99]',
-  danger: 'border border-line bg-surface text-flame-ink active:scale-[0.99]',
+  primary: 'btn-primary bg-accent text-white active:scale-[0.99]',
+  ghost: 'btn-quiet border border-line bg-surface text-ink active:scale-[0.99]',
+  danger: 'btn-quiet border border-line bg-surface text-flame-ink active:scale-[0.99]',
 }
 
 export function Button({ variant = 'primary', block, className = '', ...props }: ButtonProps) {
