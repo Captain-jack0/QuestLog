@@ -119,3 +119,66 @@ body::before {
     opacity: 1;
   }
 }
+
+/* ---- landing hero cube ------------------------------------------------------------
+   A dark object with one light source, echoing the product idea: a few threads lit,
+   the rest still there in the shadow. Pure CSS so the page has nothing to download. */
+.hero-cube-stage {
+  --size: clamp(180px, 34vw, 320px);
+  --half: calc(var(--size) / 2);
+  width: var(--size);
+  height: var(--size);
+  perspective: 900px;
+  margin-inline: auto;
+}
+
+.hero-cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: hero-cube-spin 26s linear infinite;
+  filter: drop-shadow(0 30px 60px rgb(0 0 0 / 0.65));
+}
+
+.hero-cube-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  padding: 3px;
+  background: linear-gradient(150deg, rgb(var(--line) / 0.55), rgb(var(--paper) / 0.95));
+  border: 1px solid rgb(var(--line) / 0.8);
+  border-radius: 10px;
+}
+
+.hero-cube-tile {
+  border-radius: 4px;
+  background: linear-gradient(160deg, rgb(var(--surface) / 0.9), rgb(var(--paper) / 0.9));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.hero-cube-tile.is-lit {
+  background: linear-gradient(160deg, rgb(var(--accent) / 0.85), rgb(var(--accent) / 0.25));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 0 18px rgb(var(--accent) / 0.35);
+}
+
+@keyframes hero-cube-spin {
+  from {
+    transform: rotateX(-22deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(-22deg) rotateY(360deg);
+  }
+}
+
+/* Motion is decoration here; park the cube at a good angle instead of spinning it. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-cube {
+    animation: none;
+    transform: rotateX(-22deg) rotateY(-28deg);
+  }
+}

@@ -42,6 +42,14 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation()
 
   if (loading) return <p className="p-8 text-center text-muted">Loading…</p>
-  if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  // A visitor who lands on a deep link gets the pitch first, then the form.
+  if (!session)
+    return (
+      <Navigate
+        to={location.pathname === '/' ? '/' : '/login'}
+        replace
+        state={{ from: location.pathname }}
+      />
+    )
   return <>{children}</>
 }

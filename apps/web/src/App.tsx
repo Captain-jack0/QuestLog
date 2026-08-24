@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { RequireAuth } from './auth/AuthProvider'
+import { RequireAuth, useAuth } from './auth/AuthProvider'
 import { TabBar } from './components/TabBar'
 import { SideNav } from './components/SideNav'
 import { QuickAddSheet } from './components/QuickAddSheet'
 import { TimerBar } from './features/timer/TimerBar'
 import { LoginScreen } from './screens/Login'
+import { LandingScreen } from './screens/Landing'
 import { TodayScreen } from './screens/Today'
 import { AreasScreen } from './screens/Areas'
 import { AreaDetailScreen } from './screens/AreaDetail'
@@ -14,9 +15,14 @@ import { ProgressScreen } from './screens/Progress'
 import { SettingsScreen } from './screens/Settings'
 
 export default function App() {
+  const { session, loading } = useAuth()
+
   return (
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
+      {/* The root is the landing page for visitors and Today for anyone signed in, so a
+          bookmark keeps working and a stranger still gets an explanation. */}
+      {!loading && !session && <Route path="/" element={<LandingScreen />} />}
       <Route
         element={
           <RequireAuth>

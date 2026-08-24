@@ -26,7 +26,9 @@ const labels: Record<Mode, string> = {
 export function LoginScreen() {
   const { session, loading } = useAuth()
   const location = useLocation()
-  const [mode, setMode] = useState<Mode>('signin')
+  // The landing page's "Start free" button asks for the signup form directly.
+  const requestedMode = (location.state as { mode?: Mode } | null)?.mode
+  const [mode, setMode] = useState<Mode>(requestedMode === 'signup' ? 'signup' : 'signin')
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
