@@ -16,7 +16,7 @@ export function TabBar({ onQuickAdd }: { onQuickAdd: () => void }) {
           type="button"
           aria-label="Quick add"
           onClick={onQuickAdd}
-          className="flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full bg-accent text-2xl text-white shadow-lg active:scale-95"
+          className="btn-primary flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full border-2 border-accent text-2xl text-accent shadow-lg active:scale-95"
         >
           +
         </button>

@@ -35,7 +35,7 @@ function Crashed() {
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="mt-6 min-h-[44px] rounded-xl bg-accent py-3 font-semibold text-white"
+        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold text-accent"
       >
         Reload
       </button>

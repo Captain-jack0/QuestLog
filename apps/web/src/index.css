@@ -201,10 +201,11 @@ body::before {
 }
 
 /* ---- shared interaction colours ----------------------------------------------------
-   Hover used to fall back to browser defaults, which read as grey on a navy page. Every
-   interactive surface now tints with the accent already in the palette. */
+   Ghost-by-default: buttons are transparent at rest, gaining colour only on hover.
+   Primary fills solid on hover; quiet variants tint subtly. */
 .btn-primary:hover {
-  background-color: rgb(var(--accent) / 0.88);
+  background-color: rgb(var(--accent));
+  color: white;
 }
 
 .btn-quiet:hover {

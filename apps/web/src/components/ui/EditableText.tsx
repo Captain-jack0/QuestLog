@@ -76,7 +76,7 @@ export function EditableText({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={commit}
-            className="min-h-[36px] rounded-lg bg-accent px-3 text-xs font-semibold text-white"
+            className="btn-primary min-h-[36px] rounded-lg border border-accent px-3 text-xs font-semibold text-accent"
           >
             Save
           </button>

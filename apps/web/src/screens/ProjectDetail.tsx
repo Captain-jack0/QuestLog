@@ -263,7 +263,7 @@ export function ProjectDetailScreen() {
                   aria-label={`Move ${task.title} to another project`}
                   disabled={isOptimistic(task.id)}
                   onClick={() => setMovingTask({ id: task.id, title: task.title })}
-                  className="min-h-[36px] rounded-full px-2 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
+                  className="btn-quiet min-h-[36px] rounded-full border border-line px-2 text-xs font-semibold text-muted disabled:opacity-40"
                 >
                   ⇄ Move
                 </button>

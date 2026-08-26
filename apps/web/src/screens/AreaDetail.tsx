@@ -62,30 +62,32 @@ export function AreaDetailScreen() {
         </Card>
       )}
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {projects.data?.map((project) => {
           const stat = stats.data?.[project.id]
           return (
-            <Card key={project.id} edgeColor={area.data?.color} className="pl-5">
-              <Link to={`/projects/${project.id}`} className="block w-full text-left">
+            <Card key={project.id} edgeColor={area.data?.color} className="aspect-square pl-5">
+              <Link to={`/projects/${project.id}`} className="flex h-full w-full flex-col text-left">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold leading-tight">{project.title}</span>
+                  <span className="font-semibold leading-tight line-clamp-2">{project.title}</span>
                   <StatusChip status={project.status} />
                 </div>
-                {stat?.nextStep && (
-                  <p className="mt-2 text-sm">
-                    <span className="text-muted">Next: </span>
-                    {stat.nextStep}
-                  </p>
-                )}
-                {stat && stat.tasksTotal > 0 && (
-                  <div className="mt-3">
-                    <ProgressBar done={stat.tasksDone} total={stat.tasksTotal} />
-                    <p className="mt-1 text-xs text-muted">
-                      {stat.tasksDone}/{stat.tasksTotal} tasks done
+                <div className="mt-auto">
+                  {stat?.nextStep && (
+                    <p className="mt-2 text-sm line-clamp-1">
+                      <span className="text-muted">Next: </span>
+                      {stat.nextStep}
                     </p>
-                  </div>
-                )}
+                  )}
+                  {stat && stat.tasksTotal > 0 && (
+                    <div className="mt-3">
+                      <ProgressBar done={stat.tasksDone} total={stat.tasksTotal} />
+                      <p className="mt-1 text-xs text-muted">
+                        {stat.tasksDone}/{stat.tasksTotal} tasks done
+                      </p>
+                    </div>
+                  )}
+                </div>
               </Link>
             </Card>
           )

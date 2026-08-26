@@ -62,8 +62,8 @@ export function PickerSheet({
               type="button"
               disabled={option.current}
               onClick={() => onPick(option.id)}
-              className={`flex min-h-[44px] w-full flex-col justify-center rounded-xl px-3 py-2 text-left ${
-                option.current ? 'bg-accent/10 text-accent' : 'bg-paper hover:bg-line/40'
+              className={`btn-quiet flex min-h-[44px] w-full flex-col justify-center rounded-xl border border-line px-3 py-2 text-left ${
+                option.current ? 'bg-accent/10 text-accent' : ''
               }`}
             >
               <span className="font-medium leading-tight">

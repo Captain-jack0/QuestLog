@@ -136,7 +136,7 @@ export function LoginScreen() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="min-h-[44px] w-full rounded-xl bg-accent py-3 font-semibold text-white active:scale-[0.99] disabled:opacity-60"
+          className="btn-primary min-h-[44px] w-full rounded-xl border border-accent py-3 font-semibold text-accent active:scale-[0.99] disabled:opacity-60"
         >
           {isSubmitting ? 'Working…' : labels[mode]}
         </button>
