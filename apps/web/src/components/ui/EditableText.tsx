@@ -69,7 +69,7 @@ export function EditableText({
           onKeyDown={(e) => {
             if (e.key === 'Escape') setEditing(false)
           }}
-          className={`w-full rounded-lg border border-accent bg-paper px-2 py-1 outline-none ${className}`}
+          className={`w-full rounded-lg border border-accent bg-paper px-2 py-1 ${className}`}
         />
         <div className="mt-1 flex gap-1">
           <button
@@ -100,7 +100,7 @@ export function EditableText({
           if (e.key === 'Enter') commit()
           if (e.key === 'Escape') setEditing(false)
         }}
-        className={`w-full rounded-lg border border-accent bg-paper px-2 py-1 outline-none ${className}`}
+        className={`w-full rounded-lg border border-accent bg-paper px-2 py-1 ${className}`}
       />
     )
   }

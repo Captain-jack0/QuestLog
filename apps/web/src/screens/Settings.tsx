@@ -15,7 +15,7 @@ import { localDateKey } from '../lib/time'
 import { profileSchema, type ProfileInput } from '../lib/schemas'
 
 const field =
-  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent'
+  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent'
 
 export function SettingsScreen() {
   const { session } = useAuth()

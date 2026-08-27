@@ -111,7 +111,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
           ref={inputRef}
           aria-label="What's on your mind?"
           placeholder="What's on your mind, Captain?"
-          className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent"
+          className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent"
         />
 
         <div className="grid grid-cols-2 gap-2">
