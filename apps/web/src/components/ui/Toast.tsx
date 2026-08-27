@@ -10,10 +10,13 @@ interface Toast {
 
 const ToastContext = createContext<(message: string, tone?: Tone) => void>(() => {})
 
-const tones: Record<Tone, string> = {
-  info: 'bg-ink text-white',
-  xp: 'bg-accent text-white',
-  error: 'bg-flame text-white',
+// Toasts float over arbitrary content, so every tone stays fully opaque — a tinted
+// background would borrow whatever is behind it and lose its contrast. Text is `paper`,
+// the theme's own backdrop colour, which is the far end of the scale from any fill.
+export const tones: Record<Tone, string> = {
+  info: 'bg-ink text-paper',
+  xp: 'bg-accent text-paper',
+  error: 'bg-alert-ink text-paper',
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -33,9 +36,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            role="status"
+            // Errors are assertive; a polite `status` region can sit unread while a save
+            // silently failed. The tone decides, so the rest stay polite.
+            role={t.tone === 'error' ? 'alert' : 'status'}
             className={`animate-[slide-up_180ms_ease-out] rounded-full px-4 py-2 text-sm font-semibold shadow-lg ${tones[t.tone]}`}
           >
+            {/* A second, non-colour channel: hue alone separates error from info by only
+                1.69:1 in luminance, which colour-blind eyes cannot rely on. The role above
+                already carries the meaning, so the glyph is decorative to a screen reader. */}
+            {t.tone === 'error' && (
+              <span aria-hidden="true" className="mr-1.5">
+                ⚠
+              </span>
+            )}
             {t.message}
           </div>
         ))}

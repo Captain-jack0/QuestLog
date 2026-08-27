@@ -18,7 +18,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 const STATUS_STYLE: Record<PreviewProject['status'] | PreviewTask['status'], string> = {
   idea: 'bg-line/50 text-muted',
-  in_progress: 'bg-accent text-white',
+  in_progress: 'bg-accent text-paper',
   paused: 'bg-flame/20 text-flame-ink',
   blocked: 'bg-alert/20 text-alert-ink',
   done: 'bg-success/20 text-success-ink',
