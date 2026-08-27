@@ -50,7 +50,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
             id="area-name"
             autoFocus
             {...register('name')}
-            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent"
+            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent"
           />
           {errors.name && <p className="mt-1 text-sm text-flame-ink">{errors.name.message}</p>}
         </div>
@@ -100,7 +100,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
             type="number"
             min={0}
             {...register('sort_order', { valueAsNumber: true })}
-            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent"
+            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent"
           />
         </div>
 
