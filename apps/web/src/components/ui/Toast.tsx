@@ -36,9 +36,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            role="status"
+            // Errors are assertive; a polite `status` region can sit unread while a save
+            // silently failed. The tone decides, so the rest stay polite.
+            role={t.tone === 'error' ? 'alert' : 'status'}
             className={`animate-[slide-up_180ms_ease-out] rounded-full px-4 py-2 text-sm font-semibold shadow-lg ${tones[t.tone]}`}
           >
+            {/* A second, non-colour channel: hue alone separates error from info by only
+                1.69:1 in luminance, which colour-blind eyes cannot rely on. The role above
+                already carries the meaning, so the glyph is decorative to a screen reader. */}
+            {t.tone === 'error' && (
+              <span aria-hidden="true" className="mr-1.5">
+                ⚠
+              </span>
+            )}
             {t.message}
           </div>
         ))}
