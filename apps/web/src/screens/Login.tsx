@@ -5,6 +5,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
+import { fieldClass } from '../components/ui/field'
 
 type Mode = 'signin' | 'signup' | 'magic'
 
@@ -103,7 +104,7 @@ export function LoginScreen() {
             type="email"
             autoComplete="email"
             {...register('email')}
-            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-accent"
+            className={fieldClass}
           />
           {errors.email && <p className="mt-1 text-sm text-alert-ink">{errors.email.message}</p>}
         </div>
@@ -118,7 +119,7 @@ export function LoginScreen() {
               type="password"
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               {...register('password')}
-              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-accent"
+              className={fieldClass}
             />
             {errors.password && (
               <p className="mt-1 text-sm text-alert-ink">{errors.password.message}</p>

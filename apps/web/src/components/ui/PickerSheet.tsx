@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BottomSheet } from './BottomSheet'
+import { rowFieldClass } from './field'
 
 export interface PickerOption {
   id: string
@@ -48,7 +49,7 @@ export function PickerSheet({
           placeholder="Search…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="mb-3 min-h-[44px] w-full rounded-xl border border-line bg-paper px-4 text-base focus:border-accent"
+          className={`mb-3 w-full ${rowFieldClass}`}
         />
       )}
 

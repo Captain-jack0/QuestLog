@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { StatusChip } from '../../components/ui/StatusChip'
+import { rowFieldClass } from '../../components/ui/field'
 import { usePickableItems, type PickableItem } from './queries'
 
 interface FocusPickerSheetProps {
@@ -54,7 +55,7 @@ export function FocusPickerSheet({ open, onClose, onSubmit, saving }: FocusPicke
         placeholder="Search…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-3 min-h-[44px] w-full rounded-xl border border-line bg-paper px-4 text-base focus:border-accent"
+        className={`mb-3 w-full ${rowFieldClass}`}
       />
 
       {items.isPending && <p className="text-muted">Loading your open items…</p>}

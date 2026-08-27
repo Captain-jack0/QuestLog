@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { statusLabel } from '../../components/ui/StatusChip'
+import { fieldClass } from '../../components/ui/field'
 import type { ItemStatus } from '../../lib/schemas'
 import { needsResumeContext } from './useUpdateStatus'
 
@@ -21,9 +22,6 @@ interface UpdateStatusSheetProps {
   onClose: () => void
   onSubmit: (values: { leftOff: string; nextStep: string; note: string }) => void
 }
-
-const field =
-  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent'
 
 export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: UpdateStatusSheetProps) {
   const [leftOff, setLeftOff] = useState('')
@@ -65,7 +63,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
             autoFocus
             value={leftOff}
             onChange={(e) => setLeftOff(e.target.value)}
-            className={field}
+            className={fieldClass}
           />
         </div>
 
@@ -78,7 +76,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
             rows={2}
             value={nextStep}
             onChange={(e) => setNextStep(e.target.value)}
-            className={field}
+            className={fieldClass}
           />
         </div>
 
@@ -90,7 +88,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
             id="status-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className={field}
+            className={fieldClass}
           />
         </div>
 
