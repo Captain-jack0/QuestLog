@@ -205,7 +205,7 @@ body::before {
    Primary fills solid on hover; quiet variants tint subtly. */
 .btn-primary:hover {
   background-color: rgb(var(--accent));
-  color: white;
+  color: rgb(var(--paper));
 }
 
 .btn-quiet:hover {

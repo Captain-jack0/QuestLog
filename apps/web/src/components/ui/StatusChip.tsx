@@ -3,7 +3,7 @@ import type { ItemStatus } from '../../lib/schemas'
 const styles: Record<ItemStatus, { label: string; className: string }> = {
   idea: { label: 'Idea', className: 'bg-line/50 text-muted' },
   planned: { label: 'Planned', className: 'bg-accent/15 text-accent' },
-  in_progress: { label: 'In progress', className: 'bg-accent text-white' },
+  in_progress: { label: 'In progress', className: 'bg-accent text-paper' },
   paused: { label: 'Paused', className: 'bg-flame/20 text-flame-ink' },
   blocked: { label: 'Blocked', className: 'bg-alert/20 text-alert-ink' },
   done: { label: 'Done', className: 'bg-success/20 text-success-ink' },
