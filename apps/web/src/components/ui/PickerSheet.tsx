@@ -48,7 +48,7 @@ export function PickerSheet({
           placeholder="Search…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="mb-3 min-h-[44px] w-full rounded-xl border border-line bg-paper px-4 text-base outline-none focus:border-accent"
+          className="mb-3 min-h-[44px] w-full rounded-xl border border-line bg-paper px-4 text-base focus:border-accent"
         />
       )}
 

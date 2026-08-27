@@ -103,7 +103,7 @@ export function LoginScreen() {
             type="email"
             autoComplete="email"
             {...register('email')}
-            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base outline-none focus:border-accent"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-accent"
           />
           {errors.email && <p className="mt-1 text-sm text-flame-ink">{errors.email.message}</p>}
         </div>
@@ -118,7 +118,7 @@ export function LoginScreen() {
               type="password"
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               {...register('password')}
-              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base outline-none focus:border-accent"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-accent"
             />
             {errors.password && (
               <p className="mt-1 text-sm text-flame-ink">{errors.password.message}</p>

@@ -186,7 +186,7 @@ export function ProjectDetailScreen() {
             placeholder="Add a task…"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="min-h-[44px] flex-1 rounded-xl border border-line bg-surface px-4 text-base outline-none focus:border-accent"
+            className="min-h-[44px] flex-1 rounded-xl border border-line bg-surface px-4 text-base focus:border-accent"
           />
           <select
             aria-label="New task difficulty"

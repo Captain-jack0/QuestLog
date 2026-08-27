@@ -14,7 +14,7 @@ interface ProjectSheetProps {
 }
 
 const field =
-  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent'
+  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent'
 
 export function ProjectSheet({ open, project, onClose, onSubmit, saving }: ProjectSheetProps) {
   const {
