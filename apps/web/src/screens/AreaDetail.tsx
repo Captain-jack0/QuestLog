@@ -67,7 +67,10 @@ export function AreaDetailScreen() {
           const stat = stats.data?.[project.id]
           return (
             <Card key={project.id} edgeColor={area.data?.color} className="aspect-square pl-5">
-              <Link to={`/projects/${project.id}`} className="flex h-full w-full flex-col text-left">
+              <Link
+                to={`/projects/${project.id}`}
+                className="flex h-full w-full flex-col text-left"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-semibold leading-tight line-clamp-2">{project.title}</span>
                   <StatusChip status={project.status} />
