@@ -27,7 +27,7 @@ export function AreasScreen() {
       </header>
 
       {areas.isPending && <CardSkeleton rows={2} />}
-      {areas.isError && <p className="text-flame-ink">Could not load areas. Pull down to retry.</p>}
+      {areas.isError && <p className="text-alert-ink">Could not load areas. Pull down to retry.</p>}
 
       {areas.data?.length === 0 && (
         <Card className="text-center">

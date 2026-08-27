@@ -81,7 +81,7 @@ export function ProjectDetailScreen() {
   }
 
   if (project.isPending) return <CardSkeleton rows={3} />
-  if (project.isError || !project.data) return <p className="text-flame-ink">Project not found.</p>
+  if (project.isError || !project.data) return <p className="text-alert-ink">Project not found.</p>
 
   return (
     <div>

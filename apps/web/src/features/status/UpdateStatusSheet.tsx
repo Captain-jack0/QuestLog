@@ -57,7 +57,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
       >
         <div>
           <label htmlFor="left-off" className="mb-1 block text-sm font-medium">
-            Where did you leave off?{required && <span className="text-flame-ink"> *</span>}
+            Where did you leave off?{required && <span className="text-alert-ink"> *</span>}
           </label>
           <textarea
             id="left-off"
@@ -71,7 +71,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
 
         <div>
           <label htmlFor="next-step" className="mb-1 block text-sm font-medium">
-            What&apos;s the next step?{required && <span className="text-flame-ink"> *</span>}
+            What&apos;s the next step?{required && <span className="text-alert-ink"> *</span>}
           </label>
           <textarea
             id="next-step"
@@ -95,7 +95,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-flame-ink">
+          <p role="alert" className="text-sm text-alert-ink">
             {error}
           </p>
         )}

@@ -40,7 +40,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
             Title
           </label>
           <input id="project-title" autoFocus {...register('title')} className={field} />
-          {errors.title && <p className="mt-1 text-sm text-flame-ink">{errors.title.message}</p>}
+          {errors.title && <p className="mt-1 text-sm text-alert-ink">{errors.title.message}</p>}
         </div>
 
         <div>
