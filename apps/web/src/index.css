@@ -21,6 +21,9 @@
   --flame-ink: 255 191 128;
   --alert: 255 107 129;
   --alert-ink: 255 158 172;
+  /* Drop shadows are always darker than the backdrop, never the backdrop colour itself.
+     Holds "R G B / A" so one var() fills a whole rgb(). Dark sky carries a heavy shadow. */
+  --shadow-brain: 0 0 0 / 0.55;
 }
 
 [data-theme='calm'] {
@@ -36,6 +39,8 @@
   --flame-ink: 180 83 10;
   --alert: 225 29 72;
   --alert-ink: 159 18 57;
+  /* Same black, far lighter — a 0.55 shadow would look like soot on paper. */
+  --shadow-brain: 0 0 0 / 0.15;
 }
 
 html {
@@ -151,7 +156,7 @@ body::before {
 .brain-svg {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 24px 48px rgb(0 0 0 / 0.55));
+  filter: drop-shadow(0 24px 48px rgb(var(--shadow-brain)));
 }
 
 .brain-node {
