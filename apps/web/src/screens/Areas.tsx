@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
@@ -30,12 +31,10 @@ export function AreasScreen() {
       {areas.isError && <p className="text-alert-ink">Could not load areas. Pull down to retry.</p>}
 
       {areas.data?.length === 0 && (
-        <Card className="text-center">
-          <p className="font-medium">No areas yet 🧭</p>
-          <p className="mt-1 text-sm text-muted">
-            Areas are your big buckets — Work, Home, Learning. Start with one.
-          </p>
-        </Card>
+        <EmptyState
+          title="No areas yet 🧭"
+          description="Areas are your big buckets — Work, Home, Learning. Start with one."
+        />
       )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">

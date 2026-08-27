@@ -1,5 +1,6 @@
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
+import { EmptyState } from '../components/ui/EmptyState'
 import {
   useAreaStats,
   useBadges,
@@ -91,7 +92,7 @@ export function ProgressScreen() {
           <p className="text-flame-ink">Could not load area levels. Pull down to retry.</p>
         )}
         {areas.data?.length === 0 && (
-          <p className="text-sm text-muted">Areas get their own levels once they earn XP.</p>
+          <EmptyState title="Areas get their own levels once they earn XP." />
         )}
         <div className="flex flex-wrap gap-2">
           {areas.data?.map((area) => (
