@@ -105,7 +105,7 @@ export function LoginScreen() {
             {...register('email')}
             className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-accent"
           />
-          {errors.email && <p className="mt-1 text-sm text-flame-ink">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-sm text-alert-ink">{errors.email.message}</p>}
         </div>
 
         {mode !== 'magic' && (
@@ -121,13 +121,13 @@ export function LoginScreen() {
               className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base focus:border-accent"
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-flame-ink">{errors.password.message}</p>
+              <p className="mt-1 text-sm text-alert-ink">{errors.password.message}</p>
             )}
           </div>
         )}
 
         {error && (
-          <p role="alert" className="text-sm text-flame-ink">
+          <p role="alert" className="text-sm text-alert-ink">
             {error}
           </p>
         )}
