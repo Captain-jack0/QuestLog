@@ -213,6 +213,12 @@ body::before {
   border-color: rgb(var(--accent) / 0.5);
 }
 
+/* Destructive actions never borrow the primary accent on hover — that reads as "go". */
+.btn-danger:hover {
+  background-color: rgb(var(--alert) / 0.12);
+  border-color: rgb(var(--alert) / 0.5);
+}
+
 .link-quiet:hover {
   color: rgb(var(--ink));
   background-color: rgb(var(--accent) / 0.1);

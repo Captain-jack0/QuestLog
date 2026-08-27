@@ -10,7 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variants = {
   primary: 'btn-primary border border-accent text-accent active:scale-[0.99]',
   ghost: 'btn-quiet border border-line text-ink active:scale-[0.99]',
-  danger: 'btn-quiet border border-line text-flame-ink active:scale-[0.99]',
+  danger: 'btn-danger border border-line text-alert-ink active:scale-[0.99]',
 }
 
 export function Button({ variant = 'primary', block, className = '', ...props }: ButtonProps) {
