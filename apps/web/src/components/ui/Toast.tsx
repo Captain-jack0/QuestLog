@@ -10,10 +10,13 @@ interface Toast {
 
 const ToastContext = createContext<(message: string, tone?: Tone) => void>(() => {})
 
-const tones: Record<Tone, string> = {
-  info: 'bg-ink text-white',
-  xp: 'bg-accent text-white',
-  error: 'bg-flame text-white',
+// Toasts float over arbitrary content, so every tone stays fully opaque — a tinted
+// background would borrow whatever is behind it and lose its contrast. Text is `paper`,
+// the theme's own backdrop colour, which is the far end of the scale from any fill.
+export const tones: Record<Tone, string> = {
+  info: 'bg-ink text-paper',
+  xp: 'bg-accent text-paper',
+  error: 'bg-alert-ink text-paper',
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
