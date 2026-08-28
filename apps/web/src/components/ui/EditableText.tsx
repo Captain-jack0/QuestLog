@@ -76,7 +76,7 @@ export function EditableText({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={commit}
-            className="btn-primary min-h-[36px] rounded-lg border border-accent px-3 text-xs font-semibold text-accent"
+            className="btn-primary min-h-[44px] rounded-lg border border-accent px-3 text-xs font-semibold text-accent"
           >
             Save
           </button>
@@ -84,7 +84,7 @@ export function EditableText({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setEditing(false)}
-            className="min-h-[36px] rounded-lg px-3 text-xs font-semibold text-muted"
+            className="min-h-[44px] rounded-lg px-3 text-xs font-semibold text-muted"
           >
             Cancel
           </button>
@@ -113,7 +113,7 @@ export function EditableText({
       disabled={disabled}
       aria-label={`${label} — click to edit`}
       onClick={() => setEditing(true)}
-      className={`w-full whitespace-pre-wrap rounded-lg px-2 py-1 text-left hover:bg-paper disabled:hover:bg-transparent ${
+      className={`min-h-[44px] w-full whitespace-pre-wrap rounded-lg px-2 py-1 text-left hover:bg-paper disabled:hover:bg-transparent ${
         empty ? 'text-muted' : ''
       } ${className}`}
     >

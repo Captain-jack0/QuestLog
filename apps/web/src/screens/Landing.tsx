@@ -93,26 +93,26 @@ export function LandingScreen() {
           <nav className="flex items-center gap-1">
             <a
               href="#how"
-              className="link-quiet hidden min-h-[40px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
+              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
             >
               How it works
             </a>
             <a
               href="#features"
-              className="link-quiet hidden min-h-[40px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
+              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
             >
               Features
             </a>
             <Link
               to="/login"
-              className="link-quiet flex min-h-[40px] items-center rounded-xl px-3 text-sm font-semibold text-muted"
+              className="link-quiet flex min-h-[44px] items-center rounded-xl px-3 text-sm font-semibold text-muted"
             >
               Sign in
             </Link>
             <Link
               to="/login"
               state={{ mode: 'signup' }}
-              className="btn-primary flex min-h-[40px] items-center rounded-xl border border-accent px-4 text-sm font-semibold text-accent transition"
+              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-sm font-semibold text-accent transition"
             >
               Start free
             </Link>

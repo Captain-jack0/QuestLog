@@ -93,7 +93,7 @@ export function ResumeCard({
           type="button"
           aria-label="Edit resume context"
           onClick={() => setEditing(true)}
-          className="-mt-1 min-h-[36px] rounded-lg px-2 text-sm font-semibold text-accent"
+          className="-mt-1 min-h-[44px] rounded-lg px-2 text-sm font-semibold text-accent"
         >
           ✎ Edit
         </button>
