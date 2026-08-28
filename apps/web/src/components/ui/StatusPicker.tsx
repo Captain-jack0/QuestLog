@@ -38,7 +38,7 @@ export function StatusPicker({
             aria-label={`${label}: ${statusLabel(status)}`}
             disabled={disabled}
             onClick={() => !active && onChange(status)}
-            className={`min-h-[36px] rounded-full px-3 text-xs font-semibold transition disabled:opacity-40 ${
+            className={`min-h-[44px] rounded-full px-3 text-xs font-semibold transition disabled:opacity-40 ${
               active
                 ? `${statusTone(status)} ring-2 ring-accent ring-offset-1`
                 : 'bg-paper text-muted hover:bg-line/40'

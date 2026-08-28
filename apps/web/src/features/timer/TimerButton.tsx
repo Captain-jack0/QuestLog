@@ -38,7 +38,7 @@ export function TimerButton({
         aria-label={`Stop the timer on ${title}`}
         disabled={busy}
         onClick={() => stop.mutate()}
-        className="btn-primary min-h-[36px] shrink-0 rounded-full border border-accent px-3 text-xs font-semibold text-accent disabled:opacity-50"
+        className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-xs font-semibold text-accent disabled:opacity-50"
       >
         ⏹ Stop
       </button>
@@ -52,7 +52,7 @@ export function TimerButton({
         aria-label={`Start a timer on ${title}`}
         disabled={busy || disabled}
         onClick={() => start.mutate({ itemType, itemId })}
-        className="min-h-[36px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
+        className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
       >
         ▶ Timer
       </button>
@@ -62,7 +62,7 @@ export function TimerButton({
           aria-label={`Start a pomodoro on ${title}`}
           disabled={busy || disabled}
           onClick={() => start.mutate({ itemType, itemId, mode: 'pomodoro' })}
-          className="min-h-[36px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
+          className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
         >
           🍅 25m
         </button>

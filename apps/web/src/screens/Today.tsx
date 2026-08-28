@@ -70,19 +70,21 @@ export function TodayScreen() {
               {focus.data?.map((item) => {
                 const title = item.tasks?.title ?? item.projects?.title ?? 'Untitled'
                 return (
-                  <Card key={item.id} className="flex items-center gap-3 p-3">
-                    <input
-                      type="checkbox"
-                      aria-label={`Done: ${title}`}
-                      checked={item.completed}
-                      onChange={(e) =>
-                        toggleFocus.mutate({ id: item.id, completed: e.target.checked })
-                      }
-                      className="h-6 w-6 shrink-0 accent-accent"
-                    />
-                    <span className={item.completed ? 'text-muted line-through' : 'font-medium'}>
-                      {title}
-                    </span>
+                  <Card key={item.id} className="p-3">
+                    <label className="flex min-h-[44px] items-center gap-3">
+                      <input
+                        type="checkbox"
+                        aria-label={`Done: ${title}`}
+                        checked={item.completed}
+                        onChange={(e) =>
+                          toggleFocus.mutate({ id: item.id, completed: e.target.checked })
+                        }
+                        className="h-6 w-6 shrink-0 accent-accent"
+                      />
+                      <span className={item.completed ? 'text-muted line-through' : 'font-medium'}>
+                        {title}
+                      </span>
+                    </label>
                   </Card>
                 )
               })}
