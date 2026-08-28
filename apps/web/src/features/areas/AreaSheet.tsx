@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
+import { fieldClass } from '../../components/ui/field'
 import {
   AREA_COLORS,
   AREA_ICONS,
@@ -46,12 +47,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
           <label htmlFor="area-name" className="mb-1 block text-sm font-medium">
             Name
           </label>
-          <input
-            id="area-name"
-            autoFocus
-            {...register('name')}
-            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent"
-          />
+          <input id="area-name" autoFocus {...register('name')} className={fieldClass} />
           {errors.name && <p className="mt-1 text-sm text-alert-ink">{errors.name.message}</p>}
         </div>
 
@@ -100,7 +96,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
             type="number"
             min={0}
             {...register('sort_order', { valueAsNumber: true })}
-            className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent"
+            className={fieldClass}
           />
         </div>
 

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
 import { StatusChip } from '../components/ui/StatusChip'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
@@ -54,12 +55,10 @@ export function AreaDetailScreen() {
 
       {projects.isPending && <CardSkeleton rows={2} />}
       {projects.data?.length === 0 && (
-        <Card className="text-center">
-          <p className="font-medium">Nothing here yet</p>
-          <p className="mt-1 text-sm text-muted">
-            A project is anything with more than one step. Add the first one.
-          </p>
-        </Card>
+        <EmptyState
+          title="Nothing here yet"
+          description="A project is anything with more than one step. Add the first one."
+        />
       )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

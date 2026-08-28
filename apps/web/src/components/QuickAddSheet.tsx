@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BottomSheet } from './ui/BottomSheet'
 import { Button } from './ui/Button'
 import { useToast } from './ui/Toast'
+import { compactFieldClass, fieldClass } from './ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useAreas } from '../features/areas/queries'
 import { supabase } from '../lib/supabase'
@@ -111,7 +112,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
           ref={inputRef}
           aria-label="What's on your mind?"
           placeholder="What's on your mind, Captain?"
-          className="w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent"
+          className={fieldClass}
         />
 
         <div className="grid grid-cols-2 gap-2">
@@ -122,7 +123,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
               setAreaId(e.target.value)
               setProjectId('')
             }}
-            className="min-h-[44px] rounded-xl border border-line bg-paper px-3 text-sm"
+            className={compactFieldClass}
           >
             <option value="">Area…</option>
             {areas.data?.map((area) => (
@@ -137,7 +138,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             disabled={!areaId}
-            className="min-h-[44px] rounded-xl border border-line bg-paper px-3 text-sm disabled:opacity-50"
+            className={`${compactFieldClass} disabled:opacity-50`}
           >
             <option value="">Project…</option>
             {projects.data?.map((project) => (

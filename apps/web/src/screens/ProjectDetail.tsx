@@ -9,6 +9,7 @@ import { EditableText } from '../components/ui/EditableText'
 import { PickerSheet } from '../components/ui/PickerSheet'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
+import { compactFieldClass, rowFieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useArea, useAreas } from '../features/areas/queries'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
@@ -186,13 +187,13 @@ export function ProjectDetailScreen() {
             placeholder="Add a task…"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="min-h-[44px] flex-1 rounded-xl border border-line bg-surface px-4 text-base focus:border-accent"
+            className={`flex-1 ${rowFieldClass}`}
           />
           <select
             aria-label="New task difficulty"
             value={newDifficulty}
             onChange={(e) => setNewDifficulty(e.target.value as Difficulty)}
-            className="min-h-[44px] rounded-xl border border-line bg-surface px-2 text-sm"
+            className={compactFieldClass}
           >
             {DIFFICULTIES.map((d) => (
               <option key={d} value={d}>

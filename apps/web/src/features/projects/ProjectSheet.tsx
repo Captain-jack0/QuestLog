@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { statusLabel } from '../../components/ui/StatusChip'
+import { fieldClass } from '../../components/ui/field'
 import { ITEM_STATUSES, projectSchema, type Project, type ProjectInput } from '../../lib/schemas'
 
 interface ProjectSheetProps {
@@ -12,9 +13,6 @@ interface ProjectSheetProps {
   onSubmit: (values: ProjectInput) => void
   saving?: boolean
 }
-
-const field =
-  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent'
 
 export function ProjectSheet({ open, project, onClose, onSubmit, saving }: ProjectSheetProps) {
   const {
@@ -39,7 +37,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
           <label htmlFor="project-title" className="mb-1 block text-sm font-medium">
             Title
           </label>
-          <input id="project-title" autoFocus {...register('title')} className={field} />
+          <input id="project-title" autoFocus {...register('title')} className={fieldClass} />
           {errors.title && <p className="mt-1 text-sm text-alert-ink">{errors.title.message}</p>}
         </div>
 
@@ -51,7 +49,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
             id="project-description"
             rows={3}
             {...register('description')}
-            className={field}
+            className={fieldClass}
           />
         </div>
 
@@ -60,7 +58,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
             <label htmlFor="project-status" className="mb-1 block text-sm font-medium">
               Status
             </label>
-            <select id="project-status" {...register('status')} className={field}>
+            <select id="project-status" {...register('status')} className={fieldClass}>
               {ITEM_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {statusLabel(status)}
@@ -72,7 +70,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
             <label htmlFor="project-priority" className="mb-1 block text-sm font-medium">
               Priority
             </label>
-            <select id="project-priority" {...register('priority')} className={field}>
+            <select id="project-priority" {...register('priority')} className={fieldClass}>
               <option value="low">Low</option>
               <option value="med">Medium</option>
               <option value="high">High</option>
@@ -84,7 +82,12 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
           <label htmlFor="project-target" className="mb-1 block text-sm font-medium">
             Target date
           </label>
-          <input id="project-target" type="date" {...register('target_date')} className={field} />
+          <input
+            id="project-target"
+            type="date"
+            {...register('target_date')}
+            className={fieldClass}
+          />
         </div>
 
         <Button type="submit" block disabled={saving}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { fieldClass } from '../../components/ui/field'
 import { relativeTime } from '../../lib/time'
 
 interface ResumeCardProps {
@@ -11,9 +12,6 @@ interface ResumeCardProps {
   saving?: boolean
   onSave: (values: { leftOff: string; nextStep: string }) => void
 }
-
-const field =
-  'w-full rounded-xl border border-line bg-paper px-3 py-2 text-base focus:border-accent'
 
 /**
  * The resume context, editable in place. Saving appends a new progress log rather than
@@ -57,7 +55,7 @@ export function ResumeCard({
             autoFocus
             value={draftLeftOff}
             onChange={(e) => setDraftLeftOff(e.target.value)}
-            className={`mt-1 ${field}`}
+            className={`mt-1 ${fieldClass}`}
           />
 
           <label htmlFor="resume-next-step" className="mt-3 block text-sm font-semibold text-muted">
@@ -68,7 +66,7 @@ export function ResumeCard({
             rows={2}
             value={draftNextStep}
             onChange={(e) => setDraftNextStep(e.target.value)}
-            className={`mt-1 ${field}`}
+            className={`mt-1 ${fieldClass}`}
           />
 
           <div className="mt-3 flex gap-2">

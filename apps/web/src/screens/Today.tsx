@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
 import { useToast } from '../components/ui/Toast'
 import { FocusPickerSheet } from '../features/focus/FocusPickerSheet'
 import { useFocusItems, usePickFocus, useToggleFocusItem } from '../features/focus/queries'
@@ -59,12 +60,11 @@ export function TodayScreen() {
           </h2>
 
           {focus.data?.length === 0 ? (
-            <button type="button" onClick={() => setPickerOpen(true)} className="block w-full">
-              <Card className="border border-dashed border-line text-center text-muted">
-                Pick up to 3 things to focus on today
-                <span className="mt-1 block text-xs">+5 ✨ for choosing</span>
-              </Card>
-            </button>
+            <EmptyState
+              title="Pick up to 3 things to focus on today"
+              description="+5 ✨ for choosing"
+              onAction={() => setPickerOpen(true)}
+            />
           ) : (
             <div className="space-y-2">
               {focus.data?.map((item) => {
@@ -101,12 +101,10 @@ export function TodayScreen() {
           {threads.isPending && <CardSkeleton rows={2} />}
 
           {threads.data?.length === 0 && (
-            <Card>
-              <p className="font-medium">No threads yet 🎉</p>
-              <p className="mt-1 text-sm text-muted">
-                When you pause something, its next step will wait for you right here.
-              </p>
-            </Card>
+            <EmptyState
+              title="No threads yet 🎉"
+              description="When you pause something, its next step will wait for you right here."
+            />
           )}
 
           <div className="grid gap-3 xl:grid-cols-2">

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useToast } from '../components/ui/Toast'
+import { fieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { supabase } from '../lib/supabase'
 import { useProfile } from '../features/gamification/queries'
@@ -13,9 +14,6 @@ import { ThemePicker } from '../features/settings/ThemePicker'
 import { pushSupported, subscribeToPush, unsubscribeFromPush } from '../features/settings/push'
 import { localDateKey } from '../lib/time'
 import { profileSchema, type ProfileInput } from '../lib/schemas'
-
-const field =
-  'w-full rounded-xl border border-line bg-paper px-4 py-3 text-base focus:border-accent'
 
 export function SettingsScreen() {
   const { session } = useAuth()
@@ -113,7 +111,7 @@ export function SettingsScreen() {
           <label htmlFor="display-name" className="mb-1 block text-sm font-medium">
             Display name
           </label>
-          <input id="display-name" {...register('display_name')} className={field} />
+          <input id="display-name" {...register('display_name')} className={fieldClass} />
           {errors.display_name && (
             <p className="mt-1 text-sm text-alert-ink">{errors.display_name.message}</p>
           )}
@@ -121,7 +119,7 @@ export function SettingsScreen() {
           <label htmlFor="timezone" className="mb-1 mt-3 block text-sm font-medium">
             Timezone
           </label>
-          <select id="timezone" {...register('timezone')} className={field}>
+          <select id="timezone" {...register('timezone')} className={fieldClass}>
             {timeZones(profile.data?.timezone).map((zone) => (
               <option key={zone} value={zone}>
                 {zone}
@@ -148,7 +146,7 @@ export function SettingsScreen() {
           <label htmlFor="digest-time" className="mb-1 mt-2 block text-sm font-medium">
             Digest time
           </label>
-          <input id="digest-time" type="time" {...register('digest_time')} className={field} />
+          <input id="digest-time" type="time" {...register('digest_time')} className={fieldClass} />
           {errors.digest_time && (
             <p className="mt-1 text-sm text-alert-ink">{errors.digest_time.message}</p>
           )}
