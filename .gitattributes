@@ -1,0 +1,16 @@
+# Git normalises line endings on commit; the working copy follows the platform.
+# Without this, core.autocrlf on Windows checks files out as CRLF while Prettier
+# (endOfLine: "lf" by default) checks for LF — so `format:check` fails locally on
+# files it passes on in CI. Pinning text files to LF makes the two agree.
+* text=auto eol=lf
+
+# Binary: never touch these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
