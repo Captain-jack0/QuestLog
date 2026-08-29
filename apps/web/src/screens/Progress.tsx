@@ -141,7 +141,7 @@ export function ProgressScreen() {
             <div className="flex h-32 items-end gap-1.5">
               {focusWeeks.map((week) => (
                 <div key={week.weekStart} className="flex flex-1 flex-col items-center gap-1">
-                  <span className="tabular text-[10px] text-muted">
+                  <span className="tabular text-3xs text-muted">
                     {week.seconds > 0 ? formatMinutes(week.seconds) : ''}
                   </span>
                   <div
@@ -152,7 +152,7 @@ export function ProgressScreen() {
                       height: `${Math.max((week.seconds / focusPeak) * 100, week.seconds > 0 ? 4 : 2)}%`,
                     }}
                   />
-                  <span className="text-[10px] leading-none text-muted">
+                  <span className="text-3xs leading-none text-muted">
                     {week.label.split(' ')[0]}
                   </span>
                 </div>

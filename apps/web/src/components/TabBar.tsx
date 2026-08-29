@@ -34,7 +34,7 @@ function Tab({ to, label, icon }: { to: string; label: string; icon: string }) {
       to={to}
       end={to === '/'}
       className={({ isActive }) =>
-        `flex min-h-[44px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 text-[11px] ${
+        `flex min-h-[44px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 text-2xs ${
           isActive ? 'font-semibold text-accent' : 'text-muted'
         }`
       }

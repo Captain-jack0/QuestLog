@@ -81,11 +81,11 @@ export function AppPreview() {
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <h3 className="mr-auto text-lg font-semibold">Welcome back, Captain</h3>
                 <span className="rounded-full bg-flame/10 px-3 py-1 text-xs font-semibold text-flame-ink">
-                  <i className="pi pi-bolt mr-1 text-[10px]" aria-hidden />
+                  <i className="pi pi-bolt mr-1 text-3xs" aria-hidden />
                   12-day streak
                 </span>
                 <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                  <i className="pi pi-star-fill mr-1 text-[10px]" aria-hidden />
+                  <i className="pi pi-star-fill mr-1 text-3xs" aria-hidden />
                   48 XP today
                 </span>
               </div>
@@ -176,7 +176,7 @@ export function AppPreview() {
                 onClick={() => setAreaId(null)}
                 className="link-quiet -ml-2 mb-3 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted"
               >
-                <i className="pi pi-arrow-left text-[10px]" aria-hidden />
+                <i className="pi pi-arrow-left text-3xs" aria-hidden />
                 Areas
               </button>
               <h3 className="text-lg font-semibold">
@@ -223,7 +223,7 @@ export function AppPreview() {
                 onClick={() => setProjectId(null)}
                 className="link-quiet -ml-2 mb-3 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted"
               >
-                <i className="pi pi-arrow-left text-[10px]" aria-hidden />
+                <i className="pi pi-arrow-left text-3xs" aria-hidden />
                 {area.name}
               </button>
 
@@ -231,7 +231,7 @@ export function AppPreview() {
                 <h3 className="mr-auto text-lg font-semibold leading-tight">{project.title}</h3>
                 <StatusChip status={project.status} />
                 <span className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1 text-xs font-semibold text-muted">
-                  <i className="pi pi-stopwatch text-[10px]" aria-hidden />
+                  <i className="pi pi-stopwatch text-3xs" aria-hidden />
                   25m
                 </span>
               </div>
@@ -262,7 +262,7 @@ export function AppPreview() {
                       >
                         {task.title}
                       </span>
-                      <span className="shrink-0 rounded-lg bg-paper px-2 py-0.5 text-[11px] font-semibold text-muted">
+                      <span className="shrink-0 rounded-lg bg-paper px-2 py-0.5 text-2xs font-semibold text-muted">
                         {task.difficulty}
                       </span>
                     </div>
@@ -312,7 +312,7 @@ export function AppPreview() {
                     key={badge}
                     className="rounded-full border border-line px-3 py-1 text-xs font-semibold"
                   >
-                    <i className="pi pi-verified mr-1 text-[10px] text-success" aria-hidden />
+                    <i className="pi pi-verified mr-1 text-3xs text-success" aria-hidden />
                     {badge}
                   </span>
                 ))}
