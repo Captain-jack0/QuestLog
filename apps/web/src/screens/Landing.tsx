@@ -161,7 +161,11 @@ export function LandingScreen() {
         </section>
 
         {/* the product, working */}
-        <section className="border-y border-line bg-surface/30">
+        {/* Section bands tint with `ink`, not `surface`: in the calm theme surface is white and
+            paper is near-white, so a surface wash lands 2/255 from the page and the band
+            disappears. An ink wash steps away from paper in whichever direction the theme is —
+            darker on calm, lighter on quest — and leaves the surface cards room to sit on top. */}
+        <section className="border-y border-line bg-ink/5">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-20">
             <div className="mb-8 max-w-2xl">
               <h2 className="font-display text-3xl leading-tight md:text-5xl">
@@ -192,7 +196,7 @@ export function LandingScreen() {
         </section>
 
         {/* how it works */}
-        <section id="how" className="border-y border-line bg-surface/30 scroll-mt-20">
+        <section id="how" className="border-y border-line bg-ink/5 scroll-mt-20">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
             <h2 className="font-display text-3xl leading-tight md:text-5xl">Three moves</h2>
             <p className="mt-3 max-w-xl text-muted">
@@ -242,7 +246,7 @@ export function LandingScreen() {
         </section>
 
         {/* closing */}
-        <section className="border-t border-line bg-surface/30">
+        <section className="border-t border-line bg-ink/5">
           <div className="mx-auto max-w-3xl px-5 py-20 text-center lg:py-28">
             <LogoMark className="mx-auto h-10 w-10" />
             <h2 className="mt-6 font-display text-4xl leading-tight md:text-6xl">
