@@ -1,51 +1,28 @@
 import { useState } from 'react'
-import { AREAS, HANGING, type PreviewProject, type PreviewTask } from './previewData'
+import { NAV_ITEMS } from '../../components/navigation'
+import { ProgressBar } from '../../components/ui/ProgressBar'
+import { StatusChip } from '../../components/ui/StatusChip'
+import { AREAS, HANGING } from './previewData'
 
 /**
  * What you get after signing in, shown rather than described — and clickable all the way
  * down: Areas → a project list → one project's resume context and tasks. That drill-down is
  * the actual shape of the app, so a visitor can feel the flow before handing over an email.
  * Nothing here talks to the database.
+ *
+ * Status chips, the task meter and the tab icons are the app's own components, not lookalikes:
+ * a copy here would drift the moment the real ones change, and the preview claims to be the
+ * real thing. The frame around them (bordered panels rather than filled cards) stays in the
+ * landing page's visual language.
  */
 
-type Tab = 'today' | 'areas' | 'progress'
-
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'today', label: 'Today', icon: 'pi-home' },
-  { id: 'areas', label: 'Areas', icon: 'pi-th-large' },
-  { id: 'progress', label: 'Progress', icon: 'pi-chart-line' },
-]
-
-const STATUS_STYLE: Record<PreviewProject['status'] | PreviewTask['status'], string> = {
-  idea: 'bg-line/50 text-muted',
-  in_progress: 'bg-accent text-paper',
-  paused: 'bg-flame/20 text-flame-ink',
-  blocked: 'bg-alert/20 text-alert-ink',
-  done: 'bg-success/20 text-success-ink',
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  idea: 'Idea',
-  in_progress: 'In progress',
-  paused: 'Paused',
-  blocked: 'Blocked',
-  done: 'Done',
-}
-
-function Chip({ status }: { status: keyof typeof STATUS_STYLE }) {
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLE[status]}`}
-    >
-      {STATUS_LABEL[status]}
-    </span>
-  )
-}
+/** The app's real tabs, minus Settings — the preview has no settings screen to show. */
+const TABS = NAV_ITEMS.filter((item) => item.to !== '/settings')
 
 const WEEKS = [40, 65, 30, 80, 55, 95, 70, 100]
 
 export function AppPreview() {
-  const [tab, setTab] = useState<Tab>('today')
+  const [tab, setTab] = useState('/')
   const [areaId, setAreaId] = useState<string | null>(null)
   const [projectId, setProjectId] = useState<string | null>(null)
   const [done, setDone] = useState<string[]>([])
@@ -53,7 +30,7 @@ export function AppPreview() {
   const area = AREAS.find((a) => a.id === areaId) ?? null
   const project = area?.projects.find((p) => p.id === projectId) ?? null
 
-  function openTab(next: Tab) {
+  function openTab(next: string) {
     setTab(next)
     setAreaId(null)
     setProjectId(null)
@@ -82,30 +59,32 @@ export function AppPreview() {
         >
           {TABS.map((item) => (
             <button
-              key={item.id}
+              key={item.to}
               type="button"
-              onClick={() => openTab(item.id)}
-              aria-pressed={tab === item.id}
+              onClick={() => openTab(item.to)}
+              aria-pressed={tab === item.to}
               className={`link-quiet flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sm transition sm:flex-none ${
-                tab === item.id ? 'bg-accent/12 font-semibold text-accent' : 'text-muted'
+                tab === item.to ? 'bg-accent/10 font-semibold text-accent' : 'text-muted'
               }`}
             >
-              <i className={`pi ${item.icon} text-xs`} aria-hidden />
+              <span className="text-base leading-none" aria-hidden>
+                {item.icon}
+              </span>
               {item.label}
             </button>
           ))}
         </nav>
 
         <div className="min-h-[380px] flex-1 p-4 sm:p-5">
-          {tab === 'today' && (
+          {tab === '/' && (
             <div>
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <h3 className="mr-auto text-lg font-semibold">Welcome back, Captain</h3>
-                <span className="rounded-full bg-flame/15 px-3 py-1 text-xs font-semibold text-flame-ink">
+                <span className="rounded-full bg-flame/10 px-3 py-1 text-xs font-semibold text-flame-ink">
                   <i className="pi pi-bolt mr-1 text-[10px]" aria-hidden />
                   12-day streak
                 </span>
-                <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent">
+                <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                   <i className="pi pi-star-fill mr-1 text-[10px]" aria-hidden />
                   48 XP today
                 </span>
@@ -162,7 +141,7 @@ export function AppPreview() {
             </div>
           )}
 
-          {tab === 'areas' && !area && (
+          {tab === '/areas' && !area && (
             <div>
               <h3 className="mb-1 text-lg font-semibold">Areas</h3>
               <p className="mb-4 text-xs text-muted">Open one to see its projects.</p>
@@ -190,7 +169,7 @@ export function AppPreview() {
             </div>
           )}
 
-          {tab === 'areas' && area && !project && (
+          {tab === '/areas' && area && !project && (
             <div>
               <button
                 type="button"
@@ -218,17 +197,14 @@ export function AppPreview() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span className="font-medium leading-tight">{item.title}</span>
-                        <Chip status={item.status} />
+                        <StatusChip status={item.status} />
                       </div>
                       <p className="mt-2 text-sm">
                         <span className="text-muted">Next: </span>
                         {item.nextStep}
                       </p>
-                      <div className="mt-3 h-1 overflow-hidden rounded-full bg-line/50">
-                        <div
-                          className="h-full rounded-full bg-accent"
-                          style={{ width: `${(finished / item.tasks.length) * 100}%` }}
-                        />
+                      <div className="mt-3">
+                        <ProgressBar done={finished} total={item.tasks.length} />
                       </div>
                       <p className="mt-1 text-xs text-muted">
                         {finished}/{item.tasks.length} tasks done · waiting {item.waited}
@@ -240,7 +216,7 @@ export function AppPreview() {
             </div>
           )}
 
-          {tab === 'areas' && area && project && (
+          {tab === '/areas' && area && project && (
             <div>
               <button
                 type="button"
@@ -253,7 +229,7 @@ export function AppPreview() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="mr-auto text-lg font-semibold leading-tight">{project.title}</h3>
-                <Chip status={project.status} />
+                <StatusChip status={project.status} />
                 <span className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1 text-xs font-semibold text-muted">
                   <i className="pi pi-stopwatch text-[10px]" aria-hidden />
                   25m
@@ -291,7 +267,7 @@ export function AppPreview() {
                       </span>
                     </div>
                     <div className="mt-2">
-                      <Chip status={task.status} />
+                      <StatusChip status={task.status} />
                     </div>
                   </div>
                 ))}
@@ -299,7 +275,7 @@ export function AppPreview() {
             </div>
           )}
 
-          {tab === 'progress' && (
+          {tab === '/progress' && (
             <div>
               <h3 className="mb-4 text-lg font-semibold">Progress</h3>
               <div className="mb-5 rounded-xl border border-line p-4">
@@ -310,7 +286,9 @@ export function AppPreview() {
                   </div>
                   <p className="text-xs text-muted">1 852 / 2 263 XP</p>
                 </div>
-                <div className="mt-3 h-1 overflow-hidden rounded-full bg-line/50">
+                {/* Not ProgressBar: that one labels itself "N of M tasks done", which is the
+                    wrong sentence for an XP meter. Kept as decoration and hidden from readers. */}
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-line/50" aria-hidden>
                   <div className="h-full w-[72%] rounded-full bg-accent" />
                 </div>
               </div>
