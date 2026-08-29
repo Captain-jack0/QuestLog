@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
+import { BottomSheet } from '../components/ui/BottomSheet'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useToast } from '../components/ui/Toast'
@@ -223,10 +224,8 @@ export function TodayScreen() {
       />
 
       {snoozeFor && (
-        <div className="fixed inset-0 z-30" role="dialog" aria-modal="true" aria-label="Snooze">
-          <div className="absolute inset-0 bg-ink/30" onClick={() => setSnoozeFor(null)} />
-          <div className="absolute inset-x-0 bottom-0 space-y-2 rounded-t-2xl bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <h2 className="mb-2 text-lg font-bold">Snooze until…</h2>
+        <BottomSheet open onClose={() => setSnoozeFor(null)} title="Snooze until…">
+          <div className="space-y-2">
             {SNOOZE_OPTIONS.map((option) => (
               <Button
                 key={option.days}
@@ -249,7 +248,7 @@ export function TodayScreen() {
               </Button>
             ))}
           </div>
-        </div>
+        </BottomSheet>
       )}
     </div>
   )
