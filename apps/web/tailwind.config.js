@@ -27,6 +27,17 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
+      // Two sizes live below Tailwind's smallest (`xs`, 12px): chart axis labels, tab labels,
+      // status chips and inline icons. They were spelled `text-[10px]`/`text-[11px]` inline, so
+      // the scale had no bottom end written down. Named here as a continuation of Tailwind's own
+      // xs → 2xs → 3xs order. Deliberately plain strings, not [size, lineHeight] pairs: that
+      // emits font-size alone, exactly like the arbitrary values did, so nothing reflows.
+      // This `extend` adds to the default scale, it does not replace it — text-sm/text-2xl etc.
+      // are untouched.
+      fontSize: {
+        '2xs': '0.6875rem',
+        '3xs': '0.625rem',
+      },
       borderRadius: {
         card: '1rem',
       },

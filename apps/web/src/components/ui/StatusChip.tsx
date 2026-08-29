@@ -13,9 +13,7 @@ const styles: Record<ItemStatus, { label: string; className: string }> = {
 export function StatusChip({ status }: { status: ItemStatus }) {
   const { label, className } = styles[status]
   return (
-    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${className}`}>
-      {label}
-    </span>
+    <span className={`rounded-full px-2 py-0.5 text-2xs font-semibold ${className}`}>{label}</span>
   )
 }
 
