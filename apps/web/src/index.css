@@ -225,7 +225,6 @@ body::before {
 }
 
 .link-quiet:hover {
-  color: rgb(var(--ink));
   background-color: rgb(var(--accent) / 0.1);
 }
 
@@ -235,6 +234,13 @@ body::before {
     background-color 160ms ease,
     transform 160ms ease;
 }
+/* Brightening to ink is for links that are still quiet. A link marking the current tab says so
+   with `text-accent`, and `:hover` outranks a utility class — without this, pointing at the
+   active tab is exactly what makes it stop looking active. */
+.link-quiet:hover:not(.text-accent) {
+  color: rgb(var(--ink));
+}
+
 
 .card-hover:hover {
   border-color: rgb(var(--accent) / 0.45);
