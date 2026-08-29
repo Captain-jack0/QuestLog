@@ -207,14 +207,20 @@ body::before {
 
 /* ---- shared interaction colours ----------------------------------------------------
    Ghost-by-default: buttons are transparent at rest, gaining colour only on hover.
-   Primary fills solid on hover; quiet variants tint subtly. */
+   Primary fills solid on hover; quiet variants tint subtly.
+
+   Accent tints run on three steps, and they mean different things:
+     0.06  a wash over a whole card      (.card-hover — large area, so the faintest step)
+     0.10  a small control, hovered or selected  (.btn-quiet, .link-quiet, and `bg-accent/10`)
+     0.15  a filled badge at rest        (`bg-accent/15` — has to hold against the card behind it)
+   `bg-accent/80` is not on this scale at all: it is a solid data fill for chart bars. */
 .btn-primary:hover {
   background-color: rgb(var(--accent));
   color: rgb(var(--paper));
 }
 
 .btn-quiet:hover {
-  background-color: rgb(var(--accent) / 0.12);
+  background-color: rgb(var(--accent) / 0.1);
   border-color: rgb(var(--accent) / 0.5);
 }
 
@@ -225,7 +231,6 @@ body::before {
 }
 
 .link-quiet:hover {
-  color: rgb(var(--ink));
   background-color: rgb(var(--accent) / 0.1);
 }
 
@@ -234,6 +239,12 @@ body::before {
     border-color 160ms ease,
     background-color 160ms ease,
     transform 160ms ease;
+}
+/* Brightening to ink is for links that are still quiet. A link marking the current tab says so
+   with `text-accent`, and `:hover` outranks a utility class — without this, pointing at the
+   active tab is exactly what makes it stop looking active. */
+.link-quiet:hover:not(.text-accent) {
+  color: rgb(var(--ink));
 }
 
 .card-hover:hover {
