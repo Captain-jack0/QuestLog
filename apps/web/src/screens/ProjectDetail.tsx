@@ -114,7 +114,7 @@ export function ProjectDetailScreen() {
             <span className="flex items-center gap-1 text-muted">
               <span
                 aria-hidden
-                className="h-2 w-2 rounded-full"
+                className="h-2 w-2 rounded-full border border-ink/55"
                 style={{ backgroundColor: area.data.color }}
               />
               {area.data.icon} {area.data.name}

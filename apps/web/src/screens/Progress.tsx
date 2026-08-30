@@ -102,7 +102,7 @@ export function ProgressScreen() {
             >
               <span
                 aria-hidden
-                className="h-2 w-2 rounded-full"
+                className="h-2 w-2 rounded-full border border-ink/55"
                 style={{ backgroundColor: area.color }}
               />
               {area.icon} {area.name}
