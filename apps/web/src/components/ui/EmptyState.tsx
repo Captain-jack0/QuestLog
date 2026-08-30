@@ -25,6 +25,12 @@ interface EmptyStateProps {
  * card would be invisible, and each one has a `Loading…` twin styled identically. They belong
  * to that pair, not here.
  *
+ * Nor for `ResumeCard`'s "No resume context yet…" line, for the same shape of reason one level
+ * in: it is a branch inside a card that already has its own heading and Edit button, so this
+ * would nest a card in a card. Its `mt-1` is not drift either — it is the gap from the `<h2>`
+ * directly above, the same one the filled branch's first `<p>` uses in that exact slot. Aligning
+ * it with the sheets' bare `text-muted` paragraphs would only close it up against the heading.
+ *
  * Spans rather than paragraphs: with `onAction` the whole thing is wrapped in a `<button>`,
  * which may only contain phrasing content.
  */
