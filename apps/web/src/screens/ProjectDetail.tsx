@@ -86,7 +86,14 @@ export function ProjectDetailScreen() {
 
   return (
     <div>
-      <Link to={`/areas/${project.data.area_id ?? ''}`} className="text-sm font-medium text-muted">
+      {/* inline-flex, not a bare min-height: min-height does not apply to an inline box, so on
+          an <a> the utility alone would have measured the same 17px it was meant to fix. Centred,
+          unlike the thread title in Today, because this link stands alone with nothing beside it
+          to keep level. */}
+      <Link
+        to={`/areas/${project.data.area_id ?? ''}`}
+        className="inline-flex min-h-[44px] items-center text-sm font-medium text-muted"
+      >
         ← {area.data?.name ?? 'Area'}
       </Link>
 
@@ -226,7 +233,7 @@ export function ProjectDetailScreen() {
                   onChange={(e) =>
                     updateTask.mutate({ id: task.id, difficulty: e.target.value as Difficulty })
                   }
-                  className="shrink-0 rounded-lg bg-paper px-2 py-1 text-xs font-semibold text-muted"
+                  className={`shrink-0 ${compactFieldClass} font-semibold text-muted`}
                 >
                   {DIFFICULTIES.map((d) => (
                     <option key={d} value={d}>

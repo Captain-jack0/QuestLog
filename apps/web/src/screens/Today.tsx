@@ -118,9 +118,14 @@ export function TodayScreen() {
                 className="pl-5"
               >
                 <div className="flex items-start justify-between gap-2">
+                  {/* inline-flex, not a bare min-height: min-height does not apply to an inline
+                      box, so on an <a> the utility alone would change nothing. `items-start`
+                      rather than centring, because a one-line title centred in a 44px box drops
+                      ~12px away from the timestamp it sits opposite; this keeps the two tops
+                      level exactly as they were and spends the added height below the text. */}
                   <Link
                     to={`/projects/${thread.project_id}`}
-                    className="font-semibold leading-tight"
+                    className="inline-flex min-h-[44px] items-start font-semibold leading-tight"
                   >
                     {thread.title}
                   </Link>

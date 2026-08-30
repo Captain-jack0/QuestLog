@@ -213,7 +213,14 @@ body::before {
      0.06  a wash over a whole card      (.card-hover — large area, so the faintest step)
      0.10  a small control, hovered or selected  (.btn-quiet, .link-quiet, and `bg-accent/10`)
      0.15  a filled badge at rest        (`bg-accent/15` — has to hold against the card behind it)
-   `bg-accent/80` is not on this scale at all: it is a solid data fill for chart bars. */
+   `bg-accent/80` is not on this scale at all: it is a solid data fill for chart bars.
+
+   The hover *border* has one step, 0.5, and it is deliberately not a scale like the tints
+   above. Area is what splits the tints: a wash over a whole card needs to be fainter than the
+   same wash on a chip. A border is a hairline whatever it encloses, so that argument does not
+   carry over — and it would not survive the arithmetic anyway. Over `--surface` the two values
+   this used to hold resolve to rgb(44 81 154) at 0.45 and rgb(47 86 163) at 0.5: under 10/255
+   apart on one channel, on a 1px line. That is drift, not intent, so it is one value. */
 .btn-primary:hover {
   background-color: rgb(var(--accent));
   color: rgb(var(--paper));
@@ -248,7 +255,7 @@ body::before {
 }
 
 .card-hover:hover {
-  border-color: rgb(var(--accent) / 0.45);
+  border-color: rgb(var(--accent) / 0.5);
   background-color: rgb(var(--accent) / 0.06);
   transform: translateY(-2px);
 }
