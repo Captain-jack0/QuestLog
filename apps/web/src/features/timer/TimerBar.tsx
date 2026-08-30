@@ -31,7 +31,7 @@ export function TimerBar() {
       <div className="mx-auto flex max-w-md items-center gap-3 rounded-card bg-surface p-3 shadow-quest">
         <span
           aria-hidden
-          className="h-8 w-1 shrink-0 rounded-full"
+          className="h-8 w-1.5 shrink-0 rounded-full border border-ink/55"
           style={{ backgroundColor: timer.area_color ?? 'rgb(var(--accent))' }}
         />
         <div className="min-w-0 flex-1">
