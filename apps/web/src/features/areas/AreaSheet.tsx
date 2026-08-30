@@ -81,7 +81,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
                 aria-pressed={color === option}
                 onClick={() => setValue('color', option, { shouldDirty: true })}
                 style={{ backgroundColor: option }}
-                className={`h-11 w-11 rounded-full ${color === option ? 'ring-2 ring-ink ring-offset-2' : ''}`}
+                className={`h-11 w-11 rounded-full border border-ink/55 ${color === option ? 'ring-2 ring-ink ring-offset-2' : ''}`}
               />
             ))}
           </div>
