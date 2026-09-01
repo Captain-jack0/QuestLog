@@ -32,7 +32,13 @@ import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
 import { relativeTime } from '../lib/time'
 import { TimerButton } from '../features/timer/TimerButton'
-import { DIFFICULTIES, type Difficulty, type ItemStatus, type Task } from '../lib/schemas'
+import {
+  DIFFICULTIES,
+  DIFFICULTY_LABELS,
+  type Difficulty,
+  type ItemStatus,
+  type Task,
+} from '../lib/schemas'
 
 /** Same summary as the History section below, so the two collapsibles read as one pattern. */
 const SUMMARY_CLASS = 'cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted'
@@ -252,17 +258,22 @@ export function ProjectDetailScreen() {
             placeholder="Add a task…"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className={`flex-1 ${rowFieldClass}`}
+            // min-w-0 so it can give up room to the labelled select below: a text input's
+            // intrinsic min-width (size=20) would otherwise push the row past the viewport.
+            className={`min-w-0 flex-1 ${rowFieldClass}`}
           />
+          {/* The full label, not the bare letter: this is where a difficulty is chosen for the
+              first time, so it is the one place the letter has nothing to stand for yet. The
+              card select can stay a letter — by then the task already has a value to read. */}
           <select
             aria-label="New task difficulty"
             value={newDifficulty}
             onChange={(e) => setNewDifficulty(e.target.value as Difficulty)}
-            className={compactFieldClass}
+            className={`shrink-0 ${compactFieldClass}`}
           >
             {DIFFICULTIES.map((d) => (
               <option key={d} value={d}>
-                {d}
+                {DIFFICULTY_LABELS[d]}
               </option>
             ))}
           </select>
@@ -297,10 +308,7 @@ export function ProjectDetailScreen() {
               onAction={() => changePrefs({ ...prefs, status: [], staleOnly: false })}
             />
           ) : (
-            <EmptyState
-              title="Nothing open here."
-              description="They're waiting in Completed below."
-            />
+            <EmptyState title="Nothing open here." description="They're waiting in Closed below." />
           ))}
 
         {closedTasks.length > 0 && (
@@ -309,7 +317,9 @@ export function ProjectDetailScreen() {
             open={prefs.showCompleted}
             onToggle={(e) => changePrefs({ ...prefs, showCompleted: e.currentTarget.open })}
           >
-            <summary className={SUMMARY_CLASS}>Completed ({closedTasks.length})</summary>
+            {/* "Closed", not "Completed": the bucket is done + dropped, and calling it
+                Completed contradicted the "1/2 done" counter directly above it. */}
+            <summary className={SUMMARY_CLASS}>Closed ({closedTasks.length})</summary>
             {/* No dimming: these rows keep their status controls, and a finished task you
                 meant to keep open is exactly the one you need to be able to read. */}
             <div className="mt-3">{taskList(closedTasks)}</div>
