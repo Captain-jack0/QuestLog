@@ -196,7 +196,9 @@ export function ProjectDetailScreen() {
             </span>
           )}
           <StatusChip status={project.data.status} />
-          <span className="text-muted">{project.data.priority} priority</span>
+          {/* The label, not the enum: this line reads as a sentence, and "med priority" is not
+              one. Same reason the new-task select spells the values out below. */}
+          <span className="text-muted">{PRIORITY_LABELS[project.data.priority]} priority</span>
           <TimerButton
             itemType="project"
             itemId={projectId}
