@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ItemStatus, Priority } from '../../lib/schemas'
 import { localDateKey } from '../../lib/time'
 import { DEFAULT_PREFS, parsePrefs, type TaskListPrefs } from './listPrefs'
-import { compareTasks, isStale, partitionTasks } from './taskOrder'
+import { compareTasks, isStale, partitionTasks, taskProgress } from './taskOrder'
 
 type Row = {
   id: string
@@ -77,14 +77,19 @@ describe('compareTasks', () => {
 
 describe('isStale', () => {
   it('needs more than the threshold: exactly N days is not stale, N + 1 days is', () => {
-    const at = (ms: number) => task('t', { updated_at: new Date(ms).toISOString() })
+    // in_progress, not the factory default: only started work can go stale.
+    const at = (ms: number) =>
+      task('t', { status: 'in_progress', updated_at: new Date(ms).toISOString() })
     expect(isStale(at(NOW - 14 * DAY), 14, NOW)).toBe(false)
     expect(isStale(at(NOW - 14 * DAY - 1), 14, NOW)).toBe(true)
     expect(isStale(at(NOW - 15 * DAY), 14, NOW)).toBe(true)
   })
 
   it('never calls a snoozed task stale until the snooze date has arrived', () => {
-    const forgotten = { updated_at: new Date(NOW - 60 * DAY).toISOString() }
+    const forgotten = {
+      status: 'in_progress' as const,
+      updated_at: new Date(NOW - 60 * DAY).toISOString(),
+    }
     const tomorrow = localDateKey(new Date(NOW + DAY))
     const today = localDateKey(new Date(NOW))
 
@@ -98,6 +103,53 @@ describe('isStale', () => {
     expect(isStale(task('t', { ...forgotten, status: 'done' }), 14, NOW)).toBe(false)
     expect(isStale(task('t', { ...forgotten, status: 'dropped' }), 14, NOW)).toBe(false)
     expect(isStale(task('t', { ...forgotten, status: 'paused' }), 14, NOW)).toBe(true)
+  })
+
+  it('counts only the three statuses the server hangs, so backlog is never stale', () => {
+    const forgotten = { updated_at: new Date(NOW - 60 * DAY).toISOString() }
+    // idea/planned are open but not started — v_hanging_threads leaves them out too, and the
+    // chip must not claim work Today never lists.
+    expect(isStale(task('t', { ...forgotten, status: 'idea' }), 14, NOW)).toBe(false)
+    expect(isStale(task('t', { ...forgotten, status: 'planned' }), 14, NOW)).toBe(false)
+    expect(isStale(task('t', { ...forgotten, status: 'in_progress' }), 14, NOW)).toBe(true)
+    expect(isStale(task('t', { ...forgotten, status: 'blocked' }), 14, NOW)).toBe(true)
+  })
+})
+
+describe('taskProgress', () => {
+  it('counts done against the whole list, open statuses included in the denominator', () => {
+    const rows = [
+      task('a', { status: 'done' }),
+      task('b', { status: 'done' }),
+      task('c', { status: 'in_progress' }),
+    ]
+    expect(taskProgress(rows)).toEqual({ done: 2, total: 3 })
+  })
+
+  it('reports the project, not the view: the filtered list must never be what it is given', () => {
+    // The regression this guards: wiring the bar to partitionTasks().open makes a project whose
+    // work is finished read "0/1" — the two done tasks have left for the closed bucket.
+    const rows = [
+      task('done1', { status: 'done' }),
+      task('done2', { status: 'done' }),
+      task('todo', { status: 'planned' }),
+    ]
+    const { open } = partitionTasks(rows, prefs(), 14, NOW)
+
+    expect(taskProgress(rows)).toEqual({ done: 2, total: 3 })
+    expect(taskProgress(open)).not.toEqual({ done: 2, total: 3 })
+  })
+
+  it('counts dropped as not done, so it can never disagree with the Closed section', () => {
+    const rows = [task('a', { status: 'done' }), task('b', { status: 'dropped' })]
+    const { closed } = partitionTasks(rows, prefs(), 14, NOW)
+
+    expect(taskProgress(rows)).toEqual({ done: 1, total: 2 })
+    expect(closed).toHaveLength(2)
+  })
+
+  it('is zero over zero on an empty list', () => {
+    expect(taskProgress([])).toEqual({ done: 0, total: 0 })
   })
 })
 

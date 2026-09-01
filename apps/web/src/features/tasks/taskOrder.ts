@@ -32,6 +32,14 @@ function isOpen(status: ItemStatus): boolean {
   return OPEN_STATUSES.includes(status)
 }
 
+/**
+ * Narrower than OPEN_STATUSES on purpose. The server's hanging-threads view counts exactly
+ * these three (`20260818120400_focus_snooze_views.sql:155`), and `idea`/`planned` are backlog,
+ * not neglect — an idea you noted three weeks ago and never started is not a dropped thread.
+ * Counting them would make the chip claim work that Today never lists.
+ */
+const STALE_STATUSES: ItemStatus[] = ['in_progress', 'paused', 'blocked']
+
 /** In-progress work outranks everything under both sort keys — it is the list's spine. */
 function focusRank(task: Pick<Sortable, 'status'>): number {
   return task.status === 'in_progress' ? 0 : 1
@@ -63,9 +71,23 @@ export function compareTasks(sort: SortKey): (a: Sortable, b: Sortable) => numbe
  * (`snoozed_until is null or snoozed_until <= current_date`, :156).
  */
 export function isStale(task: Staleable, staleDays: number, now: number): boolean {
-  if (!isOpen(task.status)) return false
+  if (!STALE_STATUSES.includes(task.status)) return false
   if (task.snoozed_until && task.snoozed_until > localDateKey(new Date(now))) return false
   return Date.parse(task.updated_at) < now - staleDays * DAY_MS
+}
+
+/**
+ * The progress bar reports the project, not the current view, so this must be handed the whole
+ * task list — never `partitionTasks(...).open`, which the filters and the closed bucket have
+ * both already thinned. Same count as `aggregateProjectStats`, one project at a time.
+ */
+export function taskProgress(tasks: readonly { status: ItemStatus }[]): {
+  done: number
+  total: number
+} {
+  let done = 0
+  for (const task of tasks) if (task.status === 'done') done += 1
+  return { done, total: tasks.length }
 }
 
 function matchesFilters(

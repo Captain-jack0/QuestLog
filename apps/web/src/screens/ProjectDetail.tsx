@@ -26,7 +26,7 @@ import { TaskItem } from '../features/tasks/TaskItem'
 import { TaskListControls } from '../features/tasks/TaskListControls'
 import { TaskSheet } from '../features/tasks/TaskSheet'
 import { savePrefs, storedPrefs, type TaskListPrefs } from '../features/tasks/listPrefs'
-import { partitionTasks } from '../features/tasks/taskOrder'
+import { partitionTasks, taskProgress } from '../features/tasks/taskOrder'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
 import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
@@ -70,8 +70,8 @@ export function ProjectDetailScreen() {
 
   const latest = logs.data?.[0]
   // Deliberately the unfiltered query data: the bar reports the project, not the current view,
-  // so hiding a done task behind a filter must not move it.
-  const done = tasks.data?.filter((t) => t.status === 'done').length ?? 0
+  // so hiding a done task behind a filter must not move it. taskOrder.test.ts guards the count.
+  const progress = taskProgress(tasks.data ?? [])
   const staleDays = profile.data?.stale_days ?? 14
 
   const {
@@ -223,12 +223,12 @@ export function ProjectDetailScreen() {
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Tasks</h2>
           <span className="text-xs text-muted">
-            {done}/{tasks.data?.length ?? 0} done
+            {progress.done}/{progress.total} done
           </span>
         </div>
-        {(tasks.data?.length ?? 0) > 0 && (
+        {progress.total > 0 && (
           <div className="mb-3">
-            <ProgressBar done={done} total={tasks.data?.length ?? 0} />
+            <ProgressBar done={progress.done} total={progress.total} />
           </div>
         )}
 
@@ -271,7 +271,7 @@ export function ProjectDetailScreen() {
           </Button>
         </form>
 
-        {(tasks.data?.length ?? 0) > 0 && (
+        {progress.total > 0 && (
           <TaskListControls
             prefs={prefs}
             onChange={changePrefs}
@@ -288,7 +288,7 @@ export function ProjectDetailScreen() {
         {openTasks.length > 0 && taskList(openTasks)}
 
         {/* Two ways to lose sight of an open task, two different ways out. */}
-        {(tasks.data?.length ?? 0) > 0 &&
+        {progress.total > 0 &&
           openTasks.length === 0 &&
           (hiddenByFilter > 0 ? (
             <EmptyState
