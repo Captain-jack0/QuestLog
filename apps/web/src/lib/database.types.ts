@@ -332,6 +332,7 @@ export type Database = {
           description: string | null
           difficulty: Database['public']['Enums']['difficulty']
           id: string
+          priority: Database['public']['Enums']['priority']
           project_id: string
           snoozed_until: string | null
           sort_order: number
@@ -346,6 +347,7 @@ export type Database = {
           description?: string | null
           difficulty?: Database['public']['Enums']['difficulty']
           id?: string
+          priority?: Database['public']['Enums']['priority']
           project_id: string
           snoozed_until?: string | null
           sort_order?: number
@@ -360,6 +362,7 @@ export type Database = {
           description?: string | null
           difficulty?: Database['public']['Enums']['difficulty']
           id?: string
+          priority?: Database['public']['Enums']['priority']
           project_id?: string
           snoozed_until?: string | null
           sort_order?: number
