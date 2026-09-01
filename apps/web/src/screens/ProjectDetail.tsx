@@ -35,8 +35,11 @@ import { TimerButton } from '../features/timer/TimerButton'
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
+  PRIORITIES,
+  PRIORITY_LABELS,
   type Difficulty,
   type ItemStatus,
+  type Priority,
   type Task,
 } from '../lib/schemas'
 
@@ -67,6 +70,9 @@ export function ProjectDetailScreen() {
   const [pending, setPending] = useState<PendingStatusChange | null>(null)
   const [newTitle, setNewTitle] = useState('')
   const [newDifficulty, setNewDifficulty] = useState<Difficulty>('M')
+  // 'med' is the same value useCreateTask falls back to, so touching nothing here still
+  // produces the row this form produced before the select existed.
+  const [newPriority, setNewPriority] = useState<Priority>('med')
   const [movingProject, setMovingProject] = useState(false)
   const [movingTask, setMovingTask] = useState<{ id: string; title: string } | null>(null)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -238,14 +244,17 @@ export function ProjectDetailScreen() {
           </div>
         )}
 
+        {/* Wraps instead of sharing one line: with two labelled selects beside it the input
+            measured 69px at 320px wide — narrower than its own placeholder. On its own row it
+            gets the full 288px there, and the selects keep their labels at every width. */}
         <form
-          className="mb-3 flex gap-2"
+          className="mb-3 flex flex-wrap gap-2"
           onSubmit={(e) => {
             e.preventDefault()
             const title = newTitle.trim()
             if (!title) return
             createTask.mutate(
-              { title, difficulty: newDifficulty },
+              { title, difficulty: newDifficulty, priority: newPriority },
               {
                 onSuccess: () => setNewTitle(''),
                 onError: (error) => toast(error.message, 'error'),
@@ -258,13 +267,12 @@ export function ProjectDetailScreen() {
             placeholder="Add a task…"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            // min-w-0 so it can give up room to the labelled select below: a text input's
-            // intrinsic min-width (size=20) would otherwise push the row past the viewport.
-            className={`min-w-0 flex-1 ${rowFieldClass}`}
+            className={`w-full ${rowFieldClass}`}
           />
-          {/* The full label, not the bare letter: this is where a difficulty is chosen for the
-              first time, so it is the one place the letter has nothing to stand for yet. The
-              card select can stay a letter — by then the task already has a value to read. */}
+          {/* The full labels, not the bare enum values: this is where a task's difficulty and
+              priority are chosen for the first time, so it is the one place "M" and "med" have
+              nothing to stand for yet. The card select can stay a letter — by then the task
+              already has a value to read. */}
           <select
             aria-label="New task difficulty"
             value={newDifficulty}
@@ -274,6 +282,18 @@ export function ProjectDetailScreen() {
             {DIFFICULTIES.map((d) => (
               <option key={d} value={d}>
                 {DIFFICULTY_LABELS[d]}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="New task priority"
+            value={newPriority}
+            onChange={(e) => setNewPriority(e.target.value as Priority)}
+            className={`shrink-0 ${compactFieldClass}`}
+          >
+            {PRIORITIES.map((p) => (
+              <option key={p} value={p}>
+                {PRIORITY_LABELS[p]}
               </option>
             ))}
           </select>
