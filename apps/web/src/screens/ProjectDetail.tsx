@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
@@ -109,16 +109,6 @@ export function ProjectDetailScreen() {
     updateStatus.mutate({ itemType, itemId, status, leftOff: '', nextStep: '' })
   }
 
-  /**
-   * Priority is only editable in the pop-up, and the card has no button that opens it, so the
-   * body itself is the target. Every inline control inside the card handles its own click, so
-   * a tap that landed on one (or on an icon inside one) is not a tap on the body.
-   */
-  function openFromCardBody(task: Task, event: MouseEvent<HTMLDivElement>) {
-    if ((event.target as HTMLElement).closest('button, input, select, textarea, a, label')) return
-    setEditingTask(task)
-  }
-
   /** Rows share one card and its dividers; cards are grid items with a card each. */
   function taskList(items: Task[]) {
     const handlers = (task: Task) => ({
@@ -143,18 +133,7 @@ export function ProjectDetailScreen() {
     return (
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((task) => (
-          <div key={task.id} className="relative" onClick={(e) => openFromCardBody(task, e)}>
-            <TaskItem view="card" {...handlers(task)} />
-            {/* The keyboard half of the body tap. Hidden until focused rather than drawn on
-                the card, which is the control the card is deliberately not growing. */}
-            <button
-              type="button"
-              className="sr-only focus:not-sr-only focus:absolute focus:right-3 focus:top-3 focus:z-10 focus:inline-flex focus:min-h-[44px] focus:items-center focus:rounded-full focus:bg-paper focus:px-3 focus:text-xs focus:font-semibold focus:text-accent"
-              onClick={() => setEditingTask(task)}
-            >
-              Edit {task.title} details
-            </button>
-          </div>
+          <TaskItem key={task.id} view="card" {...handlers(task)} />
         ))}
       </div>
     )

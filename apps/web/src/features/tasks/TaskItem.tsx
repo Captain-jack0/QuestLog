@@ -48,6 +48,24 @@ function DifficultyLetter({ difficulty }: { difficulty: Difficulty }) {
   )
 }
 
+/**
+ * Both views carry it: the pop-up holds priority, which nothing on either surface edits inline,
+ * so a visible control has to point at it. A card body that silently opened the sheet was the
+ * same affordance with nothing to see and no tab stop of its own.
+ */
+function OpenButton({ title, onOpen }: { title: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={`Open ${title}`}
+      onClick={onOpen}
+      className="min-h-[44px] min-w-[44px] shrink-0 rounded-full text-muted hover:bg-line/40"
+    >
+      <span aria-hidden>⋯</span>
+    </button>
+  )
+}
+
 interface TaskItemProps {
   task: Task
   view: TaskView
@@ -56,7 +74,7 @@ interface TaskItemProps {
   onUpdate: (fields: { title?: string; description?: string; difficulty?: Difficulty }) => void
   /** Card view only — the row sends moving to the pop-up. */
   onMove: () => void
-  /** Row view only — opens the task pop-up for everything the row does not carry. */
+  /** Opens the task pop-up: everything the row does not carry, and priority in both views. */
   onOpen: () => void
 }
 
@@ -113,14 +131,7 @@ export function TaskItem({ task, view, onStatusChange, onUpdate, onMove, onOpen 
           {relativeTime(task.updated_at)}
         </span>
 
-        <button
-          type="button"
-          aria-label={`Open ${task.title}`}
-          onClick={onOpen}
-          className="min-h-[44px] min-w-[44px] shrink-0 rounded-full text-muted hover:bg-line/40"
-        >
-          <span aria-hidden>⋯</span>
-        </button>
+        <OpenButton title={task.title} onOpen={onOpen} />
       </div>
     )
   }
@@ -145,6 +156,7 @@ export function TaskItem({ task, view, onStatusChange, onUpdate, onMove, onOpen 
             </option>
           ))}
         </select>
+        <OpenButton title={task.title} onOpen={onOpen} />
       </div>
 
       <EditableText
