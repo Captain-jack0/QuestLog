@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NAV_ITEMS } from '../../components/navigation'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { StatusChip } from '../../components/ui/StatusChip'
+import { taskProgress } from '../../features/tasks/taskOrder'
 import { OPEN_STATUSES } from '../../lib/schemas'
 import { AREAS, HANGING, type PreviewTask } from './previewData'
 
@@ -62,6 +63,9 @@ export function AppPreview() {
   const project = area?.projects.find((p) => p.id === projectId) ?? null
   const openTasks = project?.tasks.filter(isOpen) ?? []
   const closedTasks = project?.tasks.filter((task) => !isOpen(task)) ?? []
+  // The whole task list, not `openTasks`: the real bar reports the project rather than the
+  // current view (taskOrder.ts:83), so the work folded into Closed still counts here.
+  const progress = taskProgress(project?.tasks ?? [])
 
   function openTab(next: string) {
     setTab(next)
@@ -281,9 +285,20 @@ export function AppPreview() {
                 <p className="mt-3 text-xs text-muted">last touched {project.waited} ago</p>
               </div>
 
-              <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-muted">
-                Tasks
-              </p>
+              {/* The meter the real screen puts over its task list (ProjectDetail.tsx:242) —
+                  its own ProgressBar and its own "N/M done" sentence, so the preview claims a
+                  number the app would actually show. Only the label keeps the preview's
+                  smaller type scale, matching the section headings around it. */}
+              <div className="mb-2 mt-4 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Tasks</p>
+                <span className="text-xs text-muted">
+                  {progress.done}/{progress.total} done
+                </span>
+              </div>
+              <div className="mb-3">
+                <ProgressBar done={progress.done} total={progress.total} />
+              </div>
+
               <div className="grid gap-2 sm:grid-cols-2">{openTasks.map(taskCard)}</div>
 
               {/* Finished work leaves the list here too, exactly as it does in the real screen

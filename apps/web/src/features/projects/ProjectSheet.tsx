@@ -4,7 +4,14 @@ import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { statusLabel } from '../../components/ui/StatusChip'
 import { fieldClass } from '../../components/ui/field'
-import { ITEM_STATUSES, projectSchema, type Project, type ProjectInput } from '../../lib/schemas'
+import {
+  ITEM_STATUSES,
+  PRIORITIES,
+  PRIORITY_LABELS,
+  projectSchema,
+  type Project,
+  type ProjectInput,
+} from '../../lib/schemas'
 
 interface ProjectSheetProps {
   open: boolean
@@ -71,9 +78,11 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
               Priority
             </label>
             <select id="project-priority" {...register('priority')} className={fieldClass}>
-              <option value="low">Low</option>
-              <option value="med">Medium</option>
-              <option value="high">High</option>
+              {PRIORITIES.map((priority) => (
+                <option key={priority} value={priority}>
+                  {PRIORITY_LABELS[priority]}
+                </option>
+              ))}
             </select>
           </div>
         </div>
