@@ -8,6 +8,8 @@ export type TaskListPrefs = {
   /** Independent filter chips; empty means "no status filter", not "nothing shown". */
   status: ItemStatus[]
   staleOnly: boolean
+  highPriorityOnly: boolean
+  quickOnly: boolean
   showCompleted: boolean
   sort: SortKey
   view: TaskView
@@ -16,9 +18,20 @@ export type TaskListPrefs = {
 export const DEFAULT_PREFS: TaskListPrefs = {
   status: [],
   staleOnly: false,
+  highPriorityOnly: false,
+  quickOnly: false,
   showCompleted: false,
   sort: 'created',
   view: 'card',
+}
+
+/**
+ * The one definition of "no filters". Two places offer a way back — the bar's "Show all" and
+ * the filtered empty state — and a field added here would otherwise have to be remembered in
+ * both. `showCompleted`, `sort` and `view` are not filters and survive.
+ */
+export function clearedFilters(prefs: TaskListPrefs): TaskListPrefs {
+  return { ...prefs, status: [], staleOnly: false, highPriorityOnly: false, quickOnly: false }
 }
 
 const STORAGE_KEY = 'questlog:tasks-view'
@@ -49,6 +62,8 @@ export function parsePrefs(raw: unknown): TaskListPrefs {
   return {
     status: Array.isArray(saved.status) ? saved.status.filter(isItemStatus) : DEFAULT_PREFS.status,
     staleOnly: bool(saved.staleOnly, DEFAULT_PREFS.staleOnly),
+    highPriorityOnly: bool(saved.highPriorityOnly, DEFAULT_PREFS.highPriorityOnly),
+    quickOnly: bool(saved.quickOnly, DEFAULT_PREFS.quickOnly),
     showCompleted: bool(saved.showCompleted, DEFAULT_PREFS.showCompleted),
     sort: pick(saved.sort, SORT_KEYS, DEFAULT_PREFS.sort),
     view: pick(saved.view, TASK_VIEWS, DEFAULT_PREFS.view),

@@ -25,7 +25,12 @@ import { useCreateTask, useMoveTask, useTasks, useUpdateTask } from '../features
 import { TaskItem } from '../features/tasks/TaskItem'
 import { TaskListControls } from '../features/tasks/TaskListControls'
 import { TaskSheet } from '../features/tasks/TaskSheet'
-import { savePrefs, storedPrefs, type TaskListPrefs } from '../features/tasks/listPrefs'
+import {
+  clearedFilters,
+  savePrefs,
+  storedPrefs,
+  type TaskListPrefs,
+} from '../features/tasks/listPrefs'
 import { partitionTasks, taskProgress } from '../features/tasks/taskOrder'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
 import { ResumeCard } from '../features/status/ResumeCard'
@@ -325,7 +330,7 @@ export function ProjectDetailScreen() {
             <EmptyState
               title="No open task matches these filters."
               description={`${hiddenByFilter} hidden. Show all.`}
-              onAction={() => changePrefs({ ...prefs, status: [], staleOnly: false })}
+              onAction={() => changePrefs(clearedFilters(prefs))}
             />
           ) : (
             <EmptyState title="Nothing open here." description="They're waiting in Closed below." />
