@@ -71,8 +71,10 @@ jobs:
           retention-days: 7
 
   # Vercel deploys from the same push; give it a moment, then check the real site the way a
-  # visitor would. Catches the failure mode unit tests cannot see: a build that ships without
-  # its Supabase credentials, or with a key that has been revoked.
+  # visitor would. Catches the failure modes unit tests cannot see: a build that ships without
+  # its Supabase credentials, a key that has been revoked, and a migration that never reached
+  # production — the `db` job above proves migrations run, but only on its own throwaway
+  # instance, so the live schema is checked here or nowhere.
   verify-production:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
