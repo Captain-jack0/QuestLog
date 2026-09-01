@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { NAV_ITEMS } from '../../components/navigation'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { StatusChip } from '../../components/ui/StatusChip'
-import { AREAS, HANGING } from './previewData'
+import { OPEN_STATUSES } from '../../lib/schemas'
+import { AREAS, HANGING, type PreviewTask } from './previewData'
 
 /**
  * What you get after signing in, shown rather than described — and clickable all the way
@@ -21,6 +22,36 @@ const TABS = NAV_ITEMS.filter((item) => item.to !== '/settings')
 
 const WEEKS = [40, 65, 30, 80, 55, 95, 70, 100]
 
+/**
+ * `OPEN_STATUSES` rather than `status !== 'done'`: the real split is the complement of that
+ * list (taskOrder.ts:33), so borrowing it keeps the preview honest if the list ever changes —
+ * the same reason the chips and the meter here are the app's own components.
+ */
+const isOpen = (task: PreviewTask) => OPEN_STATUSES.includes(task.status)
+
+/** The strike-through is the real one (TaskItem.tsx:89), kept for the closed bucket. */
+function taskCard(task: PreviewTask) {
+  return (
+    <div key={task.title} className="rounded-xl border border-line p-3">
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className={`text-sm font-medium leading-tight ${
+            task.status === 'done' ? 'text-muted line-through' : ''
+          }`}
+        >
+          {task.title}
+        </span>
+        <span className="shrink-0 rounded-lg bg-paper px-2 py-0.5 text-2xs font-semibold text-muted">
+          {task.difficulty}
+        </span>
+      </div>
+      <div className="mt-2">
+        <StatusChip status={task.status} />
+      </div>
+    </div>
+  )
+}
+
 export function AppPreview() {
   const [tab, setTab] = useState('/')
   const [areaId, setAreaId] = useState<string | null>(null)
@@ -29,6 +60,8 @@ export function AppPreview() {
 
   const area = AREAS.find((a) => a.id === areaId) ?? null
   const project = area?.projects.find((p) => p.id === projectId) ?? null
+  const openTasks = project?.tasks.filter(isOpen) ?? []
+  const closedTasks = project?.tasks.filter((task) => !isOpen(task)) ?? []
 
   function openTab(next: string) {
     setTab(next)
@@ -251,27 +284,20 @@ export function AppPreview() {
               <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-muted">
                 Tasks
               </p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {project.tasks.map((task) => (
-                  <div key={task.title} className="rounded-xl border border-line p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <span
-                        className={`text-sm font-medium leading-tight ${
-                          task.status === 'done' ? 'text-muted line-through' : ''
-                        }`}
-                      >
-                        {task.title}
-                      </span>
-                      <span className="shrink-0 rounded-lg bg-paper px-2 py-0.5 text-2xs font-semibold text-muted">
-                        {task.difficulty}
-                      </span>
-                    </div>
-                    <div className="mt-2">
-                      <StatusChip status={task.status} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="grid gap-2 sm:grid-cols-2">{openTasks.map(taskCard)}</div>
+
+              {/* Finished work leaves the list here too, exactly as it does in the real screen
+                  (ProjectDetail.tsx:341) — inline strike-throughs stopped being what you sign in
+                  to. Closed by default, matching `showCompleted: false` (listPrefs.ts:23). The
+                  summary keeps the preview's own type scale; only the behaviour is borrowed. */}
+              {closedTasks.length > 0 && (
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-muted">
+                    Closed ({closedTasks.length})
+                  </summary>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">{closedTasks.map(taskCard)}</div>
+                </details>
+              )}
             </div>
           )}
 
