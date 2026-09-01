@@ -61,23 +61,25 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
       await queryClient.cancelQueries({ queryKey: key })
       const previous = queryClient.getQueryData<Task[]>(key)
       if (previous) {
-        queryClient.setQueryData(key, [
-          ...previous,
-          {
-            id: optimisticId(previous.length),
-            project_id: projectId,
-            user_id: userId ?? '',
-            title,
-            difficulty,
-            priority,
-            status: 'idea',
-            sort_order: previous.length,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            completed_at: null,
-            snoozed_until: null,
-          } as Task,
-        ])
+        // No `as Task`: the cast was the only thing that would have hidden a new column from
+        // this row, and a placeholder missing a field the list reads is exactly the bug worth
+        // catching at compile time. Every field below is spelled out on purpose.
+        const optimistic: Task = {
+          id: optimisticId(previous.length),
+          project_id: projectId,
+          user_id: userId ?? '',
+          title,
+          description: null,
+          difficulty,
+          priority,
+          status: 'idea',
+          sort_order: previous.length,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          completed_at: null,
+          snoozed_until: null,
+        }
+        queryClient.setQueryData(key, [...previous, optimistic])
       }
       return { previous }
     },
