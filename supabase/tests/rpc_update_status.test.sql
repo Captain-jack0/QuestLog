@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(24);
+select plan(28);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'a@example.com'),
@@ -31,6 +31,12 @@ insert into tasks (id, user_id, project_id, title, difficulty) values
    'aaaa0000-0000-0000-0000-000000000002', 'Write RLS', 'S'),
   ('aaaa0000-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111',
    'aaaa0000-0000-0000-0000-000000000002', 'Write the RPC', 'L');
+
+-- Dropped up front rather than through rpc_update_status: this row only exists to be groomed,
+-- and going through the RPC would pay it XP and log progress the assertions below count on.
+insert into tasks (id, user_id, project_id, title, difficulty, status) values
+  ('aaaa0000-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111',
+   'aaaa0000-0000-0000-0000-000000000002', 'Rewrite it in assembly', 'L', 'dropped');
 
 -- ---- first action of the day ------------------------------------------------------
 select is(
@@ -132,16 +138,44 @@ select is(
   0, 'picking focus a second time on the same day pays nothing');
 
 reset role;
--- the touch trigger would stamp now() over our backdating
+-- The touch triggers would stamp now() over our backdating. Four items land on the same age and
+-- differ only in status: ...0003 paused (a real hanging thread), ...0005 done, ...0006 dropped,
+-- and project ...0002 done. Backdating ...0003 is safe for the view test below: its
+-- last_activity_at comes from its progress logs (coalesce(l.logged_at, t.updated_at)), and
+-- next_step is picked by progress_logs.created_at, which none of this touches.
 alter table tasks disable trigger tasks_touch_updated_at;
 update tasks set updated_at = now() - interval '40 days'
- where id = 'aaaa0000-0000-0000-0000-000000000005';
+ where id in ('aaaa0000-0000-0000-0000-000000000003',
+              'aaaa0000-0000-0000-0000-000000000005',
+              'aaaa0000-0000-0000-0000-000000000006');
 alter table tasks enable trigger tasks_touch_updated_at;
+alter table projects disable trigger projects_touch_updated_at;
+update projects set updated_at = now() - interval '40 days'
+ where id = 'aaaa0000-0000-0000-0000-000000000002';
+alter table projects enable trigger projects_touch_updated_at;
 select login('11111111-1111-1111-1111-111111111111');
 
 select is(
+  (rpc_groom_stale('task', 'aaaa0000-0000-0000-0000-000000000003') ->> 'xp_awarded')::int,
+  15, 'grooming a genuinely open, stale item pays 15');
+
+-- Age alone used to be enough: a finished task read as stale and paid out again every day.
+select is(
+  (rpc_groom_stale('task', 'aaaa0000-0000-0000-0000-000000000005') ->> 'stale')::boolean,
+  false, 'a completed item is never stale, however old');
+
+select is(
   (rpc_groom_stale('task', 'aaaa0000-0000-0000-0000-000000000005') ->> 'xp_awarded')::int,
-  15, 'grooming a stale item pays 15');
+  0, 'a completed item pays nothing, however old');
+
+select is(
+  (rpc_groom_stale('task', 'aaaa0000-0000-0000-0000-000000000006') ->> 'xp_awarded')::int,
+  0, 'a dropped item pays nothing, however old');
+
+-- the project branch reads its own status, so it needs its own case
+select is(
+  (rpc_groom_stale('project', 'aaaa0000-0000-0000-0000-000000000002') ->> 'xp_awarded')::int,
+  0, 'a completed project pays nothing, however old');
 
 select is(
   (rpc_groom_stale('task', 'aaaa0000-0000-0000-0000-000000000004') ->> 'xp_awarded')::int,
