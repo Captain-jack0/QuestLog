@@ -12,8 +12,14 @@ const styles: Record<ItemStatus, { label: string; className: string }> = {
 
 export function StatusChip({ status }: { status: ItemStatus }) {
   const { label, className } = styles[status]
+  // A status is one word to the eye: never let "In progress" break across two lines, and never
+  // let a flex row squeeze the pill narrower than its own text.
   return (
-    <span className={`rounded-full px-2 py-0.5 text-2xs font-semibold ${className}`}>{label}</span>
+    <span
+      className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-2xs font-semibold ${className}`}
+    >
+      {label}
+    </span>
   )
 }
 
