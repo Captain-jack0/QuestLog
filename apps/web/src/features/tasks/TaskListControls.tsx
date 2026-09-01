@@ -1,6 +1,6 @@
 import { statusLabel, statusTone } from '../../components/ui/StatusChip'
-import type { ItemStatus } from '../../lib/schemas'
-import { TASK_VIEWS, type TaskListPrefs, type TaskView } from './listPrefs'
+import { DIFFICULTY_LABELS, PRIORITY_LABELS, type ItemStatus } from '../../lib/schemas'
+import { clearedFilters, TASK_VIEWS, type TaskListPrefs, type TaskView } from './listPrefs'
 import { SORT_KEYS, type SortKey } from './taskOrder'
 
 /**
@@ -21,6 +21,12 @@ const VIEW_LABELS: Record<TaskView, string> = { card: 'Card view', row: 'Row vie
 /** Every control in the bar is the same 44px pill; only the selected paint differs. */
 const PILL = 'min-h-[44px] rounded-full px-3 text-xs font-semibold transition'
 const IDLE = 'text-muted hover:bg-line/40'
+/**
+ * Pressed paint for every chip that is not a status. It says "I am on", not which axis — the
+ * label already says that. Status chips keep `statusTone` so a pressed "Paused" reads exactly
+ * like the Paused badge on the rows it is filtering to.
+ */
+const ON = 'bg-accent/15 text-accent'
 /** Selection ring, a separate layer from the global `:focus-visible` ring (index.css). */
 const SELECTED_RING = 'ring-2 ring-accent ring-offset-1'
 
@@ -47,7 +53,9 @@ export function TaskListControls({
   hiddenCount,
   totalCount,
 }: TaskListControlsProps) {
-  const filtering = prefs.status.length > 0 || prefs.staleOnly
+  // Every filter in the bar, or the "Showing X of Y" line goes missing for the ones left out.
+  const filtering =
+    prefs.status.length > 0 || prefs.staleOnly || prefs.highPriorityOnly || prefs.quickOnly
 
   function toggleStatus(status: ItemStatus) {
     onChange({
@@ -83,11 +91,34 @@ export function TaskListControls({
           type="button"
           aria-pressed={prefs.staleOnly}
           onClick={() => onChange({ ...prefs, staleOnly: !prefs.staleOnly })}
-          className={`${PILL} ${
-            prefs.staleOnly ? `bg-accent/15 text-accent ${SELECTED_RING}` : `bg-paper ${IDLE}`
-          }`}
+          className={`${PILL} ${prefs.staleOnly ? `${ON} ${SELECTED_RING}` : `bg-paper ${IDLE}`}`}
         >
           Untouched {staleDays}d
+        </button>
+
+        {/* Glyph beside the word, so the row doubles as the legend the priority mark has
+            nowhere else: the ▲ in the list is the ▲ on this chip, in the same accent. */}
+        <button
+          type="button"
+          aria-pressed={prefs.highPriorityOnly}
+          onClick={() => onChange({ ...prefs, highPriorityOnly: !prefs.highPriorityOnly })}
+          className={`${PILL} ${
+            prefs.highPriorityOnly ? `${ON} ${SELECTED_RING}` : `bg-paper ${IDLE}`
+          }`}
+        >
+          <span aria-hidden>▲</span> {PRIORITY_LABELS.high}
+          <span className="sr-only"> priority</span>
+        </button>
+
+        {/* The label already carries its own gloss ("S · Quick"), so the letter needs no
+            second explanation here. */}
+        <button
+          type="button"
+          aria-pressed={prefs.quickOnly}
+          onClick={() => onChange({ ...prefs, quickOnly: !prefs.quickOnly })}
+          className={`${PILL} ${prefs.quickOnly ? `${ON} ${SELECTED_RING}` : `bg-paper ${IDLE}`}`}
+        >
+          {DIFFICULTY_LABELS.S}
         </button>
       </div>
 
@@ -101,7 +132,7 @@ export function TaskListControls({
             <span aria-hidden>·</span>
             <button
               type="button"
-              onClick={() => onChange({ ...prefs, status: [], staleOnly: false })}
+              onClick={() => onChange(clearedFilters(prefs))}
               className="min-h-[44px] rounded-full px-1 text-xs font-semibold text-accent hover:bg-line/40"
             >
               Show all

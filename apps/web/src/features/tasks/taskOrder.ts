@@ -1,4 +1,4 @@
-import { OPEN_STATUSES, type ItemStatus, type Priority } from '../../lib/schemas'
+import { OPEN_STATUSES, type Difficulty, type ItemStatus, type Priority } from '../../lib/schemas'
 import { localDateKey } from '../../lib/time'
 import type { TaskListPrefs } from './listPrefs'
 
@@ -12,6 +12,8 @@ export type SortKey = (typeof SORT_KEYS)[number]
 type Sortable = {
   status: ItemStatus
   priority: Priority
+  /** Filtered on, never sorted on — nothing ranks S over L. */
+  difficulty: Difficulty
   created_at: string
   sort_order: number
 }
@@ -98,6 +100,9 @@ function matchesFilters(
 ): boolean {
   if (prefs.status.length > 0 && !prefs.status.includes(task.status)) return false
   if (prefs.staleOnly && !isStale(task, staleDays, now)) return false
+  // Both filter on a value the list draws for itself: `high` has the ▲ mark, `S` the letter.
+  if (prefs.highPriorityOnly && task.priority !== 'high') return false
+  if (prefs.quickOnly && task.difficulty !== 'S') return false
   return true
 }
 
