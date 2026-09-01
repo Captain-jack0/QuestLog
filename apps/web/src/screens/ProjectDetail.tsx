@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState, type MouseEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
 import { StatusChip } from '../components/ui/StatusChip'
 import { StatusPicker } from '../components/ui/StatusPicker'
-import { EditableText } from '../components/ui/EditableText'
 import { PickerSheet } from '../components/ui/PickerSheet'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
 import { compactFieldClass, rowFieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useArea, useAreas } from '../features/areas/queries'
+import { useProfile } from '../features/gamification/queries'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import {
   useMoveProject,
@@ -21,15 +22,20 @@ import {
   useUpdateProject,
 } from '../features/projects/queries'
 import { useCreateTask, useMoveTask, useTasks, useUpdateTask } from '../features/tasks/queries'
+import { TaskItem } from '../features/tasks/TaskItem'
+import { TaskListControls } from '../features/tasks/TaskListControls'
+import { TaskSheet } from '../features/tasks/TaskSheet'
+import { savePrefs, storedPrefs, type TaskListPrefs } from '../features/tasks/listPrefs'
+import { partitionTasks } from '../features/tasks/taskOrder'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
 import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
 import { relativeTime } from '../lib/time'
-import { isOptimistic } from '../lib/optimistic'
 import { TimerButton } from '../features/timer/TimerButton'
-import { type Difficulty, type ItemStatus } from '../lib/schemas'
+import { DIFFICULTIES, type Difficulty, type ItemStatus, type Task } from '../lib/schemas'
 
-const DIFFICULTIES: Difficulty[] = ['S', 'M', 'L']
+/** Same summary as the History section below, so the two collapsibles read as one pattern. */
+const SUMMARY_CLASS = 'cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted'
 
 export function ProjectDetailScreen() {
   const { projectId = '' } = useParams()
@@ -49,6 +55,7 @@ export function ProjectDetailScreen() {
   const moveProject = useMoveProject()
   const moveTask = useMoveTask()
   const projectOptions = useProjectOptions()
+  const profile = useProfile()
 
   const [editing, setEditing] = useState(false)
   const [pending, setPending] = useState<PendingStatusChange | null>(null)
@@ -56,9 +63,30 @@ export function ProjectDetailScreen() {
   const [newDifficulty, setNewDifficulty] = useState<Difficulty>('M')
   const [movingProject, setMovingProject] = useState(false)
   const [movingTask, setMovingTask] = useState<{ id: string; title: string } | null>(null)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  // Hydrated once, on mount: the list should already be in the shape you left it in when it
+  // first paints, not reflow into it after an effect.
+  const [prefs, setPrefs] = useState<TaskListPrefs>(storedPrefs)
 
   const latest = logs.data?.[0]
+  // Deliberately the unfiltered query data: the bar reports the project, not the current view,
+  // so hiding a done task behind a filter must not move it.
   const done = tasks.data?.filter((t) => t.status === 'done').length ?? 0
+  const staleDays = profile.data?.stale_days ?? 14
+
+  const {
+    open: openTasks,
+    closed: closedTasks,
+    hiddenByFilter,
+  } = useMemo(
+    () => partitionTasks(tasks.data ?? [], prefs, staleDays, Date.now()),
+    [tasks.data, prefs, staleDays],
+  )
+
+  function changePrefs(next: TaskListPrefs) {
+    setPrefs(next)
+    savePrefs(next)
+  }
 
   /** Paused/blocked/done need the resume sheet; everything else goes straight to the RPC. */
   function requestStatus(
@@ -79,6 +107,57 @@ export function ProjectDetailScreen() {
       return
     }
     updateStatus.mutate({ itemType, itemId, status, leftOff: '', nextStep: '' })
+  }
+
+  /**
+   * Priority is only editable in the pop-up, and the card has no button that opens it, so the
+   * body itself is the target. Every inline control inside the card handles its own click, so
+   * a tap that landed on one (or on an icon inside one) is not a tap on the body.
+   */
+  function openFromCardBody(task: Task, event: MouseEvent<HTMLDivElement>) {
+    if ((event.target as HTMLElement).closest('button, input, select, textarea, a, label')) return
+    setEditingTask(task)
+  }
+
+  /** Rows share one card and its dividers; cards are grid items with a card each. */
+  function taskList(items: Task[]) {
+    const handlers = (task: Task) => ({
+      task,
+      onStatusChange: (status: ItemStatus) => requestStatus('task', task.id, task.title, status),
+      onUpdate: (fields: { title?: string; description?: string; difficulty?: Difficulty }) =>
+        updateTask.mutate({ id: task.id, ...fields }),
+      onMove: () => setMovingTask({ id: task.id, title: task.title }),
+      onOpen: () => setEditingTask(task),
+    })
+
+    if (prefs.view === 'row') {
+      return (
+        <Card className="divide-y divide-line p-0">
+          {items.map((task) => (
+            <TaskItem key={task.id} view="row" {...handlers(task)} />
+          ))}
+        </Card>
+      )
+    }
+
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((task) => (
+          <div key={task.id} className="relative" onClick={(e) => openFromCardBody(task, e)}>
+            <TaskItem view="card" {...handlers(task)} />
+            {/* The keyboard half of the body tap. Hidden until focused rather than drawn on
+                the card, which is the control the card is deliberately not growing. */}
+            <button
+              type="button"
+              className="sr-only focus:not-sr-only focus:absolute focus:right-3 focus:top-3 focus:z-10 focus:inline-flex focus:min-h-[44px] focus:items-center focus:rounded-full focus:bg-paper focus:px-3 focus:text-xs focus:font-semibold focus:text-accent"
+              onClick={() => setEditingTask(task)}
+            >
+              Edit {task.title} details
+            </button>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (project.isPending) return <CardSkeleton rows={3} />
@@ -213,85 +292,54 @@ export function ProjectDetailScreen() {
           </Button>
         </form>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {tasks.data?.map((task) => (
-            <Card key={task.id} className="flex min-h-[190px] flex-col p-3">
-              <div className="flex items-start justify-between gap-1">
-                <EditableText
-                  label={`Task title: ${task.title}`}
-                  value={task.title}
-                  disabled={isOptimistic(task.id)}
-                  onSave={(title) => updateTask.mutate({ id: task.id, title })}
-                  className={`font-semibold leading-tight ${
-                    task.status === 'done' ? 'text-muted line-through' : ''
-                  }`}
-                />
-                <select
-                  aria-label={`Difficulty for ${task.title}`}
-                  disabled={isOptimistic(task.id)}
-                  value={task.difficulty}
-                  onChange={(e) =>
-                    updateTask.mutate({ id: task.id, difficulty: e.target.value as Difficulty })
-                  }
-                  className={`shrink-0 ${compactFieldClass} font-semibold text-muted`}
-                >
-                  {DIFFICULTIES.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {(tasks.data?.length ?? 0) > 0 && (
+          <TaskListControls
+            prefs={prefs}
+            onChange={changePrefs}
+            staleDays={staleDays}
+            hiddenCount={hiddenByFilter}
+            totalCount={openTasks.length + hiddenByFilter}
+          />
+        )}
 
-              <EditableText
-                multiline
-                allowEmpty
-                label={`Description for ${task.title}`}
-                placeholder="+ Add a description"
-                value={task.description ?? ''}
-                disabled={isOptimistic(task.id)}
-                onSave={(description) => updateTask.mutate({ id: task.id, description })}
-                className="mt-1 flex-1 text-sm text-muted"
-              />
+        {tasks.data && tasks.data.length === 0 && (
+          <EmptyState title="No tasks yet." description="Add the first one above." />
+        )}
 
-              <div className="mt-2">
-                <StatusPicker
-                  compact
-                  label={`Status for ${task.title}`}
-                  value={task.status}
-                  // a row that has not come back from the database yet has no real id to send
-                  disabled={isOptimistic(task.id)}
-                  onChange={(status) => requestStatus('task', task.id, task.title, status)}
-                />
-              </div>
+        {openTasks.length > 0 && taskList(openTasks)}
 
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  aria-label={`Move ${task.title} to another project`}
-                  disabled={isOptimistic(task.id)}
-                  onClick={() => setMovingTask({ id: task.id, title: task.title })}
-                  className="btn-quiet min-h-[44px] rounded-full border border-line px-2 text-xs font-semibold text-muted disabled:opacity-40"
-                >
-                  ⇄ Move
-                </button>
-                <TimerButton
-                  itemType="task"
-                  itemId={task.id}
-                  title={task.title}
-                  withPomodoro
-                  disabled={isOptimistic(task.id)}
-                />
-              </div>
-            </Card>
+        {/* Two ways to lose sight of an open task, two different ways out. */}
+        {(tasks.data?.length ?? 0) > 0 &&
+          openTasks.length === 0 &&
+          (hiddenByFilter > 0 ? (
+            <EmptyState
+              title="No open task matches these filters."
+              description={`${hiddenByFilter} hidden. Show all.`}
+              onAction={() => changePrefs({ ...prefs, status: [], staleOnly: false })}
+            />
+          ) : (
+            <EmptyState
+              title="Nothing open here."
+              description="They're waiting in Completed below."
+            />
           ))}
-        </div>
+
+        {closedTasks.length > 0 && (
+          <details
+            className="mt-4"
+            open={prefs.showCompleted}
+            onToggle={(e) => changePrefs({ ...prefs, showCompleted: e.currentTarget.open })}
+          >
+            <summary className={SUMMARY_CLASS}>Completed ({closedTasks.length})</summary>
+            {/* No dimming: these rows keep their status controls, and a finished task you
+                meant to keep open is exactly the one you need to be able to read. */}
+            <div className="mt-3">{taskList(closedTasks)}</div>
+          </details>
+        )}
       </section>
 
       <details className="mt-6">
-        <summary className="cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted">
-          History ({logs.data?.length ?? 0})
-        </summary>
+        <summary className={SUMMARY_CLASS}>History ({logs.data?.length ?? 0})</summary>
         <ol className="mt-3 space-y-3 border-l border-line pl-4">
           {logs.data?.map((log) => (
             <li key={log.id}>
@@ -381,6 +429,28 @@ export function ProjectDetailScreen() {
               onSuccess: () => {
                 setEditing(false)
                 toast('Project updated')
+              },
+              onError: (error) => toast(error.message, 'error'),
+            },
+          )
+        }
+      />
+
+      <TaskSheet
+        open={editingTask !== null}
+        task={editingTask}
+        onClose={() => setEditingTask(null)}
+        saving={updateTask.isPending}
+        // Closed from onSuccess only. Closing here would dismiss the sheet before the write
+        // is known to have landed — and the form's own validation never gets this far.
+        onSubmit={(values) =>
+          editingTask &&
+          updateTask.mutate(
+            { ...values, id: editingTask.id },
+            {
+              onSuccess: () => {
+                setEditingTask(null)
+                toast('Task updated')
               },
               onError: (error) => toast(error.message, 'error'),
             },
