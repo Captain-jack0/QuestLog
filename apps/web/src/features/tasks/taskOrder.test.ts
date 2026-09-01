@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import type { ItemStatus, Priority } from '../../lib/schemas'
+import type { Difficulty, ItemStatus, Priority } from '../../lib/schemas'
 import { localDateKey } from '../../lib/time'
-import { DEFAULT_PREFS, parsePrefs, type TaskListPrefs } from './listPrefs'
+import { clearedFilters, DEFAULT_PREFS, parsePrefs, type TaskListPrefs } from './listPrefs'
 import { compareTasks, isStale, partitionTasks, taskProgress } from './taskOrder'
 
 type Row = {
   id: string
   status: ItemStatus
   priority: Priority
+  difficulty: Difficulty
   created_at: string
   sort_order: number
   updated_at: string
@@ -22,6 +23,7 @@ function task(id: string, over: Partial<Row> = {}): Row {
     id,
     status: 'planned',
     priority: 'med',
+    difficulty: 'M',
     created_at: '2026-01-01T00:00:00.000Z',
     sort_order: 0,
     updated_at: '2026-01-01T00:00:00.000Z',
@@ -204,6 +206,89 @@ describe('partitionTasks', () => {
     expect(result.open).toHaveLength(2)
     expect(result.hiddenByFilter).toBe(0)
   })
+
+  it('keeps only high priority under the high chip, and everything without it', () => {
+    const rows = [
+      task('urgent', { priority: 'high' }),
+      task('normal', { priority: 'med' }),
+      task('later', { priority: 'low' }),
+    ]
+
+    const filtered = partitionTasks(rows, prefs({ highPriorityOnly: true }), 14, NOW)
+    expect(ids(filtered.open)).toEqual(['urgent'])
+    expect(filtered.hiddenByFilter).toBe(2)
+
+    expect(partitionTasks(rows, prefs(), 14, NOW).open).toHaveLength(3)
+  })
+
+  it('keeps only S under the quick chip', () => {
+    const rows = [
+      task('small', { difficulty: 'S' }),
+      task('session', { difficulty: 'M' }),
+      task('deep', { difficulty: 'L' }),
+    ]
+
+    const filtered = partitionTasks(rows, prefs({ quickOnly: true }), 14, NOW)
+    expect(ids(filtered.open)).toEqual(['small'])
+    expect(filtered.hiddenByFilter).toBe(2)
+  })
+
+  it('intersects the two: a task must be both high and S to survive', () => {
+    const rows = [
+      task('both', { priority: 'high', difficulty: 'S' }),
+      task('high-only', { priority: 'high', difficulty: 'L' }),
+      task('quick-only', { priority: 'low', difficulty: 'S' }),
+      task('neither', { priority: 'med', difficulty: 'M' }),
+    ]
+    const result = partitionTasks(rows, prefs({ highPriorityOnly: true, quickOnly: true }), 14, NOW)
+
+    expect(ids(result.open)).toEqual(['both'])
+    expect(result.hiddenByFilter).toBe(3)
+  })
+
+  it('intersects with the status chips too, rather than widening the list', () => {
+    const rows = [
+      task('running', { status: 'in_progress', priority: 'high' }),
+      task('waiting', { status: 'planned', priority: 'high' }),
+    ]
+    const result = partitionTasks(
+      rows,
+      prefs({ status: ['in_progress'], highPriorityOnly: true }),
+      14,
+      NOW,
+    )
+
+    expect(ids(result.open)).toEqual(['running'])
+  })
+})
+
+describe('clearedFilters', () => {
+  it('resets all four filter fields, so no chip can stay pressed behind Show all', () => {
+    const pressed = prefs({
+      status: ['paused', 'blocked'],
+      staleOnly: true,
+      highPriorityOnly: true,
+      quickOnly: true,
+    })
+
+    expect(clearedFilters(pressed)).toEqual({
+      ...pressed,
+      status: [],
+      staleOnly: false,
+      highPriorityOnly: false,
+      quickOnly: false,
+    })
+  })
+
+  it('leaves sort, view and the completed section alone — they are not filters', () => {
+    const cleared = clearedFilters(
+      prefs({ staleOnly: true, sort: 'priority', view: 'row', showCompleted: true }),
+    )
+
+    expect(cleared.sort).toBe('priority')
+    expect(cleared.view).toBe('row')
+    expect(cleared.showCompleted).toBe(true)
+  })
 })
 
 describe('parsePrefs', () => {
@@ -212,6 +297,8 @@ describe('parsePrefs', () => {
       parsePrefs({
         status: ['paused', 'nonsense'],
         staleOnly: true,
+        highPriorityOnly: true,
+        quickOnly: true,
         showCompleted: true,
         sort: 'priority',
         view: 'row',
@@ -219,6 +306,8 @@ describe('parsePrefs', () => {
     ).toEqual({
       status: ['paused'],
       staleOnly: true,
+      highPriorityOnly: true,
+      quickOnly: true,
       showCompleted: true,
       sort: 'priority',
       view: 'row',
@@ -233,5 +322,16 @@ describe('parsePrefs', () => {
       DEFAULT_PREFS,
     )
     expect(parsePrefs({ view: 'row', staleOnly: 'yes' })).toEqual({ ...DEFAULT_PREFS, view: 'row' })
+  })
+
+  it('takes the two new chips per field and defaults a non-boolean back to off', () => {
+    expect(parsePrefs({ highPriorityOnly: true })).toEqual({
+      ...DEFAULT_PREFS,
+      highPriorityOnly: true,
+    })
+    expect(parsePrefs({ quickOnly: true })).toEqual({ ...DEFAULT_PREFS, quickOnly: true })
+    // A record written before these chips existed has neither field — both take their default.
+    expect(parsePrefs({ status: ['paused'] }).highPriorityOnly).toBe(false)
+    expect(parsePrefs({ highPriorityOnly: 'yes', quickOnly: 1 })).toEqual(DEFAULT_PREFS)
   })
 })
