@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { fieldClass } from '../../components/ui/field'
 import { relativeTime } from '../../lib/time'
@@ -13,9 +12,16 @@ interface ResumeCardProps {
   onSave: (values: { leftOff: string; nextStep: string }) => void
 }
 
+/** The band's own top edge, so the project header reads as one card split by hairlines. */
+const BAND_CLASS = 'mt-4 border-t border-line pt-4'
+
 /**
  * The resume context, editable in place. Saving appends a new progress log rather than
  * rewriting the old one — the timeline stays append-only, which is the whole point.
+ *
+ * No longer a `Card` of its own despite the name: it is a band inside the project header
+ * card, divided by a hairline. A card here would have been a card inside a card, where both
+ * surfaces are `bg-surface` and the inner boundary disappears.
  */
 export function ResumeCard({
   leftOff,
@@ -38,7 +44,7 @@ export function ResumeCard({
 
   if (editing) {
     return (
-      <Card className="mb-4">
+      <div className={BAND_CLASS}>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -79,12 +85,12 @@ export function ResumeCard({
           </div>
           <p className="mt-2 text-xs text-muted">Saving keeps the old note in History.</p>
         </form>
-      </Card>
+      </div>
     )
   }
 
   return (
-    <Card className="mb-4">
+    <div className={BAND_CLASS}>
       <div className="flex items-start justify-between gap-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Where you left off
@@ -116,6 +122,6 @@ export function ResumeCard({
           No resume context yet — write the first note, or pause the project to be asked for one.
         </p>
       )}
-    </Card>
+    </div>
   )
 }

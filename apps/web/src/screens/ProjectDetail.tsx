@@ -172,71 +172,90 @@ export function ProjectDetailScreen() {
         ← {area.data?.name ?? 'Area'}
       </Link>
 
-      <header className="mb-4 mt-2">
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-2xl font-bold leading-tight">{project.data.title}</h1>
-          <span className="flex shrink-0 gap-2">
-            <Button variant="ghost" className="px-3 py-2" onClick={() => setMovingProject(true)}>
-              Move
-            </Button>
-            <Button variant="ghost" className="px-3 py-2" onClick={() => setEditing(true)}>
-              Edit
-            </Button>
-          </span>
-        </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-          {area.data && (
-            <span className="flex items-center gap-1 text-muted">
-              <span
-                aria-hidden
-                className="h-2 w-2 rounded-full border border-ink/55"
-                style={{ backgroundColor: area.data.color }}
-              />
-              {area.data.icon} {area.data.name}
+      {/* One card for the whole project header. The meta line and the status chips used to sit
+          naked on the page background, so nothing marked where "this project" ended and "its
+          tasks" began — the Tasks heading was the first bounded thing on the screen. A card
+          boundary says it in the vocabulary this screen already speaks.
+
+          The bands inside are divided by hairlines, not by cards: `bg-surface` on `bg-surface`
+          has no edge to see, so a card in a card would have cost the boundary it was meant to
+          draw. `divide-y divide-line` is the same call the task rows make.
+
+          No `edgeColor`: that prop means "life area" everywhere (AreaDetail.tsx:68), and the
+          area is already spoken for twice above — the back link and the dot in the meta line. */}
+      <Card className="mb-6 mt-2">
+        <header>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-bold leading-tight">{project.data.title}</h1>
+            <span className="flex shrink-0 gap-2">
+              <Button variant="ghost" className="px-3 py-2" onClick={() => setMovingProject(true)}>
+                Move
+              </Button>
+              <Button variant="ghost" className="px-3 py-2" onClick={() => setEditing(true)}>
+                Edit
+              </Button>
             </span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            {area.data && (
+              <span className="flex items-center gap-1 text-muted">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full border border-ink/55"
+                  style={{ backgroundColor: area.data.color }}
+                />
+                {area.data.icon} {area.data.name}
+              </span>
+            )}
+            <StatusChip status={project.data.status} />
+            {/* The label, not the enum: this line reads as a sentence, and "med priority" is not
+                one. Same reason the new-task select spells the values out below. */}
+            <span className="text-muted">{PRIORITY_LABELS[project.data.priority]} priority</span>
+            {/* Still here on purpose: this pair is the only way in the app to time work on a
+                project that has not been cut into tasks yet, and docs/02:26 puts it in this
+                header by name. Removing it needs a replacement entry point first. */}
+            <TimerButton
+              itemType="project"
+              itemId={projectId}
+              title={project.data.title}
+              withPomodoro
+            />
+          </div>
+          {project.data.description && (
+            <p className="mt-2 text-sm text-muted">{project.data.description}</p>
           )}
-          <StatusChip status={project.data.status} />
-          {/* The label, not the enum: this line reads as a sentence, and "med priority" is not
-              one. Same reason the new-task select spells the values out below. */}
-          <span className="text-muted">{PRIORITY_LABELS[project.data.priority]} priority</span>
-          <TimerButton
-            itemType="project"
-            itemId={projectId}
-            title={project.data.title}
-            withPomodoro
+        </header>
+
+        <ResumeCard
+          leftOff={latest?.left_off ?? null}
+          nextStep={latest?.next_step ?? null}
+          loggedAt={latest?.created_at ?? null}
+          fromAi={latest?.source === 'ai'}
+          saving={updateStatus.isPending}
+          onSave={({ leftOff, nextStep }) =>
+            updateStatus.mutate({
+              itemType: 'project',
+              itemId: projectId,
+              // an edit is a progress update, not a status change
+              status: project.data!.status,
+              leftOff,
+              nextStep,
+            })
+          }
+        />
+
+        {/* Inside the card the resting chips (`bg-paper`) finally have a surface to stand
+            against; on the page background they were paper on paper. Same pairing the task
+            cards already use. */}
+        <div className="mt-4 border-t border-line pt-4">
+          <p className="mb-2 text-sm font-medium">Project status</p>
+          <StatusPicker
+            label="Project status"
+            value={project.data.status}
+            onChange={(status) => requestStatus('project', projectId, project.data!.title, status)}
           />
         </div>
-        {project.data.description && (
-          <p className="mt-2 text-sm text-muted">{project.data.description}</p>
-        )}
-      </header>
-
-      <ResumeCard
-        leftOff={latest?.left_off ?? null}
-        nextStep={latest?.next_step ?? null}
-        loggedAt={latest?.created_at ?? null}
-        fromAi={latest?.source === 'ai'}
-        saving={updateStatus.isPending}
-        onSave={({ leftOff, nextStep }) =>
-          updateStatus.mutate({
-            itemType: 'project',
-            itemId: projectId,
-            // an edit is a progress update, not a status change
-            status: project.data!.status,
-            leftOff,
-            nextStep,
-          })
-        }
-      />
-
-      <div className="mb-6">
-        <p className="mb-2 text-sm font-medium">Project status</p>
-        <StatusPicker
-          label="Project status"
-          value={project.data.status}
-          onChange={(status) => requestStatus('project', projectId, project.data!.title, status)}
-        />
-      </div>
+      </Card>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
