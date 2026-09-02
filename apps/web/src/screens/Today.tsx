@@ -230,6 +230,51 @@ export function TodayScreen() {
                       Snooze 💤
                     </Button>
                   </div>
+
+                  {/* Its own line, and not a fourth button in the row above. At 390px the card's
+                      inner width is 322px, so four `flex-1` buttons get 74.5px each — 58.5px of
+                      it usable after the padding — while "Update ✎" measures 64.3px and
+                      "Snooze 💤" 69.5px in Inter 600 at 14px: two of the four labels would wrap
+                      and the row would grow 44px → 53px anyway. The same 44px as a fixed-width
+                      icon leaves 68.7px, still 0.9px short of Snooze.
+
+                      Weight, not only width, decides the rest: those three keep the thread — this
+                      one ends it — and an equal-width button sitting against "Done ✓" is the one
+                      a thumb hits by mistake. So it is the quiet pill the edit sheet already uses
+                      for this exact action (TaskSheet.tsx:140-151), right-aligned and auto-width,
+                      which is both the smaller mis-tap target and the same word in the same tone
+                      wherever you meet it. */}
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      type="button"
+                      // Every card in the list renders one of these, so the bare word would read
+                      // as a list of identical "Drop" buttons. Same shape as the sheet's label.
+                      aria-label={`Drop ${itemTypeLabel(thread.item_type).toLowerCase()}: ${thread.title}`}
+                      disabled={updateStatus.isPending}
+                      onClick={() =>
+                        updateStatus.mutate(
+                          {
+                            itemType: thread.item_type,
+                            itemId: thread.item_id,
+                            status: 'dropped',
+                            // `dropped` is outside needsResumeContext, so it goes straight to the
+                            // RPC with no sheet — the same call ProjectDetail.tsx:130 already
+                            // makes for it. The log it appends is empty; the history above it is
+                            // append-only and stays.
+                            leftOff: '',
+                            nextStep: '',
+                          },
+                          // The card just disappears, and the hook's own toast only says "+8 ✨".
+                          // This is the one that answers "did I just delete it?" — same place the
+                          // snooze confirmation below already speaks from.
+                          { onSuccess: () => toast('Dropped — its history stays.') },
+                        )
+                      }
+                      className="btn-quiet min-h-[44px] rounded-full border border-line px-4 text-xs font-semibold text-muted disabled:opacity-40"
+                    >
+                      Drop
+                    </button>
+                  </div>
                 </Card>
               )
             })}
