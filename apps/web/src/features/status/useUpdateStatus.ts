@@ -13,6 +13,8 @@ export interface StatusChange {
   status: ItemStatus
   leftOff: string
   nextStep: string
+  /** The task the next step points at, if the user picked one. */
+  nextStepTaskId?: string | null
   note?: string
 }
 
@@ -32,6 +34,9 @@ export function useUpdateStatus(projectId?: string) {
         p_new_status: change.status,
         p_left_off: change.leftOff,
         p_next_step: change.nextStep,
+        // undefined, not null: the parameter defaults to null server-side, and sending null
+        // explicitly is the same thing with an extra key on the wire.
+        p_next_step_task_id: change.nextStepTaskId ?? undefined,
         p_note: change.note?.trim() ? change.note.trim() : undefined,
       })
       if (error) throw error

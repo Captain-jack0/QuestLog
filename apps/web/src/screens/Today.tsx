@@ -5,6 +5,7 @@ import { CardSkeleton } from '../components/ui/Skeleton'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { StatusChip } from '../components/ui/StatusChip'
 import { ItemTypeChip, itemTypeLabel } from '../components/ui/ItemTypeChip'
 import { useToast } from '../components/ui/Toast'
 import { FocusPickerSheet } from '../features/focus/FocusPickerSheet'
@@ -158,10 +159,28 @@ export function TodayScreen() {
                     {context && <span>{context}</span>}
                   </p>
 
-                  {thread.next_step && (
+                  {/* Not when the prose is only the picked task's title: the RPC snapshots the
+                      title into next_step so every other reader still has words to show, and
+                      here that would print the same line twice. */}
+                  {thread.next_step && thread.next_step !== thread.next_step_task_title && (
                     <p className="mt-2 text-sm font-medium">
                       <span className="font-normal text-muted">Next: </span>
                       {thread.next_step}
+                    </p>
+                  )}
+
+                  {/* The pointed-at task, live. Finishing it does not clear the reference — the
+                      log is a record of what you decided, not a to-do that tidies itself — so the
+                      chip is how you see it is already done. */}
+                  {thread.next_step_task_id && thread.next_step_task_status && (
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                      <Link
+                        to={`/projects/${thread.next_step_task_project_id}`}
+                        className="inline-flex min-h-[44px] items-center font-medium text-accent"
+                      >
+                        ↳ {thread.next_step_task_title}
+                      </Link>
+                      <StatusChip status={thread.next_step_task_status} />
                     </p>
                   )}
 
@@ -176,6 +195,8 @@ export function TodayScreen() {
                           status: 'done',
                           leftOff: thread.left_off,
                           nextStep: thread.next_step,
+                          nextStepTaskId: thread.next_step_task_id,
+                          nextStepTaskTitle: thread.next_step_task_title,
                         })
                       }
                     >
@@ -192,6 +213,8 @@ export function TodayScreen() {
                           status: 'in_progress',
                           leftOff: thread.left_off,
                           nextStep: thread.next_step,
+                          nextStepTaskId: thread.next_step_task_id,
+                          nextStepTaskTitle: thread.next_step_task_title,
                         })
                       }
                     >
@@ -233,7 +256,7 @@ export function TodayScreen() {
         pending={pending}
         saving={updateStatus.isPending}
         onClose={() => setPending(null)}
-        onSubmit={({ leftOff, nextStep, note }) =>
+        onSubmit={({ leftOff, nextStep, note, nextStepTaskId }) =>
           pending &&
           updateStatus.mutate(
             {
@@ -242,6 +265,7 @@ export function TodayScreen() {
               status: pending.status,
               leftOff,
               nextStep,
+              nextStepTaskId,
               note,
             },
             { onSuccess: () => setPending(null) },

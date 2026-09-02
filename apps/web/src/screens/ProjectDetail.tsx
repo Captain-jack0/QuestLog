@@ -120,6 +120,10 @@ export function ProjectDetailScreen() {
         status,
         leftOff: status === 'done' ? latest?.left_off : '',
         nextStep: status === 'done' ? latest?.next_step : '',
+        // Prefilled alongside the text it belongs to: confirming the sheet writes a new log,
+        // and without this the task the last one pointed at would quietly not be in it.
+        nextStepTaskId: status === 'done' ? latest?.next_step_task_id : null,
+        nextStepTaskTitle: status === 'done' ? (latest?.next_step_task?.title ?? null) : null,
       })
       return
     }
@@ -240,6 +244,9 @@ export function ProjectDetailScreen() {
               status: project.data!.status,
               leftOff,
               nextStep,
+              // The card edits prose only, so the task the thread points at rides along
+              // untouched. Dropping it here would unpick the choice on every wording fix.
+              nextStepTaskId: latest?.next_step_task_id ?? null,
             })
           }
         />
@@ -502,7 +509,7 @@ export function ProjectDetailScreen() {
         pending={pending}
         saving={updateStatus.isPending}
         onClose={() => setPending(null)}
-        onSubmit={({ leftOff, nextStep, note }) =>
+        onSubmit={({ leftOff, nextStep, note, nextStepTaskId }) =>
           pending &&
           updateStatus.mutate(
             {
@@ -511,6 +518,7 @@ export function ProjectDetailScreen() {
               status: pending.status,
               leftOff,
               nextStep,
+              nextStepTaskId,
               note,
             },
             { onSuccess: () => setPending(null) },

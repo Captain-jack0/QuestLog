@@ -172,6 +172,7 @@ export type Database = {
           id: string
           left_off: string | null
           next_step: string | null
+          next_step_task_id: string | null
           note: string | null
           project_id: string
           source: Database['public']['Enums']['log_source']
@@ -183,6 +184,7 @@ export type Database = {
           id?: string
           left_off?: string | null
           next_step?: string | null
+          next_step_task_id?: string | null
           note?: string | null
           project_id: string
           source?: Database['public']['Enums']['log_source']
@@ -194,6 +196,7 @@ export type Database = {
           id?: string
           left_off?: string | null
           next_step?: string | null
+          next_step_task_id?: string | null
           note?: string | null
           project_id?: string
           source?: Database['public']['Enums']['log_source']
@@ -201,6 +204,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'progress_logs_next_step_task_id_fkey'
+            columns: ['next_step_task_id']
+            isOneToOne: false
+            referencedRelation: 'tasks'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'progress_logs_project_id_fkey'
             columns: ['project_id']
@@ -547,6 +557,10 @@ export type Database = {
           left_off: string | null
           logged_at: string | null
           next_step: string | null
+          next_step_task_id: string | null
+          next_step_task_project_id: string | null
+          next_step_task_status: Database['public']['Enums']['item_status'] | null
+          next_step_task_title: string | null
           project_id: string | null
           project_title: string | null
           status: Database['public']['Enums']['item_status'] | null
@@ -651,6 +665,7 @@ export type Database = {
           p_left_off: string
           p_new_status: Database['public']['Enums']['item_status']
           p_next_step: string
+          p_next_step_task_id?: string
           p_note?: string
           p_source?: string
         }

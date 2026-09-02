@@ -26,20 +26,27 @@ export function useProject(id: string | undefined) {
   })
 }
 
+/** A log plus the title of the task its next step points at, if it points at one. */
+export type ProgressLogWithNextTask = ProgressLog & {
+  next_step_task: { title: string } | null
+}
+
 /** The append-only timeline, newest first. */
 export function useProgressLogs(projectId: string | undefined) {
   return useQuery({
     queryKey: projectKeys.logs(projectId ?? ''),
     enabled: Boolean(projectId),
-    queryFn: async (): Promise<ProgressLog[]> => {
+    queryFn: async (): Promise<ProgressLogWithNextTask[]> => {
       const { data, error } = await supabase
         .from('progress_logs')
-        .select('*')
+        // Two foreign keys point at tasks now (the log's own item, and the task its next step
+        // names), so the embed has to say which one by constraint name.
+        .select('*, next_step_task:tasks!progress_logs_next_step_task_id_fkey(title)')
         .eq('project_id', projectId!)
         .order('created_at', { ascending: false })
         .limit(50)
       if (error) throw error
-      return data
+      return data as unknown as ProgressLogWithNextTask[]
     },
   })
 }
