@@ -11,12 +11,16 @@ export interface FocusRow {
   projects: { title: string; status: ItemStatus } | null
 }
 
-/** A task or project that can be picked as today's focus. */
+/** A task or project that can be picked as today's focus, or as a next step. */
 export interface PickableItem {
   itemType: 'task' | 'project'
   id: string
   title: string
   status: ItemStatus
+  /** Where a task lives, so a picker spanning every project can say which one. Null on a
+   *  project, which is one. */
+  projectId: string | null
+  projectTitle: string | null
 }
 
 export const focusKeys = {
@@ -46,7 +50,10 @@ export function usePickableItems(enabled: boolean) {
     enabled,
     queryFn: async (): Promise<PickableItem[]> => {
       const [tasks, projects] = await Promise.all([
-        supabase.from('tasks').select('id, title, status').in('status', OPEN_STATUSES),
+        supabase
+          .from('tasks')
+          .select('id, title, status, project_id, projects(title)')
+          .in('status', OPEN_STATUSES),
         supabase.from('projects').select('id, title, status').in('status', OPEN_STATUSES),
       ])
       if (tasks.error) throw tasks.error
@@ -57,12 +64,16 @@ export function usePickableItems(enabled: boolean) {
           id: p.id,
           title: p.title,
           status: p.status,
+          projectId: null,
+          projectTitle: null,
         })),
         ...tasks.data.map((t) => ({
           itemType: 'task' as const,
           id: t.id,
           title: t.title,
           status: t.status,
+          projectId: t.project_id,
+          projectTitle: t.projects?.title ?? null,
         })),
       ]
     },
