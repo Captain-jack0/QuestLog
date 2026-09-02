@@ -152,7 +152,24 @@ export function ProjectDetailScreen() {
     }
 
     return (
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      // Two columns from `lg`, not `sm`: a column split has to wait for the *container*, and
+      // the container does not grow at `sm` at all. The shell's column is `max-w-md` until
+      // `md` (App.tsx:56), so every viewport from 448px to 767px leaves the same 416px of
+      // content. Splitting it at 640px gave 202px columns — 170px inside the card's `p-4`
+      // (Card.tsx:13) — and the compact picker needs 218px to stay within two rows. It went
+      // to three: the picker block 94px → 144px, on a card that is 190px at its shortest.
+      //
+      // `md` is the trap, not the fix: the 224px side rail arrives at exactly that breakpoint
+      // (SideNav.tsx:10), so 768px yields 480px of content and 202px inside the card — still
+      // three rows. `lg` is the first step that pays for a second column: 314px inside, and
+      // the picker is back to the two rows a 390px phone gets at 326px inside.
+      //
+      // `xl:grid-cols-3` stays: 280px inside at 1280px, 323px from 1440px up, two-row picker
+      // at both. It can never reach the phone's 326px — three 358px columns want 1098px and
+      // the shell caps content at 1088px — but nothing measurably worse happens in those 3px.
+      //
+      // Measured in headless Chromium against the real Inter face, as StatusPicker.tsx:16-22.
+      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
         {items.map((task) => (
           <TaskItem key={task.id} view="card" {...handlers(task)} />
         ))}
