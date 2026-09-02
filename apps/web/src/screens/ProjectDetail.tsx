@@ -456,6 +456,11 @@ export function ProjectDetailScreen() {
         open={editingTask !== null}
         task={editingTask}
         onClose={() => setEditingTask(null)}
+        // Same route as the row's controls: drop/reopen need no resume context, so requestStatus
+        // sends them straight to the RPC and its invalidations cover this screen already.
+        onStatusChange={(status) =>
+          editingTask && requestStatus('task', editingTask.id, editingTask.title, status)
+        }
         saving={updateTask.isPending}
         // Closed from onSuccess only. Closing here would dismiss the sheet before the write
         // is known to have landed — and the form's own validation never gets this far.
