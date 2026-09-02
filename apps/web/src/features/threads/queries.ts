@@ -13,6 +13,13 @@ export interface HangingThread {
   area_color: string | null
   left_off: string | null
   next_step: string | null
+  /** The task the next step points at, read live: the card shows what that task is doing now,
+   *  not what it was doing when the log was written. Null once the task is deleted — the
+   *  snapshot in next_step is what survives. */
+  next_step_task_id: string | null
+  next_step_task_title: string | null
+  next_step_task_status: ItemStatus | null
+  next_step_task_project_id: string | null
   last_activity_at: string
 }
 
@@ -28,7 +35,7 @@ export function useHangingThreads() {
       const { data, error } = await supabase
         .from('v_hanging_threads')
         .select(
-          'item_type, item_id, title, status, project_id, project_title, area_name, area_color, left_off, next_step, last_activity_at',
+          'item_type, item_id, title, status, project_id, project_title, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at',
         )
         .order('last_activity_at', { ascending: true })
         .limit(20)
