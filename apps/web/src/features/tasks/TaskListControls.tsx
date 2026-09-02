@@ -4,8 +4,8 @@ import { clearedFilters, TASK_VIEWS, type TaskListPrefs, type TaskView } from '.
 import { SORT_KEYS, type SortKey } from './taskOrder'
 
 /**
- * `StatusPicker`'s QUICK four minus `done` — completed work has its own collapsible
- * section, so a "done" filter chip would fight it for the same decision.
+ * `StatusPicker`'s QUICK list minus `done` and `dropped` — closed work has its own
+ * collapsible section, so a chip for either would fight it for the same decision.
  */
 const FILTER_STATUSES: ItemStatus[] = ['in_progress', 'paused', 'blocked']
 
