@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { BottomSheet } from './BottomSheet'
 import { rowFieldClass } from './field'
 
@@ -10,31 +10,25 @@ export interface PickerOption {
   current?: boolean
 }
 
-interface PickerSheetProps {
-  open: boolean
-  title: string
+interface PickerListProps {
   options: PickerOption[]
   loading?: boolean
   emptyText?: string
-  onClose: () => void
   onPick: (id: string) => void
 }
 
-/** A searchable list in a sheet: used for moving things, where a dropdown would bury the options. */
-export function PickerSheet({
-  open,
-  title,
+/**
+ * The searchable list itself, sheet not included: `UpdateStatusSheet` swaps it in as a second
+ * mode of the sheet it already owns, because two open `BottomSheet`s share one `document`
+ * keydown listener — Escape would close both and Tab would fight over the trap.
+ */
+export function PickerList({
   options,
   loading,
   emptyText = 'Nothing to move into yet.',
-  onClose,
   onPick,
-}: PickerSheetProps) {
+}: PickerListProps) {
   const [search, setSearch] = useState('')
-
-  useEffect(() => {
-    if (open) setSearch('')
-  }, [open])
 
   const query = search.trim().toLowerCase()
   const visible = options.filter((option) =>
@@ -42,7 +36,7 @@ export function PickerSheet({
   )
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={title}>
+    <>
       {options.length > 6 && (
         <input
           aria-label="Search"
@@ -76,6 +70,25 @@ export function PickerSheet({
           </li>
         ))}
       </ul>
+    </>
+  )
+}
+
+interface PickerSheetProps extends PickerListProps {
+  open: boolean
+  title: string
+  onClose: () => void
+}
+
+/**
+ * A searchable list in a sheet: used for moving things, where a dropdown would bury the options.
+ * The search box needs no reset effect — `BottomSheet` renders nothing while closed, so the
+ * list unmounts and its state goes with it.
+ */
+export function PickerSheet({ open, title, onClose, ...list }: PickerSheetProps) {
+  return (
+    <BottomSheet open={open} onClose={onClose} title={title}>
+      <PickerList {...list} />
     </BottomSheet>
   )
 }
