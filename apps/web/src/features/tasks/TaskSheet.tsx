@@ -10,6 +10,7 @@ import {
   PRIORITIES,
   PRIORITY_LABELS,
   taskSchema,
+  type ItemStatus,
   type Task,
   type TaskInput,
 } from '../../lib/schemas'
@@ -19,6 +20,8 @@ interface TaskSheetProps {
   task?: Task | null
   onClose: () => void
   onSubmit: (values: TaskInput) => void
+  /** Routed through the caller, like the row's: the status mutation stays where it lives. */
+  onStatusChange: (status: ItemStatus) => void
   saving?: boolean
 }
 
@@ -30,7 +33,14 @@ interface TaskSheetProps {
  * of their own (UpdateStatusSheet, PickerSheet), and two BottomSheets at once would stack two
  * document-level keydown listeners, so Escape would close both and the focus traps would fight.
  */
-export function TaskSheet({ open, task, onClose, onSubmit, saving }: TaskSheetProps) {
+export function TaskSheet({
+  open,
+  task,
+  onClose,
+  onSubmit,
+  onStatusChange,
+  saving,
+}: TaskSheetProps) {
   const {
     register,
     handleSubmit,
@@ -47,6 +57,18 @@ export function TaskSheet({ open, task, onClose, onSubmit, saving }: TaskSheetPr
 
   // A row that has not come back from the database yet has no real id to update against.
   const unsaved = task ? isOptimistic(task.id) : false
+
+  // One control, both directions. The row's checkbox only ever offers `done`, so a dropped task
+  // has no way back to an open status anywhere else in the app. Neither target asks for resume
+  // context (needsResumeContext covers paused/blocked only), so both go straight to the RPC.
+  const subAction =
+    task?.status === 'dropped'
+      ? {
+          label: 'Reopen',
+          next: 'in_progress' as ItemStatus,
+          hint: 'Moves back to your open tasks.',
+        }
+      : { label: 'Drop', next: 'dropped' as ItemStatus, hint: 'Stays in Closed, with its history.' }
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Edit task">
@@ -107,6 +129,28 @@ export function TaskSheet({ open, task, onClose, onSubmit, saving }: TaskSheetPr
         </Button>
         {unsaved && (
           <p className="text-sm text-muted">This task is still saving. Try again in a moment.</p>
+        )}
+
+        {/* Quiet and neutral, like the chip: `dropped` is grey in StatusChip, not an error tone,
+            and the button is a choice rather than a verdict — no strike-through, that is the
+            outcome label's language and would read as "disabled" on a control. Closing first
+            keeps the resume sheet from ever stacking on top of this one. */}
+        {task && (
+          <div className="mt-4 border-t border-line pt-4">
+            <button
+              type="button"
+              aria-label={`${subAction.label} task: ${task.title}`}
+              disabled={saving || unsaved}
+              onClick={() => {
+                onClose()
+                onStatusChange(subAction.next)
+              }}
+              className="btn-quiet min-h-[44px] w-full rounded-full border border-line px-2 text-xs font-semibold text-muted disabled:opacity-40"
+            >
+              {subAction.label}
+            </button>
+            <p className="mt-2 text-xs text-muted">{subAction.hint}</p>
+          </div>
         )}
       </form>
     </BottomSheet>
