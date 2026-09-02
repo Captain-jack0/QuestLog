@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(28);
+select plan(33);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'a@example.com'),
@@ -196,6 +196,59 @@ select is(
   (rpc_update_status('task', 'aaaa0000-0000-0000-0000-000000000004', 'in_progress',
                      'reopened', 'polish it') ->> 'leveled_up')::boolean,
   false, 'leveled_up is false while the total stays under the next threshold');
+
+-- ---- the next step as a task reference ----------------------------------------------
+-- Last on purpose: these calls write logs and pay XP, so running them earlier would move the
+-- totals every assertion above counts.
+select login('11111111-1111-1111-1111-111111111111');
+
+-- `do`, not a bare select: the call has to happen between assertions without printing a row
+-- into the TAP stream.
+do $$ begin perform rpc_update_status('task', 'aaaa0000-0000-0000-0000-000000000003',
+     'paused', 'stuck again', '', null, 'user', 'aaaa0000-0000-0000-0000-000000000004'); end $$;
+
+select is(
+  (select next_step from progress_logs order by created_at desc limit 1),
+  'Write RLS', 'a picked task with no prose snapshots its title into next_step');
+
+select is(
+  (select next_step_task_title from v_hanging_threads
+    where item_id = 'aaaa0000-0000-0000-0000-000000000003'),
+  'Write RLS', 'the view carries the referenced task through to the client');
+
+do $$ begin perform rpc_update_status('task', 'aaaa0000-0000-0000-0000-000000000003',
+     'paused', 'stuck again', 'my own words', null, 'user',
+     'aaaa0000-0000-0000-0000-000000000004'); end $$;
+
+select is(
+  (select next_step from progress_logs order by created_at desc limit 1),
+  'my own words', 'prose wins over the snapshot when both are given');
+
+select throws_ok(
+  $$select rpc_update_status('task', 'aaaa0000-0000-0000-0000-000000000003', 'paused', 'x', 'y',
+                             null, 'user', 'aaaa0000-0000-0000-0000-000000000003')$$,
+  '22023',
+  'a task cannot be its own next step',
+  'an item cannot point at itself as its own next step');
+
+-- Someone else's task must be indistinguishable from a missing one.
+reset role;
+insert into life_areas (id, user_id, name)
+values ('bbbb0000-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'Theirs');
+insert into projects (id, user_id, area_id, title)
+values ('bbbb0000-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222',
+        'bbbb0000-0000-0000-0000-000000000001', 'Their project');
+insert into tasks (id, user_id, project_id, title)
+values ('bbbb0000-0000-0000-0000-000000000003', '22222222-2222-2222-2222-222222222222',
+        'bbbb0000-0000-0000-0000-000000000002', 'Their task');
+select login('11111111-1111-1111-1111-111111111111');
+
+select throws_ok(
+  $$select rpc_update_status('task', 'aaaa0000-0000-0000-0000-000000000003', 'paused', 'x', 'y',
+                             null, 'user', 'bbbb0000-0000-0000-0000-000000000003')$$,
+  'P0002',
+  'next step task not found',
+  'another user''s task cannot be referenced as a next step');
 
 select * from finish();
 rollback;
