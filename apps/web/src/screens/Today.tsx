@@ -5,6 +5,7 @@ import { CardSkeleton } from '../components/ui/Skeleton'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { ItemTypeChip, itemTypeLabel } from '../components/ui/ItemTypeChip'
 import { useToast } from '../components/ui/Toast'
 import { FocusPickerSheet } from '../features/focus/FocusPickerSheet'
 import { useFocusItems, usePickFocus, useToggleFocusItem } from '../features/focus/queries'
@@ -70,21 +71,28 @@ export function TodayScreen() {
             <div className="space-y-2">
               {focus.data?.map((item) => {
                 const title = item.tasks?.title ?? item.projects?.title ?? 'Untitled'
+                // focus_items holds exactly one of the two ids (rpc_pick_focus rejects
+                // anything else, focus_snooze_views.sql:34), so project_id alone decides.
+                const itemType = item.project_id ? 'project' : 'task'
+                const titleClass = item.completed ? 'text-muted line-through' : 'font-medium'
                 return (
                   <Card key={item.id} className="p-3">
                     <label className="flex min-h-[44px] items-center gap-3">
+                      {/* The chip at the end of the row is real text, but an explicit
+                          aria-label outranks the wrapping <label>, so the kind has to be
+                          repeated in the name — otherwise someone tabbing the list hears
+                          "Redesign" without ever learning which Redesign they are ticking. */}
                       <input
                         type="checkbox"
-                        aria-label={`Done: ${title}`}
+                        aria-label={`Done: ${title} — ${itemTypeLabel(itemType)}`}
                         checked={item.completed}
                         onChange={(e) =>
                           toggleFocus.mutate({ id: item.id, completed: e.target.checked })
                         }
                         className="h-6 w-6 shrink-0 accent-accent"
                       />
-                      <span className={item.completed ? 'text-muted line-through' : 'font-medium'}>
-                        {title}
-                      </span>
+                      <span className={`min-w-0 flex-1 ${titleClass}`}>{title}</span>
+                      <ItemTypeChip itemType={itemType} />
                     </label>
                   </Card>
                 )
@@ -111,84 +119,97 @@ export function TodayScreen() {
           )}
 
           <div className="grid gap-3 xl:grid-cols-2">
-            {threads.data?.map((thread) => (
-              <Card
-                key={`${thread.item_type}-${thread.item_id}`}
-                edgeColor={thread.area_color}
-                className="pl-5"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  {/* inline-flex, not a bare min-height: min-height does not apply to an inline
-                      box, so on an <a> the utility alone would change nothing. `items-start`
-                      rather than centring, because a one-line title centred in a 44px box drops
-                      ~12px away from the timestamp it sits opposite; this keeps the two tops
-                      level exactly as they were and spends the added height below the text. */}
-                  <Link
-                    to={`/projects/${thread.project_id}`}
-                    className="inline-flex min-h-[44px] items-start font-semibold leading-tight"
-                  >
-                    {thread.title}
-                  </Link>
-                  <span className="shrink-0 text-xs text-muted">
-                    {relativeTime(thread.last_activity_at)}
-                  </span>
-                </div>
-                <p className="text-xs text-muted">
-                  {thread.area_name ? `${thread.area_name} · ` : ''}
-                  {thread.project_title}
-                </p>
+            {threads.data?.map((thread) => {
+              // v_hanging_threads gives a project row its *own* title as project_title — the
+              // union's second leg selects p.title into both columns
+              // (focus_snooze_views.sql:158-159) — so printing it under the heading spelled the
+              // same words twice. A project's context is the area it lives in; only a task also
+              // sits inside a project. Fixed here rather than in the view: project_id on that
+              // row is load-bearing (the Link below routes on it), and a migration would sit in
+              // CI green while production kept the duplicate — see the lesson
+              // migration-uretime-gitmiyor-2026-09-01.
+              const inProject = thread.item_type === 'task' ? thread.project_title : null
+              const context = [thread.area_name, inProject].filter(Boolean).join(' · ')
 
-                {thread.next_step && (
-                  <p className="mt-2 text-sm font-medium">
-                    <span className="font-normal text-muted">Next: </span>
-                    {thread.next_step}
+              return (
+                <Card
+                  key={`${thread.item_type}-${thread.item_id}`}
+                  edgeColor={thread.area_color}
+                  className="pl-5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    {/* inline-flex, not a bare min-height: min-height does not apply to an inline
+                        box, so on an <a> the utility alone would change nothing. `items-start`
+                        rather than centring, because a one-line title centred in a 44px box drops
+                        ~12px away from the timestamp it sits opposite; this keeps the two tops
+                        level exactly as they were and spends the added height below the text. */}
+                    <Link
+                      to={`/projects/${thread.project_id}`}
+                      className="inline-flex min-h-[44px] items-start font-semibold leading-tight"
+                    >
+                      {thread.title}
+                    </Link>
+                    <span className="shrink-0 text-xs text-muted">
+                      {relativeTime(thread.last_activity_at)}
+                    </span>
+                  </div>
+                  <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                    <ItemTypeChip itemType={thread.item_type} />
+                    {context && <span>{context}</span>}
                   </p>
-                )}
 
-                <div className="mt-3 flex gap-2">
-                  <Button
-                    className="flex-1 px-2 py-2 text-sm"
-                    onClick={() =>
-                      setPending({
-                        itemType: thread.item_type,
-                        itemId: thread.item_id,
-                        title: thread.title,
-                        status: 'done',
-                        leftOff: thread.left_off,
-                        nextStep: thread.next_step,
-                      })
-                    }
-                  >
-                    Done ✓
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="flex-1 px-2 py-2 text-sm"
-                    onClick={() =>
-                      setPending({
-                        itemType: thread.item_type,
-                        itemId: thread.item_id,
-                        title: thread.title,
-                        status: 'in_progress',
-                        leftOff: thread.left_off,
-                        nextStep: thread.next_step,
-                      })
-                    }
-                  >
-                    Update ✎
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="flex-1 px-2 py-2 text-sm"
-                    onClick={() =>
-                      setSnoozeFor({ itemType: thread.item_type, itemId: thread.item_id })
-                    }
-                  >
-                    Snooze 💤
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                  {thread.next_step && (
+                    <p className="mt-2 text-sm font-medium">
+                      <span className="font-normal text-muted">Next: </span>
+                      {thread.next_step}
+                    </p>
+                  )}
+
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      className="flex-1 px-2 py-2 text-sm"
+                      onClick={() =>
+                        setPending({
+                          itemType: thread.item_type,
+                          itemId: thread.item_id,
+                          title: thread.title,
+                          status: 'done',
+                          leftOff: thread.left_off,
+                          nextStep: thread.next_step,
+                        })
+                      }
+                    >
+                      Done ✓
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="flex-1 px-2 py-2 text-sm"
+                      onClick={() =>
+                        setPending({
+                          itemType: thread.item_type,
+                          itemId: thread.item_id,
+                          title: thread.title,
+                          status: 'in_progress',
+                          leftOff: thread.left_off,
+                          nextStep: thread.next_step,
+                        })
+                      }
+                    >
+                      Update ✎
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="flex-1 px-2 py-2 text-sm"
+                      onClick={() =>
+                        setSnoozeFor({ itemType: thread.item_type, itemId: thread.item_id })
+                      }
+                    >
+                      Snooze 💤
+                    </Button>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </section>
       </div>
