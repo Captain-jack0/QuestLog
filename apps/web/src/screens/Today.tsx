@@ -13,6 +13,7 @@ import { useFocusItems, usePickFocus, useToggleFocusItem } from '../features/foc
 import { useProfile, useStreak, useTodayXp } from '../features/gamification/queries'
 import { SNOOZE_OPTIONS, useHangingThreads, useSnooze } from '../features/threads/queries'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
+import { dropChange } from '../features/status/drop'
 import { useUpdateStatus } from '../features/status/useUpdateStatus'
 import { localDateKey, relativeTime } from '../lib/time'
 
@@ -253,17 +254,12 @@ export function TodayScreen() {
                       disabled={updateStatus.isPending}
                       onClick={() =>
                         updateStatus.mutate(
-                          {
-                            itemType: thread.item_type,
-                            itemId: thread.item_id,
-                            status: 'dropped',
-                            // `dropped` is outside needsResumeContext, so it goes straight to the
-                            // RPC with no sheet — the same call ProjectDetail.tsx:130 already
-                            // makes for it. The log it appends is empty; the history above it is
-                            // append-only and stays.
-                            leftOff: '',
-                            nextStep: '',
-                          },
+                          // `dropped` is outside needsResumeContext, so it goes straight to the
+                          // RPC with no sheet — the same call ProjectDetail.tsx:130 already makes
+                          // for it. The variables live in drop.ts because nothing else guards
+                          // them: no sheet collects them and there is no render test in this
+                          // project to catch it if they change (drop.test.ts).
+                          dropChange(thread.item_type, thread.item_id),
                           // The card just disappears, and the hook's own toast only says "+8 ✨".
                           // This is the one that answers "did I just delete it?" — same place the
                           // snooze confirmation below already speaks from.

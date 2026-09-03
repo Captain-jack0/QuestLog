@@ -202,7 +202,7 @@ export function ProjectDetailScreen() {
           has no edge to see, so a card in a card would have cost the boundary it was meant to
           draw. `divide-y divide-line` is the same call the task rows make.
 
-          No `edgeColor`: that prop means "life area" everywhere (AreaDetail.tsx:68), and the
+          No `edgeColor`: that prop means "life area" everywhere (AreaDetail.tsx:76), and the
           area is already spoken for twice above — the back link and the dot in the meta line. */}
       <Card className="mb-6 mt-2">
         <header>

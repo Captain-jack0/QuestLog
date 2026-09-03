@@ -11,8 +11,12 @@ select plan(9);
 
 -- ---- the names are load-bearing ------------------------------------------------------
 -- Two foreign keys point from progress_logs at tasks, so PostgREST disambiguates embeds by
--- constraint name and queries.ts:44 hard-codes one. Renaming either breaks that embed at
--- runtime with nothing failing at build time, so the name is sealed here alongside the action.
+-- constraint name. The embed at apps/web/src/features/projects/queries.ts:44 hard-codes the
+-- *other* one (`progress_logs_next_step_task_id_fkey`), so renaming the two asserted below
+-- would not break that call — this assertion earns its place for a different reason: setting
+-- the action means dropping and re-adding the constraint, and a re-add under a drifted name
+-- would leave the embed vocabulary of the whole table up for grabs with nothing failing at
+-- build time. The names and the action are sealed together because they were changed together.
 select is(
   (select count(*)::int from pg_constraint
     where connamespace = 'public'::regnamespace

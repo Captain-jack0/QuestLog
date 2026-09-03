@@ -13,11 +13,27 @@
 -- effect of tidying up a task list.
 --
 -- So both become `on delete set null`. `task_id` is already nullable in both tables and the
--- shape is already routine in the product: rpc_update_status.sql:82-88 writes project-level logs
--- with a null `task_id`, and timer.test.sql:77 clocks time against a project alone. Readers cope
--- already — v_running_timer `left join`s tasks (time_tracking.sql:162) and daily_focus_seconds
--- (time_tracking.sql:167-179) never looks at `task_id`. The house precedent is xp_events, whose
--- three references have been `set null` since day one (gamification.sql:8-10).
+-- shape is already routine in the product: rpc_update_status leaves `v_task_id` null on its
+-- project branch (20260902120000_next_step_task.sql:86-91) and its one log INSERT writes that
+-- null straight through (same file, 138-141), and timer.test.sql:77 clocks time against a
+-- project alone. Readers cope already — v_running_timer `left join`s tasks
+-- (time_tracking.sql:162) and daily_focus_seconds (time_tracking.sql:167-179) never looks at
+-- `task_id`. The house precedent is xp_events, whose three references have been `set null`
+-- since day one (gamification.sql:8-10).
+--
+-- One reader does *not* cope, and this migration ships knowing it. v_hanging_threads groups its
+-- `latest_log` CTE by `coalesce(task_id, project_id)` (20260902120000_next_step_task.sql:271-277),
+-- so a log orphaned by this change stops being its task's and joins the *project's* group. The
+-- CTE is `distinct on ... order by created_at desc`, so if that orphan is the newest row in the
+-- group it outranks the project's own last log, and a deleted task's `left_off`/`next_step` is
+-- then printed as the project's context — on the Today card and in the daily digest, which reads
+-- the same view (digest.sql:60).
+--
+-- Accepted, not fixed. Nothing in the UI deletes a task today, so there is no trigger for it; and
+-- the alternative is strictly worse, because before this change that history was not mislabelled
+-- but destroyed. A wrong label can be corrected later from data that still exists. The fix, when
+-- a delete path arrives, belongs in the CTE — partition by the log's own grain rather than by a
+-- coalesce, so an orphan never competes with project-level logs.
 --
 -- This overturns the reasoning written at next_step_task.sql:3-7, which read the cascade as
 -- intentional ("a log about a deleted task has nothing left to be about"). A log about a deleted
@@ -33,8 +49,11 @@
 -- the two targets, so nulling `task_id` there would violate the check and break the delete.
 --
 -- The constraint names are re-used verbatim. Two foreign keys point from `progress_logs` at
--- `tasks`, so PostgREST embeds have to disambiguate by constraint name, and queries.ts:44 spells
--- one out. A renamed constraint would break that embed at runtime with nothing failing at build.
+-- `tasks`, so PostgREST embeds have to disambiguate by constraint name, and
+-- apps/web/src/features/projects/queries.ts:44 hard-codes the *other* one of the pair
+-- (`progress_logs_next_step_task_id_fkey`). Renaming either is a runtime break with nothing
+-- failing at build; keeping both verbatim is what makes this drop-and-re-add invisible to the
+-- client.
 
 alter table progress_logs drop constraint progress_logs_task_id_fkey;
 
