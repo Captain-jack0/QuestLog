@@ -142,9 +142,16 @@ export function ProjectDetailScreen() {
       onOpen: () => setEditingTask(task),
     })
 
+    // `!p-0`, not `p-0`: Card hardcodes `p-4` (Card.tsx:13) and Tailwind emits `.p-4` after
+    // `.p-0`, so at equal specificity the plain class lost and this list has been rendering
+    // at 16px all along. The list wants none: each row carries its own `px-3 py-2`
+    // (TaskItem.tsx:103), so 16px on top of that insets the text 28px, and the dividers are
+    // meant to run edge to edge — which is what Card's `overflow-hidden rounded-card` is
+    // there to clip. The `!` is the override made visible; a bare `p-0` would be a class
+    // that reads as intent and does nothing.
     if (prefs.view === 'row') {
       return (
-        <Card className="divide-y divide-line p-0">
+        <Card className="divide-y divide-line !p-0">
           {items.map((task) => (
             <TaskItem key={task.id} view="row" {...handlers(task)} />
           ))}
@@ -500,8 +507,10 @@ export function ProjectDetailScreen() {
         open={editingTask !== null}
         task={editingTask}
         onClose={() => setEditingTask(null)}
-        // Same route as the row's controls: drop/reopen need no resume context, so requestStatus
-        // sends them straight to the RPC and its invalidations cover this screen already.
+        // The same `requestStatus` the card's picker uses, so the sheet offers the whole set and
+        // each status takes the route it needs: `in_progress` and `dropped` go straight to the
+        // RPC, while `paused`, `blocked` and `done` are handed to UpdateStatusSheet for their
+        // resume context. The sheet closes itself first (TaskSheet.tsx), so the two never stack.
         onStatusChange={(status) =>
           editingTask && requestStatus('task', editingTask.id, editingTask.title, status)
         }

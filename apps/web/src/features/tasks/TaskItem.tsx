@@ -101,27 +101,15 @@ export function TaskItem({ task, view, onStatusChange, onUpdate, onMove, onOpen 
   if (view === 'row') {
     return (
       <div className="flex min-h-[56px] items-center gap-2 px-3 py-2">
-        {/* The 24px box is the visual; the label is the target. Unlike Today's version this
-            one has no text beside it to give it width, so it takes its own 44px. */}
-        <label className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center">
-          <input
-            type="checkbox"
-            aria-label={`Done: ${task.title}`}
-            checked={task.status === 'done'}
-            disabled={pending}
-            // Unchecking reopens straight into `in_progress`: it is the one status that needs
-            // no resume context, so undoing a completion stays a single tap.
-            onChange={(e) => onStatusChange(e.target.checked ? 'done' : 'in_progress')}
-            className="h-6 w-6 shrink-0 accent-accent"
-          />
-        </label>
-
         <PriorityMark priority={task.priority} />
 
         <div className="min-w-0 flex-1">{title}</div>
 
-        {/* Drops at 390px, where the width is not there. Nothing shrinks; it leaves. */}
-        <span className="hidden shrink-0 sm:inline">
+        {/* Leaves the layout at 390px, where the width is not there — but not the accessibility
+            tree: `hidden` is display:none and takes the word with it, and since the checkbox
+            went to the pop-up this chip is the row's only carrier of "done". `sr-only` is
+            absolutely positioned, so it costs the row the same zero width `hidden` did. */}
+        <span className="shrink-0 max-sm:sr-only">
           <StatusChip status={task.status} />
         </span>
 
@@ -137,7 +125,7 @@ export function TaskItem({ task, view, onStatusChange, onUpdate, onMove, onOpen 
   }
 
   return (
-    <Card className="flex min-h-[190px] flex-col p-3">
+    <Card className="flex min-h-[190px] flex-col">
       <div className="flex items-start justify-between gap-1">
         {/* pt-3 lines the glyph up with the first line of the 44px title button rather than
             centring it against a title that may wrap to two lines. */}

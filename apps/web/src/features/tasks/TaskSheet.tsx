@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
+import { StatusPicker } from '../../components/ui/StatusPicker'
 import { fieldClass } from '../../components/ui/field'
 import { isOptimistic } from '../../lib/optimistic'
 import {
@@ -29,9 +30,10 @@ interface TaskSheetProps {
  * The long form of a task edit. The card keeps its inline title/description/difficulty
  * editing — this sheet sits on top of it for the times you want every field at once.
  *
- * Status and "move to another project" deliberately stay outside: both already open a sheet
- * of their own (UpdateStatusSheet, PickerSheet), and two BottomSheets at once would stack two
- * document-level keydown listeners, so Escape would close both and the focus traps would fight.
+ * "Move to another project" deliberately stays outside: it opens a PickerSheet of its own, and
+ * two BottomSheets at once would stack two document-level keydown listeners, so Escape would
+ * close both and the focus traps would fight. Status is in, under the same rule: the picker
+ * closes this sheet before it asks, so the resume sheet never lands on top of one.
  */
 export function TaskSheet({
   open,
@@ -57,18 +59,6 @@ export function TaskSheet({
 
   // A row that has not come back from the database yet has no real id to update against.
   const unsaved = task ? isOptimistic(task.id) : false
-
-  // One control, both directions. The row's checkbox only ever offers `done`, so a dropped task
-  // has no way back to an open status anywhere else in the app. Neither target asks for resume
-  // context (needsResumeContext covers paused/blocked only), so both go straight to the RPC.
-  const subAction =
-    task?.status === 'dropped'
-      ? {
-          label: 'Reopen',
-          next: 'in_progress' as ItemStatus,
-          hint: 'Moves back to your open tasks.',
-        }
-      : { label: 'Drop', next: 'dropped' as ItemStatus, hint: 'Stays in Closed, with its history.' }
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Edit task">
@@ -131,25 +121,31 @@ export function TaskSheet({
           <p className="text-sm text-muted">This task is still saving. Try again in a moment.</p>
         )}
 
-        {/* Quiet and neutral, like the chip: `dropped` is grey in StatusChip, not an error tone,
-            and the button is a choice rather than a verdict — no strike-through, that is the
-            outcome label's language and would read as "disabled" on a control. Closing first
-            keeps the resume sheet from ever stacking on top of this one. */}
+        {/* The whole set, not a single toggle. The Drop/Reopen pair this replaces could reach
+            `dropped` and `in_progress` only, so the sheet could neither finish a task nor reopen
+            a finished one — and with the row's checkbox gone (TaskItem.tsx:101) that is the row
+            view's only way to either. One control, not two: a Drop button beside a `Dropped`
+            chip would be the same mutation offered twice, one of them phrased differently.
+
+            Same component and same `compact` set as the card (TaskItem.tsx:174), so a status
+            reads the same wherever you meet it — and the sheet's 358px inner width at 390px is
+            wider than the 326px the card fits it in, so it costs the same two rows.
+
+            Closing first keeps the resume sheet (paused/blocked/done) off the top of this one;
+            both state updates land in one commit, so nothing flickers in between. */}
         {task && (
           <div className="mt-4 border-t border-line pt-4">
-            <button
-              type="button"
-              aria-label={`${subAction.label} task: ${task.title}`}
+            <p className="mb-2 text-sm font-medium">Status</p>
+            <StatusPicker
+              compact
+              label="Status"
+              value={task.status}
               disabled={saving || unsaved}
-              onClick={() => {
+              onChange={(status) => {
                 onClose()
-                onStatusChange(subAction.next)
+                onStatusChange(status)
               }}
-              className="btn-quiet min-h-[44px] w-full rounded-full border border-line px-2 text-xs font-semibold text-muted disabled:opacity-40"
-            >
-              {subAction.label}
-            </button>
-            <p className="mt-2 text-xs text-muted">{subAction.hint}</p>
+            />
           </div>
         )}
       </form>
