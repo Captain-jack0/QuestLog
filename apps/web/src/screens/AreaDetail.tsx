@@ -61,7 +61,15 @@ export function AreaDetailScreen() {
         />
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {/* Same rule as the task grid (ProjectDetail.tsx:172), and the same trap: a column step
+          has to wait for the container, and the shell's content is frozen at 416px from 448px
+          to 767px (App.tsx:56). `sm:grid-cols-3` stepped up inside that frozen width — 131px
+          tiles, 95px inside the padding, and next to a `shrink-0` status chip that is 76px on
+          its own the title was left 11px, about one character. At 390px the same tile gives it
+          53px. `md` would not fix it either (32px), because the 224px side rail arrives with
+          that breakpoint (SideNav.tsx:10). From `lg` the container can pay: three columns give
+          the title 107px at 1024px, four give it 111px at 1280px. */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
         {projects.data?.map((project) => {
           const stat = stats.data?.[project.id]
           return (

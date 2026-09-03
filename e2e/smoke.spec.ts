@@ -46,8 +46,11 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await page.getByLabel("What's the next step?").fill('review it tomorrow')
     await page.getByRole('button', { name: /Mark as done/i }).click()
 
-    // 10 check-in + 25 for an M task on the first action of the day
-    await expect(page.getByRole('status').filter({ hasText: '✨' })).toBeVisible()
+    // 10 check-in + 25 for an M task on the first action of the day (next_step_task.sql:145,152;
+    // the quick-add form posts 'M', ProjectDetail.tsx:78). Toasts live 2600ms (Toast.tsx:29) and
+    // stack, so a bare '✨' matches whichever XP toasts happen to overlap; the exact amount picks
+    // out one and fails loudly if the award ever changes.
+    await expect(page.getByRole('status').filter({ hasText: '+35 ✨' })).toBeVisible()
     await expect(page.getByText('1/1 done')).toBeVisible()
   })
 
@@ -56,7 +59,10 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await page.getByLabel('Where did you leave off?').fill('first task done')
     await page.getByLabel("What's the next step?").fill('plan the second one')
     await page.getByRole('button', { name: /Mark as paused/i }).click()
-    await expect(page.getByRole('status').filter({ hasText: '✨' })).toBeVisible()
+    // Pausing is not a completion, so it pays the flat progress_update 8 (next_step_task.sql:159)
+    // and the check-in already fired above — 8 is the whole award. The '+35 ✨' from the previous
+    // step is usually still on screen here, which is what a bare '✨' used to match as well.
+    await expect(page.getByRole('status').filter({ hasText: '+8 ✨' })).toBeVisible()
   })
 
   await test.step('Today shows the thread with its next step', async () => {
@@ -68,11 +74,13 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
 
   await test.step('focus can be picked and is worth 5 XP', async () => {
     await page.getByRole('button', { name: /Pick up to 3/ }).click()
-    await page
-      .getByRole('button', { name: /Test project/ })
-      .first()
-      .click()
-    await page.getByRole('button', { name: /Focus on 1 today/ }).click()
+    // Scoped to the sheet, not the page: every thread card behind the overlay carries a
+    // "Drop project: Test project" button that /Test project/ matches too, and the overlay
+    // eats the click. No `.first()` either — if a second match ever appears in here, this
+    // should fail loudly rather than quietly pick one.
+    const picker = page.getByRole('dialog', { name: "Pick today's focus" })
+    await picker.getByRole('button', { name: /Test project/ }).click()
+    await picker.getByRole('button', { name: /Focus on 1 today/ }).click()
     await expect(page.getByRole('status').filter({ hasText: '+5 ✨' })).toBeVisible()
   })
 })

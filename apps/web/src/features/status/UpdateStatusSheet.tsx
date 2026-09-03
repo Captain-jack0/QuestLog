@@ -6,7 +6,7 @@ import { statusLabel } from '../../components/ui/StatusChip'
 import { fieldClass } from '../../components/ui/field'
 import { usePickableItems } from '../focus/queries'
 import type { ItemStatus } from '../../lib/schemas'
-import { needsResumeContext } from './useUpdateStatus'
+import { needsResumeContext } from './statusChange'
 
 export interface PendingStatusChange {
   itemType: 'task' | 'project'
