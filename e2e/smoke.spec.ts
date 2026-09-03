@@ -68,11 +68,13 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
 
   await test.step('focus can be picked and is worth 5 XP', async () => {
     await page.getByRole('button', { name: /Pick up to 3/ }).click()
-    await page
-      .getByRole('button', { name: /Test project/ })
-      .first()
-      .click()
-    await page.getByRole('button', { name: /Focus on 1 today/ }).click()
+    // Scoped to the sheet, not the page: every thread card behind the overlay carries a
+    // "Drop project: Test project" button that /Test project/ matches too, and the overlay
+    // eats the click. No `.first()` either — if a second match ever appears in here, this
+    // should fail loudly rather than quietly pick one.
+    const picker = page.getByRole('dialog', { name: "Pick today's focus" })
+    await picker.getByRole('button', { name: /Test project/ }).click()
+    await picker.getByRole('button', { name: /Focus on 1 today/ }).click()
     await expect(page.getByRole('status').filter({ hasText: '+5 ✨' })).toBeVisible()
   })
 })

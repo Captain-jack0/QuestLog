@@ -2,21 +2,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import confetti from 'canvas-confetti'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
-import type { ItemStatus } from '../../lib/schemas'
 import { statusFeedback, type StatusResult } from './feedback'
+import type { StatusChange } from './statusChange'
 
 export type { StatusResult }
-
-export interface StatusChange {
-  itemType: 'task' | 'project'
-  itemId: string
-  status: ItemStatus
-  leftOff: string
-  nextStep: string
-  /** The task the next step points at, if the user picked one. */
-  nextStepTaskId?: string | null
-  note?: string
-}
 
 /**
  * Every status change in the app goes through here: the RPC owns XP, streaks and badges,
@@ -70,9 +59,4 @@ export function useUpdateStatus(projectId?: string) {
       }
     },
   })
-}
-
-/** Paused/blocked need the resume context; done prefills it but does not demand it. */
-export function needsResumeContext(status: ItemStatus): boolean {
-  return status === 'paused' || status === 'blocked'
 }

@@ -1,4 +1,4 @@
-import type { StatusChange } from './useUpdateStatus'
+import type { StatusChange } from './statusChange'
 
 /**
  * The variables for dropping a thread straight from a card. Pure on purpose: `dropped` is

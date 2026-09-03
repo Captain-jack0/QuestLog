@@ -34,7 +34,8 @@ import {
 import { partitionTasks, taskProgress } from '../features/tasks/taskOrder'
 import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
 import { ResumeCard } from '../features/status/ResumeCard'
-import { needsResumeContext, useUpdateStatus } from '../features/status/useUpdateStatus'
+import { needsResumeContext } from '../features/status/statusChange'
+import { useUpdateStatus } from '../features/status/useUpdateStatus'
 import { relativeTime } from '../lib/time'
 import { TimerButton } from '../features/timer/TimerButton'
 import {

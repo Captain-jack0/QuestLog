@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { dropChange } from './drop'
-import { needsResumeContext } from './useUpdateStatus'
+import { needsResumeContext } from './statusChange'
 
 describe('dropChange', () => {
   it('drops rather than completing — the two are one word apart and worlds apart in XP', () => {
