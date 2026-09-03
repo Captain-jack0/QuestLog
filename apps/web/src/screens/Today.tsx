@@ -78,7 +78,7 @@ export function TodayScreen() {
                 const itemType = item.project_id ? 'project' : 'task'
                 const titleClass = item.completed ? 'text-muted line-through' : 'font-medium'
                 return (
-                  <Card key={item.id} className="p-3">
+                  <Card key={item.id}>
                     <label className="flex min-h-[44px] items-center gap-3">
                       {/* The chip at the end of the row is real text, but an explicit
                           aria-label outranks the wrapping <label>, so the kind has to be
