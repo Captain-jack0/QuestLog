@@ -27,6 +27,28 @@ export function nextTrapIndex(count: number, current: number, backwards: boolean
   return (current + (backwards ? -1 : 1) + count) % count
 }
 
+const LOCK_KEYS = ['position', 'top', 'width', 'overflow', 'paddingRight'] as const
+type LockStyle = Record<(typeof LOCK_KEYS)[number], string>
+
+/**
+ * How the body is frozen while a sheet is open. iOS Safari keeps scrolling the page behind an
+ * overlay when only `overflow: hidden` is set, so the body is pinned with `position: fixed`
+ * instead and the scroll offset it loses is carried in `top` (restored on close).
+ *
+ * Pinning collapses the document, which takes the desktop scrollbar with it and shifts the
+ * page sideways; `gutter` is that scrollbar's width and pads the gap back. Touch browsers
+ * report 0 there and get no padding.
+ */
+export function bodyLockStyle(scrollY: number, gutter: number): LockStyle {
+  return {
+    position: 'fixed',
+    top: `-${scrollY}px`,
+    width: '100%',
+    overflow: 'hidden',
+    paddingRight: gutter > 0 ? `${gutter}px` : '',
+  }
+}
+
 export function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -75,10 +97,20 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   useEffect(() => {
     if (!open) return
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const body = document.body
+    // Two sheets at once is against the rules (see TaskSheet), but a second lock would snapshot
+    // the first one's pin as "previous" and hand the page back to the wrong offset — or leave
+    // the body pinned for good. The one that got there first owns the lock.
+    if (body.style.position === 'fixed') return
+    const scrollY = window.scrollY
+    const gutter = window.innerWidth - document.documentElement.clientWidth
+    const previous = {} as LockStyle
+    for (const key of LOCK_KEYS) previous[key] = body.style[key]
+    Object.assign(body.style, bodyLockStyle(scrollY, gutter))
     return () => {
-      document.body.style.overflow = previous
+      Object.assign(body.style, previous)
+      // The body was pinned, so the browser forgot where the page was; put it back.
+      window.scrollTo(0, scrollY)
     }
   }, [open])
 
