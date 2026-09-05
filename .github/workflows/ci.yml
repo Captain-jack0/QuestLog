@@ -64,7 +64,8 @@ jobs:
             echo "VITE_SUPABASE_ANON_KEY=$(supabase status -o json | jq -r '.ANON_KEY')"
           } >> .env.local
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      # v4 and v5 still declare `using: node20`; v6 is the first node24 runtime
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
