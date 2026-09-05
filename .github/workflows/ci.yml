@@ -16,7 +16,10 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          # major only, on purpose: @supabase/* needs >=22.0.0 and a transitive
+          # optional dep (@napi-rs/lzma-linux-x64-gnu) needs ^22.20, so pinning a
+          # lower 22.x minor brings the npm EBADENGINE warnings back
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run format:check
@@ -43,7 +46,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - uses: supabase/setup-cli@v1
         with:
@@ -83,7 +86,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - name: Wait for the deploy, then verify
         run: |
           sleep 60
