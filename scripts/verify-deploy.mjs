@@ -105,6 +105,15 @@ async function main() {
   }
 
   // RLS is what keeps one account out of another's rows; prove it from the outside.
+  // A 200 here means anon still holds a SELECT grant on the table: production's tables were
+  // created while Supabase auto-exposed new public entities to the Data API roles, and nothing
+  // has revoked that since (the platform default has since flipped — supabase/config.toml:19-24
+  // — which is why the local pgTAP run sees a 42501 instead). Issue #34 chose to keep the grant
+  // and rely on RLS, so a healthy result is an open door with an empty room: grant present,
+  // 0 rows. Say that plainly, otherwise "blocks anonymous reads" reads as "anon has no access"
+  // — false in production, and the whole point of #34. A non-200 means the grant is gone; if
+  // that is ever done on purpose this check flips to expecting it. Rows coming back means RLS,
+  // not the grant, failed.
   const leak = await fetch(`${supabaseUrl}/rest/v1/projects?select=id&limit=1`, {
     headers: { apikey: key },
   })
@@ -112,7 +121,9 @@ async function main() {
   record(
     'rls blocks anonymous reads',
     Array.isArray(rows) && rows.length === 0,
-    Array.isArray(rows) ? `${rows.length} rows returned` : `HTTP ${leak.status}`,
+    leak.ok
+      ? `anon can SELECT (Supabase default grant); RLS returned ${rows.length} rows`
+      : `anon SELECT grant missing — HTTP ${leak.status}`,
   )
 
   // Schema drift. PostgREST resolves the column list before RLS ever filters a row, so asking
