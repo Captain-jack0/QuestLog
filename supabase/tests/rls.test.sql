@@ -72,13 +72,24 @@ select throws_ok(
   'other user cannot insert rows owned by someone else'
 );
 
--- ---- anonymous is locked out ------------------------------------------------------
+-- ---- anonymous is locked out (in this local role) ---------------------------------
+-- This proves the local test role, not production. 20260818120100_rls.sql:29-30 says
+-- "anon gets nothing at all" about table grants — and in production that is not true:
+-- the same query returns 200 with rows already filtered to zero by RLS, not a 42501.
+-- The tables there were created while Supabase still auto-exposed new public entities to
+-- the Data API roles, and no migration has revoked that since. Locally the difference is
+-- config.toml:19-24 — `auto_expose_new_tables` is unset, so nothing is exposed without an
+-- explicit grant and the query fails before RLS even runs. That is the platform's new
+-- default (the legacy flag is removed on 2026-10-30), so this file describes where the
+-- platform is going; production carries the residue of where it was. Issue #34 chose to
+-- keep the residue and rely on RLS. The production claim — anon can read the table, RLS
+-- empties it — is verified against the live database in scripts/verify-deploy.mjs, not here.
 set local role anon;
 select throws_ok(
   'select count(*) from projects',
   '42501',
   null,
-  'anon has no table privileges at all'
+  'anon has no SELECT grant on this local role (prod still carries the legacy auto-expose grant)'
 );
 
 select * from finish();
