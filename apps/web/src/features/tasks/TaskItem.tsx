@@ -15,6 +15,7 @@ import {
   type Task,
 } from '../../lib/schemas'
 import { TimerButton } from '../timer/TimerButton'
+import { formatMinutes } from '../timer/pomodoro'
 import type { TaskView } from './listPrefs'
 
 /**
@@ -76,6 +77,13 @@ interface TaskItemProps {
   onMove: () => void
   /** Opens the task pop-up: everything the row does not carry, and priority in both views. */
   onOpen: () => void
+  /**
+   * Card view only — every finished session on this task, stacked. Undefined while the query
+   * is in flight and for a task nobody has timed; that draws nothing, so the footer does not
+   * flicker an empty total in on load. A stored session is always ≥ 60s (rpc_stop_timer
+   * discards shorter ones), so a present total never rounds to "0m".
+   */
+  focusSeconds?: number
 }
 
 /**
@@ -83,7 +91,15 @@ interface TaskItemProps {
  * for scanning, so the rarely-used controls are *removed* to the pop-up rather than shrunk —
  * that is how every remaining target stays at 44px inside a 56px row.
  */
-export function TaskItem({ task, view, onStatusChange, onUpdate, onMove, onOpen }: TaskItemProps) {
+export function TaskItem({
+  task,
+  view,
+  onStatusChange,
+  onUpdate,
+  onMove,
+  onOpen,
+  focusSeconds,
+}: TaskItemProps) {
   // a row that has not come back from the database yet has no real id to send
   const pending = isOptimistic(task.id)
   const titleClass = task.status === 'done' ? 'text-muted line-through' : ''
@@ -178,6 +194,15 @@ export function TaskItem({ task, view, onStatusChange, onUpdate, onMove, onOpen 
         >
           ⇄ Move
         </button>
+        {/* Beside the timer because it is the timer's own history: what the button has already
+            banked on this task. Minutes, not mm:ss — this is a summary, and the live count is
+            TimerBar's job. */}
+        {focusSeconds ? (
+          <span className="ml-auto shrink-0 text-2xs text-muted">
+            <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+            <span className="sr-only">{formatMinutes(focusSeconds)} focused so far</span>
+          </span>
+        ) : null}
         <TimerButton
           itemType="task"
           itemId={task.id}
