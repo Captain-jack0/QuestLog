@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
+import { sumSecondsByTask, type TimeEntryRow } from './totals'
 
 export interface RunningTimer {
   id: string
@@ -24,6 +25,7 @@ export interface StopResult {
 export const timerKeys = {
   running: ['timer', 'running'] as const,
   daily: ['timer', 'daily'] as const,
+  taskTotals: ['timer', 'task-totals'] as const,
 }
 
 export function useRunningTimer() {
@@ -88,6 +90,35 @@ export function useStopTimer() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['timer'] })
       queryClient.invalidateQueries({ queryKey: ['gamification'] })
+    },
+  })
+}
+
+/**
+ * Stacked focus seconds per task, for the task cards. One query for the whole screen rather
+ * than one per card, like useProjectStats. Sits under the `timer` key so both mutations above
+ * already invalidate it — stopping a timer folds that session into the total.
+ *
+ * Keyed on the task ids, not on the project: `time_entries.project_id` is snapshotted when the
+ * timer starts (time_tracking.sql:52-53,67-68) and no trigger re-points it, so a task moved to
+ * another project keeps entries filed under the old one. Asking by project would drop that
+ * task's whole history the moment ⇄ Move is pressed.
+ *
+ * ponytail: no aggregate and no limit — with config.toml's max_rows = 1000 a screen whose
+ * tasks hold more than 1000 sessions between them would silently undercount. Roughly three
+ * years of daily focus on one project; a `sum() group by task_id` RPC is the upgrade.
+ */
+export function useTaskTotals(taskIds: string[]) {
+  return useQuery({
+    queryKey: [...timerKeys.taskTotals, taskIds.join(',')],
+    enabled: taskIds.length > 0,
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('task_id, seconds')
+        .in('task_id', taskIds)
+      if (error) throw error
+      return sumSecondsByTask((data ?? []) as TimeEntryRow[])
     },
   })
 }
