@@ -54,7 +54,7 @@ jobs:
           # CLI change behaviour under us — both have bitten this project already
           version: 2.115.0
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: supabase start
       - name: Point the app at the local stack
         # These are the fixed demo credentials every local `supabase start` prints.
