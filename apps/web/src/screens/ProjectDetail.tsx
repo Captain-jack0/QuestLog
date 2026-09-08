@@ -36,8 +36,10 @@ import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/
 import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext } from '../features/status/statusChange'
 import { useUpdateStatus } from '../features/status/useUpdateStatus'
+import { isOptimistic } from '../lib/optimistic'
 import { relativeTime } from '../lib/time'
 import { TimerButton } from '../features/timer/TimerButton'
+import { useTaskTotals } from '../features/timer/queries'
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
@@ -61,6 +63,15 @@ export function ProjectDetailScreen() {
   const area = useArea(project.data?.area_id ?? undefined)
   const tasks = useTasks(projectId)
   const logs = useProgressLogs(projectId)
+  // The unfiltered list: a task hidden behind a filter costs nothing here, and re-querying
+  // every time the filter chips move would be a refetch per keystroke. The optimistic row is
+  // dropped — its fake id is not a uuid and Postgres rejects the whole query over it
+  // (lib/optimistic.ts:3-7), which would blank every badge on the screen until the insert lands.
+  const taskIds = useMemo(
+    () => (tasks.data ?? []).map((t) => t.id).filter((id) => !isOptimistic(id)),
+    [tasks.data],
+  )
+  const taskTotals = useTaskTotals(taskIds)
 
   const updateProject = useUpdateProject(project.data?.area_id ?? '')
   const createTask = useCreateTask(projectId, session?.user.id)
@@ -140,6 +151,7 @@ export function ProjectDetailScreen() {
         updateTask.mutate({ id: task.id, ...fields }),
       onMove: () => setMovingTask({ id: task.id, title: task.title }),
       onOpen: () => setEditingTask(task),
+      focusSeconds: taskTotals.data?.[task.id],
     })
 
     // `!p-0`, not `p-0`: Card hardcodes `p-4` (Card.tsx:13) and Tailwind emits `.p-4` after

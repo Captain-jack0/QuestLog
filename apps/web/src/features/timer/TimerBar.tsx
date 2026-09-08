@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { onPageWake } from '../../lib/pageWake'
 import { formatDuration, pomodoroPhase } from './pomodoro'
 import { useRunningTimer, useStopTimer } from './queries'
 
@@ -16,8 +17,16 @@ export function TimerBar() {
   const timer = running.data
   useEffect(() => {
     if (!timer) return
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
+    const tick = () => setNow(Date.now())
+    const id = setInterval(tick, 1000)
+    // The interval alone is not enough: a backgrounded tab has it throttled to about once
+    // a minute, and iOS suspends it entirely, so on return the clock reads whatever it
+    // read when the user left until the next tick lands. Recompute on the way back in.
+    const off = onPageWake(tick)
+    return () => {
+      clearInterval(id)
+      off()
+    }
   }, [timer])
 
   if (!timer) return null
