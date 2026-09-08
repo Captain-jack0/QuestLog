@@ -39,7 +39,8 @@ describe('nextTrapIndex', () => {
  * Only the style arithmetic — `position: fixed` is the half `overflow: hidden` was missing on
  * iOS, and `top` is the only record of where the page was while it is pinned. Applying the
  * lock and handing the scroll position back is DOM work with no jsdom to run it here; the
- * scroll steps of `e2e/sheet-keyboard.spec.ts` assert that half against a real browser.
+ * scroll steps of `e2e/sheet-keyboard.spec.ts` assert that half against a real browser, with
+ * scroll anchoring switched off so the restore is the sheet's doing and not the browser's.
  */
 describe('bodyLockStyle', () => {
   it('pins the body instead of trusting overflow alone', () => {

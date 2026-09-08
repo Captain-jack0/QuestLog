@@ -97,11 +97,11 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   useEffect(() => {
     if (!open) return
+    // Only ever one sheet is open at a time (see TaskSheet), so this lock never nests: every
+    // mount point sits under the same `z-30` overlay, which swallows the clicks that would
+    // open a second one. Nesting would need a way to hand the page back to the right offset,
+    // and there is nothing to hand it to yet.
     const body = document.body
-    // Two sheets at once is against the rules (see TaskSheet), but a second lock would snapshot
-    // the first one's pin as "previous" and hand the page back to the wrong offset — or leave
-    // the body pinned for good. The one that got there first owns the lock.
-    if (body.style.position === 'fixed') return
     const scrollY = window.scrollY
     const gutter = window.innerWidth - document.documentElement.clientWidth
     const previous = {} as LockStyle
