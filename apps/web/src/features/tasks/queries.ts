@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import type { Difficulty, Priority, Task } from '../../lib/schemas'
+import { withNormalizedDescription } from '../../lib/description'
+import { newTaskRow } from './newTask'
 
 export const taskKeys = {
   byProject: (projectId: string) => ['tasks', projectId] as const,
@@ -29,14 +31,12 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
   const key = taskKeys.byProject(projectId)
 
   return useMutation({
-    // priority defaults to 'med' here, not just in the column default: the optimistic row has to
-    // show the same value the insert will store, or the list flickers on refetch.
-    mutationFn: async ({
-      title,
-      difficulty,
-      priority = 'med',
-    }: {
+    // Both halves below build their row through `newTaskRow` (newTask.ts): the optimistic
+    // placeholder has to store exactly what the insert will, or the list flickers on refetch —
+    // and that is testable there, where importing the module does not stand up a client.
+    mutationFn: async (input: {
       title: string
+      description?: string
       difficulty: Difficulty
       priority?: Priority
     }) => {
@@ -44,36 +44,28 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
       const sortOrder = queryClient.getQueryData<Task[]>(key)?.length ?? 0
       const { data, error } = await supabase
         .from('tasks')
-        .insert({
-          project_id: projectId,
-          user_id: userId,
-          title,
-          difficulty,
-          priority,
-          sort_order: sortOrder,
-        })
+        .insert(newTaskRow({ ...input, projectId, userId, sortOrder }))
         .select()
         .single()
       if (error) throw error
       return data
     },
-    onMutate: async ({ title, difficulty, priority = 'med' }) => {
+    onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: key })
       const previous = queryClient.getQueryData<Task[]>(key)
       if (previous) {
         // No `as Task`: the cast was the only thing that would have hidden a new column from
         // this row, and a placeholder missing a field the list reads is exactly the bug worth
-        // catching at compile time. Every field below is spelled out on purpose.
+        // catching at compile time. Every field the row does not carry is spelled out below.
         const optimistic: Task = {
+          ...newTaskRow({
+            ...input,
+            projectId,
+            userId: userId ?? '',
+            sortOrder: previous.length,
+          }),
           id: optimisticId(previous.length),
-          project_id: projectId,
-          user_id: userId ?? '',
-          title,
-          description: null,
-          difficulty,
-          priority,
           status: 'idea',
-          sort_order: previous.length,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           completed_at: null,
@@ -111,16 +103,22 @@ export function useUpdateTask(projectId: string) {
       difficulty?: Difficulty
       priority?: Priority
     }) => {
-      const { error } = await supabase.from('tasks').update(fields).eq('id', id)
+      const { error } = await supabase
+        .from('tasks')
+        .update(withNormalizedDescription(fields))
+        .eq('id', id)
       if (error) throw error
     },
-    onMutate: async (vars) => {
+    onMutate: async ({ id, ...fields }) => {
       await queryClient.cancelQueries({ queryKey: key })
       const previous = queryClient.getQueryData<Task[]>(key)
       if (previous) {
+        // The same normalisation the write gets: a row that shows '' until the refetch lands
+        // and null afterwards is the flicker the optimistic row exists to prevent.
+        const patch = withNormalizedDescription(fields)
         queryClient.setQueryData(
           key,
-          previous.map((t) => (t.id === vars.id ? { ...t, ...vars } : t)),
+          previous.map((t) => (t.id === id ? { ...t, ...patch } : t)),
         )
       }
       return { previous }

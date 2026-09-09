@@ -83,4 +83,28 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await picker.getByRole('button', { name: /Focus on 1 today/ }).click()
     await expect(page.getByRole('status').filter({ hasText: '+5 ✨' })).toBeVisible()
   })
+
+  // Last, not beside 'add a task': a second task here would turn the '1/1 done' the completion
+  // step asserts into '1/2'. The quick row is exercised above; this is the other door, and the
+  // only check that the description the sheet collects actually reaches the row.
+  await test.step('the task sheet adds a task with a description', async () => {
+    await page.getByRole('link', { name: 'Areas' }).click()
+    await page.getByRole('link', { name: /Work/ }).click()
+    await page.getByRole('link', { name: 'Test project' }).click()
+
+    // Typed in the quick row first: the sheet is supposed to carry it over, not start empty.
+    await page.getByRole('textbox', { name: 'New task' }).fill('Second task')
+    await page.getByRole('button', { name: 'Add task with description' }).click()
+
+    // Scoped to the dialog: 'Title' and 'Description' are labels the page uses elsewhere too.
+    const sheet = page.getByRole('dialog', { name: 'Add task' })
+    await expect(sheet.getByLabel('Title')).toHaveValue('Second task')
+    await sheet.getByLabel('Description').fill('the long version')
+    await sheet.getByRole('button', { name: 'Add task' }).click()
+
+    await expect(page.getByRole('radiogroup', { name: 'Status for Second task' })).toBeVisible()
+    await expect(page.getByText('the long version')).toBeVisible()
+    // Seeded the sheet, so it must not still be sitting there offering the same task again.
+    await expect(page.getByRole('textbox', { name: 'New task' })).toHaveValue('')
+  })
 })
