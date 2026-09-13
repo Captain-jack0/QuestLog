@@ -97,10 +97,11 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   useEffect(() => {
     if (!open) return
-    // Only ever one sheet is open at a time (see TaskSheet), so this lock never nests: every
-    // mount point sits under the same `z-30` overlay, which swallows the clicks that would
-    // open a second one. Nesting would need a way to hand the page back to the right offset,
-    // and there is nothing to hand it to yet.
+    // Sheets swap, they never stack: a sheet that opens another closes itself first, in the
+    // same commit (TaskSheet.tsx). React runs this effect's cleanup before the next one's
+    // setup, so the unpin always lands before the next pin and `previous` never snapshots
+    // another sheet's lock. The hand-off is covered by e2e/sheet-keyboard.spec.ts — get it
+    // backwards and the body stays pinned with no sheet left to unpin it.
     const body = document.body
     const scrollY = window.scrollY
     const gutter = window.innerWidth - document.documentElement.clientWidth
