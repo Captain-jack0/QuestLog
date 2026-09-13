@@ -90,6 +90,9 @@ export function ProjectDetailScreen() {
   // 'med' is the same value useCreateTask falls back to, so touching nothing here still
   // produces the row this form produced before the select existed.
   const [newPriority, setNewPriority] = useState<Priority>('med')
+  // The long form of the same add. The quick row stays exactly as it was: this is the second
+  // door, not a replacement, so a one-line task still costs one line.
+  const [addingTask, setAddingTask] = useState(false)
   const [movingProject, setMovingProject] = useState(false)
   const [movingTask, setMovingTask] = useState<{ id: string; title: string } | null>(null)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -316,7 +319,9 @@ export function ProjectDetailScreen() {
 
         {/* Wraps instead of sharing one line: with two labelled selects beside it the input
             measured 69px at 320px wide — narrower than its own placeholder. On its own row it
-            gets the full 288px there, and the selects keep their labels at every width. */}
+            gets the full 288px there, and the selects keep their labels at every width. The
+            "More…" button is the fourth control and wraps with the rest; the input's own row is
+            what the measurement above protects, and that is `w-full` regardless. */}
         <form
           className="mb-3 flex flex-wrap gap-2"
           onSubmit={(e) => {
@@ -369,6 +374,20 @@ export function ProjectDetailScreen() {
           </select>
           <Button type="submit" className="px-4">
             Add
+          </Button>
+          {/* `type="button"`: inside a form, an unqualified button submits it, and this one has
+              to hand the half-typed row to the sheet rather than insert it. Ghost so the row
+              still has one primary action — the quick add is the default path. The label is
+              spelled out for the screen reader the way its three neighbours are; "More…" alone
+              names nothing. */}
+          <Button
+            type="button"
+            variant="ghost"
+            aria-label="Add task with description"
+            className="px-4"
+            onClick={() => setAddingTask(true)}
+          >
+            More…
           </Button>
         </form>
 
@@ -514,6 +533,31 @@ export function ProjectDetailScreen() {
           )
         }
       />
+
+      {/* Mounted only while open, unlike the edit sheet below: there is no `task` for `values`
+          to re-sync against, so a sheet that survived the close would reopen holding the last
+          task you added. Unmounting is the reset. */}
+      {addingTask && (
+        <TaskSheet
+          open
+          mode="create"
+          initial={{ title: newTitle, difficulty: newDifficulty, priority: newPriority }}
+          onClose={() => setAddingTask(false)}
+          saving={createTask.isPending}
+          onSubmit={(values) =>
+            createTask.mutate(values, {
+              onSuccess: () => {
+                setAddingTask(false)
+                // The quick row seeded this sheet, so leaving its title behind would offer the
+                // task you just created a second time.
+                setNewTitle('')
+                toast('Task added')
+              },
+              onError: (error) => toast(error.message, 'error'),
+            })
+          }
+        />
+      )}
 
       <TaskSheet
         open={editingTask !== null}

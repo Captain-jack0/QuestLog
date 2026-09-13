@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { normalizeDescription } from '../../lib/description'
 import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import { OPEN_STATUSES, type ProgressLog, type Project, type ProjectInput } from '../../lib/schemas'
 import { aggregateProjectStats, type ProjectStats } from './stats'
@@ -51,11 +52,10 @@ export function useProgressLogs(projectId: string | undefined) {
   })
 }
 
-/** Empty strings from the form are stored as null, not as ''. */
 function toRow(input: ProjectInput) {
   return {
     title: input.title,
-    description: input.description?.trim() ? input.description.trim() : null,
+    description: normalizeDescription(input.description),
     priority: input.priority,
     status: input.status,
     target_date: input.target_date ? input.target_date : null,

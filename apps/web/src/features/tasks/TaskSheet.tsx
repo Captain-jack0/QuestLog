@@ -16,15 +16,35 @@ import {
   type TaskInput,
 } from '../../lib/schemas'
 
-interface TaskSheetProps {
+interface TaskSheetBase {
   open: boolean
-  task?: Task | null
   onClose: () => void
   onSubmit: (values: TaskInput) => void
-  /** Routed through the caller, like the row's: the status mutation stays where it lives. */
-  onStatusChange: (status: ItemStatus) => void
   saving?: boolean
 }
+
+/**
+ * A union rather than two optional props: a task that has not been inserted yet has no status to
+ * change, and an edit sheet without `onStatusChange` would render the picker and silently do
+ * nothing when you use it. Each mode can only be given the props it can act on.
+ */
+type TaskSheetProps = TaskSheetBase &
+  (
+    | {
+        mode: 'create'
+        /** Seeds the fields, so the quick-add row's half-typed entry carries into the sheet. */
+        initial?: Partial<TaskInput>
+        task?: never
+        onStatusChange?: never
+      }
+    | {
+        mode?: 'edit'
+        initial?: never
+        task: Task | null
+        /** Routed through the caller, like the row's: the status mutation stays where it lives. */
+        onStatusChange: (status: ItemStatus) => void
+      }
+  )
 
 /**
  * The long form of a task edit. The card keeps its inline title/description/difficulty
@@ -38,6 +58,8 @@ interface TaskSheetProps {
 export function TaskSheet({
   open,
   task,
+  initial,
+  mode = 'edit',
   onClose,
   onSubmit,
   onStatusChange,
@@ -49,11 +71,15 @@ export function TaskSheet({
     formState: { errors },
   } = useForm<TaskInput>({
     resolver: zodResolver(taskSchema),
+    // Still `values`, not `defaultValues`: the edit sheet stays mounted across tasks, so the
+    // form has to re-sync when `task` changes. `initial` only fills the create side, and the
+    // sheet is modal — the quick-add field it reads cannot move while the sheet is open, so
+    // the object stays deep-equal and never resets what you are typing in here.
     values: {
-      title: task?.title ?? '',
-      description: task?.description ?? '',
-      difficulty: task?.difficulty ?? 'M',
-      priority: task?.priority ?? 'med',
+      title: task?.title ?? initial?.title ?? '',
+      description: task?.description ?? initial?.description ?? '',
+      difficulty: task?.difficulty ?? initial?.difficulty ?? 'M',
+      priority: task?.priority ?? initial?.priority ?? 'med',
     },
   })
 
@@ -61,7 +87,9 @@ export function TaskSheet({
   const unsaved = task ? isOptimistic(task.id) : false
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Edit task">
+    // "Add task", not "New task": the quick-add input already answers to that name, and two
+    // things with one accessible name is a selector waiting to hit the wrong one.
+    <BottomSheet open={open} onClose={onClose} title={mode === 'create' ? 'Add task' : 'Edit task'}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
           <label htmlFor="task-title" className="mb-1 block text-sm font-medium">
@@ -115,7 +143,7 @@ export function TaskSheet({
         </div>
 
         <Button type="submit" block disabled={saving || unsaved}>
-          {saving ? 'Saving…' : 'Save changes'}
+          {saving ? 'Saving…' : mode === 'create' ? 'Add task' : 'Save changes'}
         </Button>
         {unsaved && (
           <p className="text-sm text-muted">This task is still saving. Try again in a moment.</p>
@@ -143,7 +171,7 @@ export function TaskSheet({
               disabled={saving || unsaved}
               onChange={(status) => {
                 onClose()
-                onStatusChange(status)
+                onStatusChange?.(status)
               }}
             />
           </div>
