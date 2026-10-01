@@ -10,6 +10,7 @@ import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
 import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/queries'
+import { projectCardView } from '../features/projects/cardView'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import { useCreateProject, useProjectStats, useProjects } from '../features/projects/queries'
 
@@ -72,29 +73,68 @@ export function AreaDetailScreen() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
         {projects.data?.map((project) => {
           const stat = stats.data?.[project.id]
+          const isDone = project.status === 'done'
+          const view = projectCardView(project.status, stat)
           return (
-            <Card key={project.id} edgeColor={area.data?.color} className="aspect-square pl-5">
+            <Card
+              key={project.id}
+              edgeColor={isDone ? 'rgb(var(--success))' : area.data?.color}
+              className="aspect-square pl-5"
+            >
+              {/* Done cards fade via a local opacity on the title and the progress bar only —
+                  never on the Card itself. A card-wide opacity composites every pixel in it
+                  (chip included) against --paper, and the Done chip (success-ink on
+                  success/20, see StatusChip.tsx) is already only 4.27:1 in the calm theme at
+                  full strength: any further blend pushes it under the 4.5:1 floor with no
+                  opacity value that recovers it (that 4.27:1 is pre-existing — the same chip
+                  renders at full strength everywhere else in the app, e.g. ProjectDetail.tsx).
+                  So the chip is left untouched here, and opacity-75 is applied only to the title
+                  (ink on the card's own surface: 6.53:1 calm, 8.29:1 quest) and the progress
+                  bar. The "Completed" label stays plain text-muted (4.83:1) — muted plus
+                  opacity would drop under 4.5:1 in calm.
+                  `group`/`group-hover` brings both back to full strength on hover/focus. */}
               <Link
                 to={`/projects/${project.id}`}
-                className="flex h-full w-full flex-col text-left"
+                className="group flex h-full w-full flex-col text-left"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-semibold leading-tight line-clamp-2">{project.title}</span>
+                  <span
+                    className={`font-semibold leading-tight line-clamp-2 ${
+                      isDone
+                        ? 'text-ink opacity-75 line-through transition group-hover:opacity-100 group-focus-within:opacity-100'
+                        : ''
+                    }`}
+                  >
+                    {project.title}
+                  </span>
                   <StatusChip status={project.status} />
                 </div>
                 <div className="mt-auto">
-                  {stat?.nextStep && (
+                  {view.showNext && stat?.nextStep && (
                     <p className="mt-2 text-sm line-clamp-1">
                       <span className="text-muted">Next: </span>
                       {stat.nextStep}
                     </p>
                   )}
-                  {stat && stat.tasksTotal > 0 && (
+                  {view.showStats && (
                     <div className="mt-3">
-                      <ProgressBar done={stat.tasksDone} total={stat.tasksTotal} />
-                      <p className="mt-1 text-xs text-muted">
-                        {stat.tasksDone}/{stat.tasksTotal} tasks done
-                      </p>
+                      {view.showProgress && (
+                        <div
+                          className={
+                            isDone
+                              ? 'opacity-75 transition group-hover:opacity-100 group-focus-within:opacity-100'
+                              : ''
+                          }
+                        >
+                          <ProgressBar
+                            done={view.barDone}
+                            total={view.barTotal}
+                            tone={view.tone}
+                            full={view.barFull}
+                          />
+                        </div>
+                      )}
+                      {view.label && <p className="mt-1 text-xs text-muted">{view.label}</p>}
                     </div>
                   )}
                 </div>
