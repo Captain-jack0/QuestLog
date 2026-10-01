@@ -16,7 +16,13 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'mobile', use: { ...devices['Pixel 7'] } }],
+  projects: [
+    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // WebKit is the engine this app is actually used on and the only one that reproduces the
+    // iOS bugs Chromium papers over — the body scroll lock in `sheet-keyboard.spec.ts` exists
+    // because `overflow: hidden` alone is ignored here and nowhere else.
+    { name: 'mobile-safari', use: { ...devices['iPhone 14'] } },
+  ],
   webServer: {
     command: 'npm run dev',
     url: `http://localhost:${PORT}`,
