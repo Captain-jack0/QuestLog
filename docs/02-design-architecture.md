@@ -75,7 +75,7 @@ profiles        (id PK = auth.users.id, display_name, timezone, digest_time,
                  created_at)
 
 life_areas      (id PK, user_id FK, name, color, icon, sort_order,
-                 archived bool, created_at)
+                 archived bool, created_at, updated_at)
 
 projects        (id PK, user_id FK, area_id FK, title, description,
                  status enum, priority enum(low/med/high), target_date date null,
