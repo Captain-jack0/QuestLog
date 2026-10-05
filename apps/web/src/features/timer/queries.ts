@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
+import { areaKeys } from '../areas/queries'
 import { sumSecondsByTask, type TimeEntryRow } from './totals'
 
 export interface RunningTimer {
@@ -59,7 +60,14 @@ export function useStartTimer() {
       if (error) throw error
     },
     onError: (error: Error) => toast(error.message, 'error'),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ['timer'] }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['timer'] })
+      // Starting stops whatever was running, and a finished session touches its task, project
+      // and area — see useStopTimer below.
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
+    },
   })
 }
 
@@ -90,6 +98,12 @@ export function useStopTimer() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['timer'] })
       queryClient.invalidateQueries({ queryKey: ['gamification'] })
+      // A finished session touches its task (20261005120000_untouched_first_ordering.sql), which
+      // moves it in the list on screen — and nothing else would refetch that list. The touch
+      // travels up, so the project and area lists moved as well.
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
     },
   })
 }

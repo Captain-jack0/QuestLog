@@ -5,7 +5,7 @@ import { Button } from './ui/Button'
 import { useToast } from './ui/Toast'
 import { compactFieldClass, fieldClass } from './ui/field'
 import { useAuth } from '../auth/AuthProvider'
-import { useAreas } from '../features/areas/queries'
+import { areaKeys, useAreas } from '../features/areas/queries'
 import { supabase } from '../lib/supabase'
 import { OPEN_STATUSES } from '../lib/schemas'
 
@@ -84,6 +84,8 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
       localStorage.setItem(LAST_PROJECT, projectId)
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      // Either insert touches the area it lands in, and the areas grid orders by that touch.
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
       queryClient.invalidateQueries({ queryKey: ['quick-add'] })
       queryClient.invalidateQueries({ queryKey: ['focus'] })
       toast(kind === 'project' ? 'Project added' : 'Task added')

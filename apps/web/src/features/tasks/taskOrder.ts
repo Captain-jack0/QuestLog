@@ -2,7 +2,7 @@ import { OPEN_STATUSES, type Difficulty, type ItemStatus, type Priority } from '
 import { localDateKey } from '../../lib/time'
 import type { TaskListPrefs } from './listPrefs'
 
-export const SORT_KEYS = ['created', 'priority'] as const
+export const SORT_KEYS = ['untouched', 'priority'] as const
 export type SortKey = (typeof SORT_KEYS)[number]
 
 /**
@@ -10,12 +10,13 @@ export type SortKey = (typeof SORT_KEYS)[number]
  * `priority` column exists on `tasks`. Anything carrying these fields sorts here.
  */
 type Sortable = {
+  id: string
   status: ItemStatus
   priority: Priority
   /** Filtered on, never sorted on — nothing ranks S over L. */
   difficulty: Difficulty
   created_at: string
-  sort_order: number
+  updated_at: string
 }
 
 type Staleable = {
@@ -47,7 +48,11 @@ function focusRank(task: Pick<Sortable, 'status'>): number {
   return task.status === 'in_progress' ? 0 : 1
 }
 
-export function compareTasks(sort: SortKey): (a: Sortable, b: Sortable) => number {
+/**
+ * `created` is not in SORT_KEYS — no control offers it. It is the order the closed bucket had
+ * before `untouched` became the default, and `partitionTasks` keeps it there.
+ */
+export function compareTasks(sort: SortKey | 'created'): (a: Sortable, b: Sortable) => number {
   return (a, b) => {
     const focus = focusRank(a) - focusRank(b)
     if (focus !== 0) return focus
@@ -57,12 +62,21 @@ export function compareTasks(sort: SortKey): (a: Sortable, b: Sortable) => numbe
       if (rank !== 0) return rank
     }
 
+    // Least recently touched first: the work nobody has looked at for longest is what the list
+    // exists to put in front of you. Editing a task sends it to the bottom.
+    if (sort === 'untouched') {
+      const touched = Date.parse(a.updated_at) - Date.parse(b.updated_at)
+      if (touched) return touched
+    }
+
     // Oldest first, so a list read top to bottom is the order the work arrived in.
-    // An unparsable timestamp yields NaN, which is falsy and falls through to sort_order.
+    // An unparsable timestamp yields NaN, which is falsy and falls through to the id.
     const created = Date.parse(a.created_at) - Date.parse(b.created_at)
     if (created) return created
 
-    return a.sort_order - b.sort_order
+    // Ids are unique, so two rows never compare equal and the result cannot depend on the
+    // order the server happened to return them in.
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
   }
 }
 
@@ -131,7 +145,9 @@ export function partitionTasks<T extends Sortable & Staleable>(
 
   return {
     open: visible.sort(compare),
-    closed: closed.sort(compare),
+    // The closed bucket keeps the order it always had: "untouched first" is a nudge towards
+    // neglected open work, and finished work has nothing left to be nudged about.
+    closed: closed.sort(prefs.sort === 'untouched' ? compareTasks('created') : compare),
     hiddenByFilter: open.length - visible.length,
   }
 }
