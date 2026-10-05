@@ -576,6 +576,8 @@ export type Database = {
           id: string | null
           mode: string | null
           project_id: string | null
+          project_seconds_today: number | null
+          project_seconds_total: number | null
           project_title: string | null
           started_at: string | null
           task_id: string | null
