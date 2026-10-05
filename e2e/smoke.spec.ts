@@ -107,4 +107,41 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     // Seeded the sheet, so it must not still be sitting there offering the same task again.
     await expect(page.getByRole('textbox', { name: 'New task' })).toHaveValue('')
   })
+
+  // Last of all: it adds a second area and a second project, and every step above picks its
+  // target by name on screens where there was exactly one of each. Neither new name contains
+  // 'Work', 'Test project', 'Areas' or 'Today', the strings those selectors match on.
+  await test.step('areas and projects list least recently touched first', async () => {
+    // The cards, by where they link: the nav link is '/areas' with nothing after it, and no
+    // timer is running, so the timer bar's project link is not on the page.
+    const areaCards = page.locator('a[href^="/areas/"]')
+    const projectCards = page.locator('a[href^="/projects/"]')
+
+    await page.getByRole('link', { name: 'Areas' }).click()
+    await page.getByRole('button', { name: '+ New' }).click()
+    await page.getByLabel('Name').fill('Garden')
+    await page.getByRole('button', { name: 'Create area' }).click()
+    // 'Work' was last touched when 'Second task' landed in it; 'Garden' is newer.
+    await expect(areaCards).toHaveText([/Work/, /Garden/])
+
+    await page.getByRole('link', { name: /Work/ }).click()
+    await page.getByRole('button', { name: '+ New project' }).click()
+    await page.getByLabel('Title').fill('Quiet sibling')
+    await page.getByRole('button', { name: 'Create project' }).click()
+    // The new project is the most recently touched one, so it goes last, not first.
+    await expect(projectCards).toHaveText([/Test project/, /Quiet sibling/])
+
+    // Touching the older project through one of its tasks is what has to move it.
+    await page.getByRole('link', { name: 'Test project' }).click()
+    await page.getByRole('textbox', { name: 'New task' }).fill('Third task')
+    await page.getByRole('button', { name: 'Add', exact: true }).click()
+    await expect(page.getByRole('radiogroup', { name: 'Status for Third task' })).toBeVisible()
+
+    // Everything since 'Garden' was created happened inside 'Work', so the two have swapped.
+    await page.getByRole('link', { name: 'Areas' }).click()
+    await expect(areaCards).toHaveText([/Garden/, /Work/])
+
+    await page.getByRole('link', { name: /Work/ }).click()
+    await expect(projectCards).toHaveText([/Quiet sibling/, /Test project/])
+  })
 })
