@@ -32,7 +32,7 @@ describe('profileSchema', () => {
 
 describe('areaSchema', () => {
   it('demands a real colour', () => {
-    const base = { name: 'Work', icon: '💼', sort_order: 0 }
+    const base = { name: 'Work', icon: '💼' }
     expect(areaSchema.safeParse({ ...base, color: '#A5B4FC' }).success).toBe(true)
     expect(areaSchema.safeParse({ ...base, color: 'blue' }).success).toBe(false)
   })
