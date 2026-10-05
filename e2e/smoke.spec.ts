@@ -69,6 +69,12 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await page.getByRole('link', { name: 'Today' }).click()
     await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible()
     await expect(page.getByText('plan the second one')).toBeVisible()
+    // Paused, so it sits under the parked heading with its status spelled out — and with nothing
+    // in progress, the Active list drops its heading rather than showing an empty one.
+    const parked = page.getByRole('region', { name: 'Paused & blocked' })
+    await expect(parked.getByText('plan the second one')).toBeVisible()
+    await expect(parked.getByText('Paused', { exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Active', exact: true })).toHaveCount(0)
     await expect(page.getByText(/1-day streak/)).toBeVisible()
   })
 
