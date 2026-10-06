@@ -38,8 +38,9 @@ import { needsResumeContext } from '../features/status/statusChange'
 import { useUpdateStatus } from '../features/status/useUpdateStatus'
 import { isOptimistic } from '../lib/optimistic'
 import { relativeTime } from '../lib/time'
+import { formatMinutes } from '../features/timer/pomodoro'
 import { TimerButton } from '../features/timer/TimerButton'
-import { useTaskTotals } from '../features/timer/queries'
+import { useProjectTotals, useTaskTotals } from '../features/timer/queries'
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
@@ -72,6 +73,9 @@ export function ProjectDetailScreen() {
     [tasks.data],
   )
   const taskTotals = useTaskTotals(taskIds)
+  // Not the sum of the badges above: time clocked on the project itself and on tasks deleted
+  // since belongs to the project too, and no task card carries it.
+  const focusSeconds = useProjectTotals(projectId ? [projectId] : []).data?.[projectId]
 
   const updateProject = useUpdateProject(project.data?.area_id ?? '')
   const createTask = useCreateTask(projectId, session?.user.id)
@@ -255,6 +259,16 @@ export function ProjectDetailScreen() {
             {/* The label, not the enum: this line reads as a sentence, and "med priority" is not
                 one. Same reason the new-task select spells the values out below. */}
             <span className="text-muted">{PRIORITY_LABELS[project.data.priority]} priority</span>
+            {/* The same badge the task cards carry (TaskItem.tsx), one level up: what is banked,
+                in minutes. The live count is TimerBar's job, so this moves when a timer stops. */}
+            {focusSeconds ? (
+              <span className="text-muted">
+                <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+                <span className="sr-only">
+                  {formatMinutes(focusSeconds)} focused on this project
+                </span>
+              </span>
+            ) : null}
             {/* Still here on purpose: this pair is the only way in the app to time work on a
                 project that has not been cut into tasks yet, and docs/02:26 puts it in this
                 header by name. Removing it needs a replacement entry point first. */}

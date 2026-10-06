@@ -13,6 +13,9 @@ import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/querie
 import { projectCardView } from '../features/projects/cardView'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import { useCreateProject, useProjectStats, useProjects } from '../features/projects/queries'
+import { formatMinutes } from '../features/timer/pomodoro'
+import { useProjectTotals } from '../features/timer/queries'
+import { isOptimistic } from '../lib/optimistic'
 
 export function AreaDetailScreen() {
   const { areaId = '' } = useParams()
@@ -22,6 +25,11 @@ export function AreaDetailScreen() {
   const area = useArea(areaId)
   const projects = useProjects(areaId)
   const stats = useProjectStats(areaId, projects.data?.map((p) => p.id) ?? [])
+  // The optimistic card is left out: its placeholder id is not a uuid, and Postgres would
+  // reject the whole query over it (lib/optimistic.ts) — every badge blank until the insert lands.
+  const focusTotals = useProjectTotals(
+    (projects.data ?? []).map((p) => p.id).filter((id) => !isOptimistic(id)),
+  )
 
   const updateArea = useUpdateArea()
   const archiveArea = useArchiveArea()
@@ -73,6 +81,7 @@ export function AreaDetailScreen() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
         {projects.data?.map((project) => {
           const stat = stats.data?.[project.id]
+          const focusSeconds = focusTotals.data?.[project.id]
           const isDone = project.status === 'done'
           const view = projectCardView(project.status, stat)
           return (
@@ -137,6 +146,15 @@ export function AreaDetailScreen() {
                       {view.label && <p className="mt-1 text-xs text-muted">{view.label}</p>}
                     </div>
                   )}
+                  {/* Outside `showStats`: a project with no tasks can still have time clocked on
+                      it. Plain `text-muted` with no fade on a Done card, for the reason given
+                      for "Completed" above. */}
+                  {focusSeconds ? (
+                    <p className="mt-1 text-xs text-muted">
+                      <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+                      <span className="sr-only">{formatMinutes(focusSeconds)} focused</span>
+                    </p>
+                  ) : null}
                 </div>
               </Link>
             </Card>
