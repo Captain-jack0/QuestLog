@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -29,7 +29,7 @@ jobs:
       - run: npm run build
 
   db:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: supabase/setup-cli@v1
@@ -41,7 +41,7 @@ jobs:
       - run: supabase test db
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -81,7 +81,7 @@ jobs:
   # instance, so the live schema is checked here or nowhere.
   verify-production:
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build]
     steps:
       - uses: actions/checkout@v5
