@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { normalizeDescription } from '../../lib/description'
 import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import { OPEN_STATUSES, type ProgressLog, type Project, type ProjectInput } from '../../lib/schemas'
+import { areaKeys } from '../areas/queries'
 import { aggregateProjectStats, type ProjectStats } from './stats'
 
 export type { ProjectStats }
@@ -71,7 +72,10 @@ export function useProjects(areaId: string | undefined) {
         .from('projects')
         .select('*')
         .eq('area_id', areaId!)
-        .order('updated_at', { ascending: false })
+        // Least recently touched first, same rule as the areas grid; a task change touches its
+        // project (20261005120000_untouched_first_ordering.sql). created_at breaks ties.
+        .order('updated_at')
+        .order('created_at')
       if (error) throw error
       return data
     },
@@ -142,6 +146,9 @@ function useProjectMutation<TVars>(
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: key })
       queryClient.invalidateQueries({ queryKey: projectKeys.openCounts })
+      // A project write touches its area (20261005120000_untouched_first_ordering.sql), which
+      // moves the area in a grid that orders by that touch.
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
     },
   })
 }
@@ -164,7 +171,10 @@ export function useCreateProject(areaId: string, userId: string | undefined) {
         replaceOptimistic(current ?? [], data),
       )
     },
+    // Last, not first: a new project is the most recently touched one, and that is where the
+    // refetch will put it.
     (current, input) => [
+      ...current,
       {
         ...toRow(input),
         id: optimisticId(current.length),
@@ -175,7 +185,6 @@ export function useCreateProject(areaId: string, userId: string | undefined) {
         completed_at: null,
         snoozed_until: null,
       } as Project,
-      ...current,
     ],
   )
 }
@@ -207,6 +216,7 @@ export function useMoveProject() {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(vars.id) })
       queryClient.invalidateQueries({ queryKey: ['gamification'] })
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
     },
   })
 }

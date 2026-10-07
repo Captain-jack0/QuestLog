@@ -10,7 +10,6 @@ type Row = {
   priority: Priority
   difficulty: Difficulty
   created_at: string
-  sort_order: number
   updated_at: string
   snoozed_until: string | null
 }
@@ -25,7 +24,6 @@ function task(id: string, over: Partial<Row> = {}): Row {
     priority: 'med',
     difficulty: 'M',
     created_at: '2026-01-01T00:00:00.000Z',
-    sort_order: 0,
     updated_at: '2026-01-01T00:00:00.000Z',
     snoozed_until: null,
     ...over,
@@ -36,13 +34,65 @@ const ids = (rows: readonly Row[]) => rows.map((row) => row.id)
 const prefs = (over: Partial<TaskListPrefs> = {}): TaskListPrefs => ({ ...DEFAULT_PREFS, ...over })
 
 describe('compareTasks', () => {
-  it('puts in_progress first under the created sort, whatever the dates say', () => {
+  it('puts in_progress first under the untouched sort, whatever the dates say', () => {
     const rows = [
-      task('old', { created_at: '2025-01-01T00:00:00.000Z' }),
-      task('running', { status: 'in_progress', created_at: '2026-06-01T00:00:00.000Z' }),
-      task('new', { created_at: '2026-03-01T00:00:00.000Z' }),
+      task('old', { updated_at: '2025-01-01T00:00:00.000Z' }),
+      task('running', { status: 'in_progress', updated_at: '2026-06-01T00:00:00.000Z' }),
+      task('new', { updated_at: '2026-03-01T00:00:00.000Z' }),
     ]
-    expect(ids([...rows].sort(compareTasks('created')))).toEqual(['running', 'old', 'new'])
+    expect(ids([...rows].sort(compareTasks('untouched')))).toEqual(['running', 'old', 'new'])
+  })
+
+  it('orders the untouched sort by updated_at, least recently touched first', () => {
+    // created_at runs the other way on purpose: the newest task is the one left alone longest,
+    // so an order that still followed created_at would come out reversed.
+    const rows = [
+      task('edited-today', {
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-15T00:00:00.000Z',
+      }),
+      task('never-touched', {
+        created_at: '2026-01-03T00:00:00.000Z',
+        updated_at: '2026-01-03T00:00:00.000Z',
+      }),
+      task('edited-last-week', {
+        created_at: '2026-01-02T00:00:00.000Z',
+        updated_at: '2026-01-08T00:00:00.000Z',
+      }),
+    ]
+    expect(ids([...rows].sort(compareTasks('untouched')))).toEqual([
+      'never-touched',
+      'edited-last-week',
+      'edited-today',
+    ])
+  })
+
+  it('applies the untouched rule inside the in_progress group too', () => {
+    const rows = [
+      task('waiting', { updated_at: '2025-01-01T00:00:00.000Z' }),
+      task('running-fresh', { status: 'in_progress', updated_at: '2026-01-10T00:00:00.000Z' }),
+      task('running-neglected', { status: 'in_progress', updated_at: '2026-01-02T00:00:00.000Z' }),
+    ]
+    expect(ids([...rows].sort(compareTasks('untouched')))).toEqual([
+      'running-neglected',
+      'running-fresh',
+      'waiting',
+    ])
+  })
+
+  it('breaks an updated_at tie with the oldest created_at', () => {
+    // The ids run against the dates on purpose: the id is the next tiebreaker down, so ids in
+    // date order would keep this passing with the created_at comparison deleted.
+    const rows = [
+      task('b-middle', { created_at: '2026-01-02T00:00:00.000Z' }),
+      task('c-oldest', { created_at: '2026-01-01T00:00:00.000Z' }),
+      task('a-newest', { created_at: '2026-01-03T00:00:00.000Z' }),
+    ].map((row) => ({ ...row, updated_at: '2026-01-10T00:00:00.000Z' }))
+    expect(ids([...rows].sort(compareTasks('untouched')))).toEqual([
+      'c-oldest',
+      'b-middle',
+      'a-newest',
+    ])
   })
 
   it('puts in_progress first under the priority sort, even at the lowest priority', () => {
@@ -60,20 +110,24 @@ describe('compareTasks', () => {
   })
 
   it('breaks a priority tie with the oldest created_at', () => {
+    // Ids against the dates here too, for the same reason as the untouched tie above.
     const rows = [
-      task('second', { priority: 'high', created_at: '2026-02-01T00:00:00.000Z' }),
-      task('first', { priority: 'high', created_at: '2026-01-01T00:00:00.000Z' }),
-      task('third', { priority: 'high', created_at: '2026-03-01T00:00:00.000Z' }),
+      task('b-middle', { priority: 'high', created_at: '2026-02-01T00:00:00.000Z' }),
+      task('c-oldest', { priority: 'high', created_at: '2026-01-01T00:00:00.000Z' }),
+      task('a-newest', { priority: 'high', created_at: '2026-03-01T00:00:00.000Z' }),
     ]
-    expect(ids([...rows].sort(compareTasks('priority')))).toEqual(['first', 'second', 'third'])
+    expect(ids([...rows].sort(compareTasks('priority')))).toEqual([
+      'c-oldest',
+      'b-middle',
+      'a-newest',
+    ])
   })
 
-  it('ignores priority under the created sort and falls back to sort_order when tied', () => {
-    const rows = [
-      task('b', { priority: 'high', sort_order: 2 }),
-      task('a', { priority: 'low', sort_order: 1 }),
-    ]
-    expect(ids([...rows].sort(compareTasks('created')))).toEqual(['a', 'b'])
+  it('ignores priority under the untouched sort and falls back to the id when all else ties', () => {
+    const rows = [task('b', { priority: 'high' }), task('a', { priority: 'low' })]
+    expect(ids([...rows].sort(compareTasks('untouched')))).toEqual(['a', 'b'])
+    // Deterministic means the input order cannot leak through.
+    expect(ids([...rows].reverse().sort(compareTasks('untouched')))).toEqual(['a', 'b'])
   })
 })
 
@@ -260,6 +314,29 @@ describe('partitionTasks', () => {
 
     expect(ids(result.open)).toEqual(['running'])
   })
+
+  it('sorts the open list untouched-first by default and leaves the closed bucket as it was', () => {
+    const rows = [
+      task('open-fresh', { updated_at: '2026-01-14T00:00:00.000Z' }),
+      task('open-neglected', { updated_at: '2026-01-02T00:00:00.000Z' }),
+      // Finished later but created earlier: the closed bucket still reads in arrival order.
+      task('done-first', {
+        status: 'done',
+        created_at: '2026-01-01T00:00:00.000Z',
+        updated_at: '2026-01-14T00:00:00.000Z',
+      }),
+      task('done-second', {
+        status: 'done',
+        created_at: '2026-01-05T00:00:00.000Z',
+        updated_at: '2026-01-06T00:00:00.000Z',
+      }),
+    ]
+    const result = partitionTasks([...rows].reverse(), prefs(), 14, NOW)
+
+    expect(DEFAULT_PREFS.sort).toBe('untouched')
+    expect(ids(result.open)).toEqual(['open-neglected', 'open-fresh'])
+    expect(ids(result.closed)).toEqual(['done-first', 'done-second'])
+  })
 })
 
 describe('clearedFilters', () => {
@@ -322,6 +399,15 @@ describe('parsePrefs', () => {
       DEFAULT_PREFS,
     )
     expect(parsePrefs({ view: 'row', staleOnly: 'yes' })).toEqual({ ...DEFAULT_PREFS, view: 'row' })
+  })
+
+  it('reads a record saved under the retired created sort as untouched', () => {
+    // Every browser that used the list before this change has `sort: 'created'` stored.
+    expect(parsePrefs({ sort: 'created', view: 'row' })).toEqual({
+      ...DEFAULT_PREFS,
+      sort: 'untouched',
+      view: 'row',
+    })
   })
 
   it('takes the two new chips per field and defaults a non-boolean back to off', () => {

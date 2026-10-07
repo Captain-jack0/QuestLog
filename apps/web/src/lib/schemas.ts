@@ -66,7 +66,6 @@ export const areaSchema = z.object({
   name: z.string().trim().min(1, 'Give the area a name').max(60, 'Keep it under 60 characters'),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Pick a colour'),
   icon: z.string().min(1, 'Pick an icon'),
-  sort_order: z.number().int().min(0),
 })
 
 export type AreaInput = z.infer<typeof areaSchema>
