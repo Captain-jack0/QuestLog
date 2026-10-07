@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
@@ -11,6 +11,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
 import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/queries'
 import { projectCardView } from '../features/projects/cardView'
+import { orderProjects } from '../features/projects/projectOrder'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import { useCreateProject, useProjectStats, useProjects } from '../features/projects/queries'
 import { formatMinutes } from '../features/timer/pomodoro'
@@ -24,6 +25,9 @@ export function AreaDetailScreen() {
 
   const area = useArea(areaId)
   const projects = useProjects(areaId)
+  // Server order is "least recently touched first" for every row; the grid keeps that for open
+  // projects and sends done / dropped ones to the end (projectOrder.ts).
+  const orderedProjects = useMemo(() => orderProjects(projects.data ?? []), [projects.data])
   const stats = useProjectStats(areaId, projects.data?.map((p) => p.id) ?? [])
   // The optimistic card is left out: its placeholder id is not a uuid, and Postgres would
   // reject the whole query over it (lib/optimistic.ts) — every badge blank until the insert lands.
@@ -79,7 +83,7 @@ export function AreaDetailScreen() {
           that breakpoint (SideNav.tsx:10). From `lg` the container can pay: three columns give
           the title 107px at 1024px, four give it 111px at 1280px. */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
-        {projects.data?.map((project) => {
+        {orderedProjects.map((project) => {
           const stat = stats.data?.[project.id]
           const focusSeconds = focusTotals.data?.[project.id]
           const isDone = project.status === 'done'

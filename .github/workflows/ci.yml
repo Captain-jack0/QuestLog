@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -29,29 +29,29 @@ jobs:
       - run: npm run build
 
   db:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          # pinned: 'latest' resolves through the GitHub API (rate-limited) and lets the
-          # CLI change behaviour under us — both have bitten this project already
+          # pinned: unset, v3 reads the root lockfile and then falls back to npm's 'latest',
+          # which lets the CLI change behaviour under us — that has bitten this project already
           version: 2.115.0
       - run: supabase start
       - run: supabase test db
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          # pinned: 'latest' resolves through the GitHub API (rate-limited) and lets the
-          # CLI change behaviour under us — both have bitten this project already
+          # pinned: unset, v3 reads the root lockfile and then falls back to npm's 'latest',
+          # which lets the CLI change behaviour under us — that has bitten this project already
           version: 2.115.0
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
@@ -81,7 +81,7 @@ jobs:
   # instance, so the live schema is checked here or nowhere.
   verify-production:
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build]
     steps:
       - uses: actions/checkout@v5

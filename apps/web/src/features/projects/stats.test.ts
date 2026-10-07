@@ -43,15 +43,9 @@ describe('aggregateProjectStats', () => {
 
 describe('form schemas', () => {
   it('rejects a blank area name and a bad colour', () => {
-    expect(
-      areaSchema.safeParse({ name: '  ', color: '#5B5BD6', icon: '🧭', sort_order: 0 }).success,
-    ).toBe(false)
-    expect(
-      areaSchema.safeParse({ name: 'Work', color: 'indigo', icon: '🧭', sort_order: 0 }).success,
-    ).toBe(false)
-    expect(
-      areaSchema.safeParse({ name: 'Work', color: '#5B5BD6', icon: '🧭', sort_order: 0 }).success,
-    ).toBe(true)
+    expect(areaSchema.safeParse({ name: '  ', color: '#5B5BD6', icon: '🧭' }).success).toBe(false)
+    expect(areaSchema.safeParse({ name: 'Work', color: 'indigo', icon: '🧭' }).success).toBe(false)
+    expect(areaSchema.safeParse({ name: 'Work', color: '#5B5BD6', icon: '🧭' }).success).toBe(true)
   })
 
   it('accepts a project with an empty description and date', () => {

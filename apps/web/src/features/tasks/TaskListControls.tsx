@@ -10,10 +10,10 @@ import { SORT_KEYS, type SortKey } from './taskOrder'
 const FILTER_STATUSES: ItemStatus[] = ['in_progress', 'paused', 'blocked']
 
 /**
- * `created` sorts oldest first (taskOrder.ts), so a "Newest" label would say the opposite
- * of what the comparator does. "Added" names the axis without claiming a direction.
+ * `untouched` sorts least recently updated first (taskOrder.ts). Same word as the stale chip
+ * above on purpose: both read `updated_at`, that one filters on it and this one orders by it.
  */
-const SORT_LABELS: Record<SortKey, string> = { created: 'Added', priority: 'Priority' }
+const SORT_LABELS: Record<SortKey, string> = { untouched: 'Untouched', priority: 'Priority' }
 
 const VIEW_GLYPHS: Record<TaskView, string> = { card: '▦', row: '☰' }
 const VIEW_LABELS: Record<TaskView, string> = { card: 'Card view', row: 'Row view' }

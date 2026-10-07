@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import type { Difficulty, Priority, Task } from '../../lib/schemas'
 import { withNormalizedDescription } from '../../lib/description'
+import { areaKeys } from '../areas/queries'
 import { newTaskRow } from './newTask'
 
 export const taskKeys = {
@@ -18,7 +19,9 @@ export function useTasks(projectId: string | undefined) {
         .from('tasks')
         .select('*')
         .eq('project_id', projectId!)
-        .order('sort_order')
+        // The list re-sorts on the client (taskOrder.ts); this only makes the raw order match
+        // its default instead of a manual order nothing can set any more.
+        .order('updated_at')
         .order('created_at')
       if (error) throw error
       return data
@@ -83,7 +86,14 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
     onError: (_error, _vars, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: key })
+      // A task write touches its project and that project's area
+      // (20261005120000_untouched_first_ordering.sql), and both lists order by that touch.
+      // Left to the 30s staleTime, going back up right after this would show the old order.
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
+    },
   })
 }
 
@@ -126,7 +136,12 @@ export function useUpdateTask(projectId: string) {
     onError: (_error, _vars, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous)
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: key })
+      // Same as useCreateTask: the edit moved the project and the area in their lists too.
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
+    },
   })
 }
 
@@ -141,6 +156,7 @@ export function useMoveTask() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: areaKeys.all })
     },
   })
 }

@@ -21,7 +21,7 @@ export const DEFAULT_PREFS: TaskListPrefs = {
   highPriorityOnly: false,
   quickOnly: false,
   showCompleted: false,
-  sort: 'created',
+  sort: 'untouched',
   view: 'card',
 }
 

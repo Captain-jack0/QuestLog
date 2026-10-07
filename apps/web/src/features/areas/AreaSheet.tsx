@@ -33,7 +33,6 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
       name: area?.name ?? '',
       color: area?.color ?? AREA_COLORS[0],
       icon: area?.icon ?? AREA_ICONS[0],
-      sort_order: area?.sort_order ?? 0,
     },
   })
 
@@ -86,19 +85,6 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
             ))}
           </div>
         </fieldset>
-
-        <div>
-          <label htmlFor="area-sort" className="mb-1 block text-sm font-medium">
-            Sort order
-          </label>
-          <input
-            id="area-sort"
-            type="number"
-            min={0}
-            {...register('sort_order', { valueAsNumber: true })}
-            className={fieldClass}
-          />
-        </div>
 
         <Button type="submit" block disabled={saving}>
           {saving ? 'Saving…' : area ? 'Save changes' : 'Create area'}
