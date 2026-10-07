@@ -8,7 +8,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(35);
+select plan(33);
 
 insert into auth.users (id, email) values
   ('44444444-4444-4444-4444-444444444444', 'owner@example.com'),
@@ -269,9 +269,14 @@ select login('55555555-5555-5555-5555-555555555555');
 insert into projects (id, user_id, area_id, title)
 values ('dddd0000-0000-0000-0000-0000000000f8', '55555555-5555-5555-5555-555555555555',
         'dddd0000-0000-0000-0000-0000000000a9', 'Planted project');
+-- rpc_update_status, not rpc_snooze: a snooze no longer touches anything for anyone
+-- (20261007120000_snooze_is_not_a_touch.sql), so it could not tell the condition from its
+-- absence. A status change is a touch on every path.
 do $$ begin
-  perform rpc_snooze('task', 'dddd0000-0000-0000-0000-0000000000f9', current_date + 7);
-  perform rpc_snooze('project', 'dddd0000-0000-0000-0000-0000000000f8', current_date + 7);
+  perform rpc_update_status('task', 'dddd0000-0000-0000-0000-0000000000f9',
+    'in_progress', 'planted', 'reach up');
+  perform rpc_update_status('project', 'dddd0000-0000-0000-0000-0000000000f8',
+    'in_progress', 'planted', 'reach up');
 end $$;
 select login('44444444-4444-4444-4444-444444444444');
 
@@ -281,20 +286,6 @@ select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0
 select is((select updated_at from life_areas where id = 'dddd0000-0000-0000-0000-0000000000a9'),
           now() - interval '10 days',
           'and a stranger''s project cannot touch an area they do not own that way either');
-
--- rpc_snooze no longer touches anything for anyone, so the two asserts above would pass without
--- the ownership condition. An edit is a touch on every path: this is the one that still proves
--- the condition is what stops a planted task from reaching up.
-select login('55555555-5555-5555-5555-555555555555');
-update tasks set title = 'Edited' where id = 'dddd0000-0000-0000-0000-0000000000f9';
-
-select is((select updated_at from tasks where id = 'dddd0000-0000-0000-0000-0000000000f9'),
-          now(), 'the stranger''s own planted task is touched');
-select login('44444444-4444-4444-4444-444444444444');
-
-select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0000000000b9'),
-          now() - interval '10 days',
-          'but editing it cannot touch the project it was planted under');
 
 select * from finish();
 rollback;
