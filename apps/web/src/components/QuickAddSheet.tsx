@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BottomSheet } from './ui/BottomSheet'
 import { Button } from './ui/Button'
@@ -42,6 +42,8 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const areas = useAreas()
+  // The grid lists least recently touched first; the picker wants the opposite, last used on top.
+  const pickerAreas = useMemo(() => [...(areas.data ?? [])].reverse(), [areas.data])
   const [areaId, setAreaId] = useState(() => localStorage.getItem(LAST_AREA) ?? '')
   const [projectId, setProjectId] = useState(() => localStorage.getItem(LAST_PROJECT) ?? '')
   const [asProject, setAsProject] = useState(false)
@@ -128,7 +130,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
             className={compactFieldClass}
           >
             <option value="">Area…</option>
-            {areas.data?.map((area) => (
+            {pickerAreas.map((area) => (
               <option key={area.id} value={area.id}>
                 {area.icon} {area.name}
               </option>
