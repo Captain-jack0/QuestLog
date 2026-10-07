@@ -8,7 +8,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(25);
+select plan(35);
 
 insert into auth.users (id, email) values
   ('44444444-4444-4444-4444-444444444444', 'owner@example.com'),
@@ -34,7 +34,9 @@ insert into life_areas (id, user_id, name) values
   ('dddd0000-0000-0000-0000-0000000000a5', '44444444-4444-4444-4444-444444444444', 'Add a project'),
   ('dddd0000-0000-0000-0000-0000000000a7', '44444444-4444-4444-4444-444444444444', 'Focus session'),
   ('dddd0000-0000-0000-0000-0000000000a8', '44444444-4444-4444-4444-444444444444', 'Edit an area'),
-  ('dddd0000-0000-0000-0000-0000000000a9', '44444444-4444-4444-4444-444444444444', 'Left alone');
+  ('dddd0000-0000-0000-0000-0000000000a9', '44444444-4444-4444-4444-444444444444', 'Left alone'),
+  ('dddd0000-0000-0000-0000-0000000000aa', '44444444-4444-4444-4444-444444444444', 'Snooze a task'),
+  ('dddd0000-0000-0000-0000-0000000000ab', '44444444-4444-4444-4444-444444444444', 'Snooze a project');
 insert into projects (id, user_id, area_id, title) values
   ('dddd0000-0000-0000-0000-0000000000b1', '44444444-4444-4444-4444-444444444444',
    'dddd0000-0000-0000-0000-0000000000a1', 'Edit a task'),
@@ -51,7 +53,11 @@ insert into projects (id, user_id, area_id, title) values
   ('dddd0000-0000-0000-0000-0000000000b9', '44444444-4444-4444-4444-444444444444',
    'dddd0000-0000-0000-0000-0000000000a9', 'Left alone'),
   ('dddd0000-0000-0000-0000-0000000000b0', '44444444-4444-4444-4444-444444444444',
-   null, 'Project-only session');
+   null, 'Project-only session'),
+  ('dddd0000-0000-0000-0000-0000000000ba', '44444444-4444-4444-4444-444444444444',
+   'dddd0000-0000-0000-0000-0000000000aa', 'Snooze a task'),
+  ('dddd0000-0000-0000-0000-0000000000bb', '44444444-4444-4444-4444-444444444444',
+   'dddd0000-0000-0000-0000-0000000000ab', 'Snooze a project');
 insert into tasks (id, user_id, project_id, title) values
   ('dddd0000-0000-0000-0000-0000000000c1', '44444444-4444-4444-4444-444444444444',
    'dddd0000-0000-0000-0000-0000000000b1', 'Edit me'),
@@ -62,7 +68,9 @@ insert into tasks (id, user_id, project_id, title) values
   ('dddd0000-0000-0000-0000-0000000000c7', '44444444-4444-4444-4444-444444444444',
    'dddd0000-0000-0000-0000-0000000000b7', 'Clock me'),
   ('dddd0000-0000-0000-0000-0000000000c9', '44444444-4444-4444-4444-444444444444',
-   'dddd0000-0000-0000-0000-0000000000b9', 'Leave me alone');
+   'dddd0000-0000-0000-0000-0000000000b9', 'Leave me alone'),
+  ('dddd0000-0000-0000-0000-0000000000ca', '44444444-4444-4444-4444-444444444444',
+   'dddd0000-0000-0000-0000-0000000000ba', 'Snooze me');
 
 -- Every user trigger off while backdating: the touch triggers would stamp now() over it, and
 -- the propagation triggers would undo it one level up. Foreign key triggers are not user
@@ -206,6 +214,41 @@ select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0
           now() - interval '10 days',
           'deleting a task with clocked time is not a focus session on its project');
 
+-- ---- snoozing is not a touch (20261007120000_snooze_is_not_a_touch.sql) -------------------
+-- "Stop nagging me" is the opposite of having worked on it: the item, its project and its area
+-- all keep their place in the lists.
+do $$ begin perform rpc_snooze('task', 'dddd0000-0000-0000-0000-0000000000ca', current_date + 7); end $$;
+
+select is((select snoozed_until from tasks where id = 'dddd0000-0000-0000-0000-0000000000ca'),
+          current_date + 7, 'the snooze itself lands');
+select is((select updated_at from tasks where id = 'dddd0000-0000-0000-0000-0000000000ca'),
+          now() - interval '10 days', 'a snoozed task keeps its place');
+select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0000000000ba'),
+          now() - interval '10 days', 'and so does its project');
+select is((select updated_at from life_areas where id = 'dddd0000-0000-0000-0000-0000000000aa'),
+          now() - interval '10 days', 'and its area');
+
+do $$ begin perform rpc_snooze('project', 'dddd0000-0000-0000-0000-0000000000bb', current_date + 7); end $$;
+
+select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0000000000bb'),
+          now() - interval '10 days', 'a snoozed project keeps its place');
+select is((select updated_at from life_areas where id = 'dddd0000-0000-0000-0000-0000000000ab'),
+          now() - interval '10 days', 'and so does its area');
+
+-- The flag rpc_snooze raises is lowered again before it returns. This file is one transaction,
+-- so a flag left up here would silence every touch below — and in production, every statement
+-- that shares the transaction.
+update tasks set title = 'Edited' where id = 'dddd0000-0000-0000-0000-0000000000ca';
+
+select is((select updated_at from tasks where id = 'dddd0000-0000-0000-0000-0000000000ca'),
+          now(), 'the next write after a snooze is a touch again');
+
+-- rpc_snooze reads row_count to tell "not yours / not there" apart from success; the set_config
+-- calls around its UPDATE must not get between the two.
+select throws_ok(
+  $$select rpc_snooze('task', 'dddd0000-0000-0000-0000-0000000000ff', current_date + 7)$$,
+  'P0002', 'item not found', 'snoozing a task that is not there still fails');
+
 -- ---- somebody else's write cannot reach up ------------------------------------------------
 -- The foreign keys are checked past RLS, so a stranger *can* point a task of their own at a
 -- project they cannot see, and a project of their own at an area they cannot see.
@@ -238,6 +281,20 @@ select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0
 select is((select updated_at from life_areas where id = 'dddd0000-0000-0000-0000-0000000000a9'),
           now() - interval '10 days',
           'and a stranger''s project cannot touch an area they do not own that way either');
+
+-- rpc_snooze no longer touches anything for anyone, so the two asserts above would pass without
+-- the ownership condition. An edit is a touch on every path: this is the one that still proves
+-- the condition is what stops a planted task from reaching up.
+select login('55555555-5555-5555-5555-555555555555');
+update tasks set title = 'Edited' where id = 'dddd0000-0000-0000-0000-0000000000f9';
+
+select is((select updated_at from tasks where id = 'dddd0000-0000-0000-0000-0000000000f9'),
+          now(), 'the stranger''s own planted task is touched');
+select login('44444444-4444-4444-4444-444444444444');
+
+select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0000000000b9'),
+          now() - interval '10 days',
+          'but editing it cannot touch the project it was planted under');
 
 select * from finish();
 rollback;
