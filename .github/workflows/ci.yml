@@ -32,10 +32,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          # pinned: 'latest' resolves through the GitHub API (rate-limited) and lets the
-          # CLI change behaviour under us — both have bitten this project already
+          # pinned: unset, v3 reads the root lockfile and then falls back to npm's 'latest',
+          # which lets the CLI change behaviour under us — that has bitten this project already
           version: 2.115.0
       - run: supabase start
       - run: supabase test db
@@ -48,10 +48,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          # pinned: 'latest' resolves through the GitHub API (rate-limited) and lets the
-          # CLI change behaviour under us — both have bitten this project already
+          # pinned: unset, v3 reads the root lockfile and then falls back to npm's 'latest',
+          # which lets the CLI change behaviour under us — that has bitten this project already
           version: 2.115.0
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit

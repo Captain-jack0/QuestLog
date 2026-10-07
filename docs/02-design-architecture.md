@@ -75,7 +75,7 @@ profiles        (id PK = auth.users.id, display_name, timezone, digest_time,
                  created_at)
 
 life_areas      (id PK, user_id FK, name, color, icon, sort_order,
-                 archived bool, created_at)
+                 archived bool, created_at, updated_at)
 
 projects        (id PK, user_id FK, area_id FK, title, description,
                  status enum, priority enum(low/med/high), target_date date null,
@@ -119,6 +119,7 @@ status enum: idea | planned | in_progress | paused | blocked | done | dropped
 - XP/level/streak are **derived from `xp_events`** (single source of truth); levels computed, never stored.
 - Views: `v_hanging_threads` (active items ordered by last update, respecting snooze), `v_area_stats` (per-area XP/level/open counts), `v_running_timer` (the clock that is running now).
 - Time is **derived from `started_at`**, never ticked in the client, so a sleeping tab, a reload or a phone lock cannot drift the count.
+- `updated_at` on areas, projects and tasks means **last touched** — a write to a task touches its project and area, and lists order least recently touched first; snoozing (`rpc_snooze`) is the one exception and leaves `updated_at` alone.
 
 ## 6. API & Logic Design
 
