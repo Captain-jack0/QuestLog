@@ -16,7 +16,10 @@ export function useAreas() {
         .from('life_areas')
         .select('*')
         .eq('archived', false)
-        .order('sort_order')
+        // Least recently touched first, so a neglected area cannot sink out of sight. A change
+        // to a project (or to one of its tasks) touches the area too — see the triggers in
+        // 20261005120000_untouched_first_ordering.sql. created_at makes ties deterministic.
+        .order('updated_at')
         .order('created_at')
       if (error) throw error
       return data
@@ -80,7 +83,9 @@ export function useCreateArea(userId: string | undefined) {
         id: optimisticId(current.length),
         user_id: userId ?? '',
         archived: false,
+        sort_order: 0,
         created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         ...input,
       } as LifeArea,
     ],

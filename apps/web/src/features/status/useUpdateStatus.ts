@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import confetti from 'canvas-confetti'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
+import { areaKeys } from '../areas/queries'
 import { statusFeedback, type StatusResult } from './feedback'
 import type { StatusChange } from './statusChange'
 
@@ -51,7 +52,15 @@ export function useUpdateStatus(projectId?: string) {
     onSettled: () => {
       // The RPC touches items, logs, XP and streaks at once — refetch the lot. Threads and
       // focus derive from the item's status too, so they go stale on every call as well.
-      for (const key of [['tasks'], ['projects'], ['gamification'], ['threads'], ['focus']]) {
+      // Areas because the write travels up to the area's `updated_at`, which its grid orders by.
+      for (const key of [
+        ['tasks'],
+        ['projects'],
+        areaKeys.all,
+        ['gamification'],
+        ['threads'],
+        ['focus'],
+      ]) {
         queryClient.invalidateQueries({ queryKey: key })
       }
       if (projectId) {
