@@ -7,8 +7,8 @@
 -- neglected work. Editing, adding and status changes keep counting as touches; this file
 -- carves out the one exception.
 --
--- Mechanism: a transaction-local flag, `questlog.skip_touch`. rpc_snooze raises it before its
--- UPDATE and lowers it again before returning; the touch functions return early while it is
+-- Mechanism: a transaction-local flag, `questlog.skip_touch`. rpc_snooze raises it right before
+-- its UPDATE and lowers it again before returning; the touch functions return early while it is
 -- up. Considered and rejected:
 --
 --   * Diffing old/new in the triggers ("only snoozed_until changed" => no touch). Shorter, but
@@ -87,10 +87,13 @@ begin
     raise exception 'not authenticated' using errcode = '28000';
   end if;
 
-  perform set_config('questlog.skip_touch', 'on', true);
+  -- The flag goes up only on the two paths that write, so no exception path ever leaves it up
+  -- and the "lowered before return" invariant does not lean on transaction rollback.
   if p_item_type = 'task' then
+    perform set_config('questlog.skip_touch', 'on', true);
     update tasks set snoozed_until = p_until where id = p_item_id and user_id = v_user;
   elsif p_item_type = 'project' then
+    perform set_config('questlog.skip_touch', 'on', true);
     update projects set snoozed_until = p_until where id = p_item_id and user_id = v_user;
   else
     raise exception 'p_item_type must be task or project, got %', p_item_type using errcode = '22023';
