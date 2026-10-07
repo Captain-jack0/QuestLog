@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin'
+
 /** @type {import('tailwindcss').Config} */
 
 // Every colour is a CSS variable holding an "R G B" triplet, so switching the theme on
@@ -38,6 +40,14 @@ export default {
         '2xs': '0.6875rem',
         '3xs': '0.625rem',
       },
+      // Icon glyph sizes, a scale of their own so icons don't ride the text scale (a type-scale
+      // change must not resize icons, nor the reverse). Emitted as `icon-*` by the plugin below.
+      // `md` carries the 1rem line-height `text-xs` had, so icons that used it don't shift.
+      iconSize: {
+        sm: '0.625rem',
+        md: ['0.75rem', '1rem'],
+        lg: '1rem',
+      },
       borderRadius: {
         card: '1rem',
       },
@@ -46,5 +56,17 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ matchUtilities, theme }) =>
+      matchUtilities(
+        {
+          icon: (value) => {
+            const [fontSize, lineHeight] = Array.isArray(value) ? value : [value]
+            return lineHeight ? { fontSize, lineHeight } : { fontSize }
+          },
+        },
+        { values: theme('iconSize') },
+      ),
+    ),
+  ],
 }
