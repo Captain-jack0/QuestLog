@@ -2,7 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
 import { areaKeys } from '../areas/queries'
-import { sumSecondsByTask, type TimeEntryRow } from './totals'
+import {
+  sumSecondsByProject,
+  sumSecondsByTask,
+  type ProjectTimeEntryRow,
+  type TimeEntryRow,
+} from './totals'
 
 export interface RunningTimer {
   id: string
@@ -13,6 +18,10 @@ export interface RunningTimer {
   project_title: string
   task_title: string | null
   area_color: string | null
+  /** Finished seconds of the running entry's project, in the user's local day / ever. The
+   *  running entry is in neither — timerBarSeconds adds the live session. */
+  project_seconds_today: number
+  project_seconds_total: number
 }
 
 export interface StopResult {
@@ -27,6 +36,7 @@ export const timerKeys = {
   running: ['timer', 'running'] as const,
   daily: ['timer', 'daily'] as const,
   taskTotals: ['timer', 'task-totals'] as const,
+  projectTotals: ['timer', 'project-totals'] as const,
 }
 
 export function useRunningTimer() {
@@ -133,6 +143,34 @@ export function useTaskTotals(taskIds: string[]) {
         .in('task_id', taskIds)
       if (error) throw error
       return sumSecondsByTask((data ?? []) as TimeEntryRow[])
+    },
+  })
+}
+
+/**
+ * Banked focus seconds per project, for the project cards and the project header. Same shape
+ * as useTaskTotals and under the same `timer` key, so stopping a timer refreshes it.
+ *
+ * Keyed on `project_id`, unlike the task totals: this is the number v_running_timer reports as
+ * `project_seconds_total`, and an entry whose task was deleted keeps its `project_id`, so its
+ * seconds stay. The flip side is the snapshot described above — a task moved to another project
+ * leaves the seconds it had already clocked with the project it was in at the time.
+ *
+ * ponytail: no aggregate and no limit, the same max_rows = 1000 ceiling as useTaskTotals and
+ * reached sooner — an area screen asks for every session of every project in the area at once.
+ * Past that the totals silently undercount; a `sum() group by project_id` RPC is the upgrade.
+ */
+export function useProjectTotals(projectIds: string[]) {
+  return useQuery({
+    queryKey: [...timerKeys.projectTotals, projectIds.join(',')],
+    enabled: projectIds.length > 0,
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('project_id, seconds')
+        .in('project_id', projectIds)
+      if (error) throw error
+      return sumSecondsByProject((data ?? []) as ProjectTimeEntryRow[])
     },
   })
 }
