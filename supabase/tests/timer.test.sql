@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(43);
+select plan(48);
 
 insert into auth.users (id, email) values
   ('88888888-8888-8888-8888-888888888888', 'timer@example.com'),
@@ -82,7 +82,8 @@ select is(
   (select array_agg(mode order by mode) from v_running_timers),
   array['pomodoro', 'timer', 'timer'], 'each clock keeps its own mode');
 
--- The unique indexes hold even for a writer that skips the RPC's own check.
+-- The task index holds even for a writer that skips the RPC's own check. (The project half has
+-- no index on purpose — see the migration header and the task delete at the end of this file.)
 reset role;
 select throws_ok(
   $$insert into time_entries (user_id, project_id, task_id)
@@ -315,6 +316,36 @@ select is(
   (select project_seconds_total from v_running_timers
     where project_id = 'bbbb0000-0000-0000-0000-000000000005'),
   2700, 'while the clock already running keeps its own project''s total');
+
+-- ---- deleting a task whose clock runs next to its project's own --------------------------
+-- `on delete set null` turns the task's open entry into a second project-level one. A unique
+-- index on open project-level entries would refuse that and take the delete down with it.
+select ok(
+  (rpc_start_timer('task', 'bbbb0000-0000-0000-0000-00000000000a') ->> 'id') is not null,
+  'a task clock starts while its project''s own clock runs');
+
+reset role;
+select lives_ok(
+  $$delete from tasks where id = 'bbbb0000-0000-0000-0000-00000000000a'$$,
+  'the task can still be deleted with both clocks open');
+
+select is(
+  (select count(*)::int from time_entries
+    where project_id = 'bbbb0000-0000-0000-0000-000000000002' and task_id is null
+      and ended_at is null),
+  2, 'and its clock carries on, filed under the project');
+
+-- ---- one user's starts and stops take turns ---------------------------------------------
+-- The count of three and the "already running on this item" check only hold if two calls
+-- cannot read the table at the same time; nothing above can race, so the lock is read back
+-- from the catalogue. Drop it and these go red.
+select ok(
+  pg_get_functiondef('rpc_start_timer(text,uuid,text)'::regprocedure) ~ 'pg_advisory_xact_lock',
+  'rpc_start_timer takes the per-user advisory lock');
+
+select ok(
+  pg_get_functiondef('rpc_stop_timer(uuid)'::regprocedure) ~ 'pg_advisory_xact_lock',
+  'rpc_stop_timer takes the same lock');
 
 select * from finish();
 rollback;

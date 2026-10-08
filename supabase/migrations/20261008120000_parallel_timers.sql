@@ -5,11 +5,13 @@
 -- stays unique is the item: one open entry per task, and one open project-level entry per
 -- project — a project's own clock and a clock on one of its tasks may run together.
 --
--- ponytail: deleting a task nulls `task_id` on its entries (history_survives_task_delete.sql),
--- so a task timer still running when its task is deleted becomes a project-level entry; if that
--- project already has its own clock open the delete fails on the index below. Nothing in the UI
--- deletes a task today (same file, :32); stop the task's timers in that delete path when it
--- arrives.
+-- Only the task half is an index. Deleting a task nulls `task_id` on its entries
+-- (history_survives_task_delete.sql), so a task clock still running then turns into a
+-- project-level entry — and a project-level index would make that delete fail whenever the
+-- project's own clock, or a second deleted task's, was open too (a project delete cascades to
+-- all its tasks at once). The project half is enforced in rpc_start_timer instead, under the
+-- per-user advisory lock, which is the only way a clock gets started. The task index cannot hit
+-- the same wall: `set null` takes rows out of it, never into it.
 --
 -- Backward compatible on purpose: the migration goes live before the front end that uses it
 -- (CLAUDE.md, "Migration önce, merge sonra"). The old client reads `v_running_timer` with
@@ -21,9 +23,6 @@ drop index time_entries_one_running_per_user;
 
 create unique index time_entries_one_running_per_task on time_entries (user_id, task_id)
   where ended_at is null and task_id is not null;
-
-create unique index time_entries_one_running_per_project on time_entries (user_id, project_id)
-  where ended_at is null and task_id is null;
 
 /**
  * Starts a timer on a task or project, alongside whatever is already running. A second clock on
