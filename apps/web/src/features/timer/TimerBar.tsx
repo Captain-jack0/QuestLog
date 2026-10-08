@@ -39,6 +39,12 @@ export function TimerBar() {
     }
   }, [ticking])
 
+  // Down to one clock, the deck is shut for good: the next clock to start must land on a
+  // closed deck, not reopen a list nobody asked for.
+  useEffect(() => {
+    if (hidden === 0) setOpen(false)
+  }, [hidden])
+
   if (!ticking) return null
 
   const expanded = open && hidden > 0
@@ -71,7 +77,10 @@ export function TimerBar() {
   )
 
   return (
-    <div className="fixed inset-x-0 bottom-[72px] z-20 px-4 md:bottom-4 md:left-auto md:right-4 md:w-80 md:px-0">
+    <section
+      aria-label="Running timers"
+      className="fixed inset-x-0 bottom-[72px] z-20 px-4 md:bottom-4 md:left-auto md:right-4 md:w-80 md:px-0"
+    >
       {expanded ? (
         <ul className="mx-auto flex max-w-md flex-col gap-2">
           {cards.map((timer, i) => (
@@ -97,7 +106,7 @@ export function TimerBar() {
           {card(cards[0], badge)}
         </div>
       )}
-    </div>
+    </section>
   )
 }
 
