@@ -39,13 +39,14 @@ export const timerKeys = {
   projectTotals: ['timer', 'project-totals'] as const,
 }
 
+/** Every clock running now — up to three since issue #45. Order is timerDeck's job. */
 export function useRunningTimer() {
   return useQuery({
     queryKey: timerKeys.running,
-    queryFn: async (): Promise<RunningTimer | null> => {
-      const { data, error } = await supabase.from('v_running_timer').select('*').maybeSingle()
+    queryFn: async (): Promise<RunningTimer[]> => {
+      const { data, error } = await supabase.from('v_running_timers').select('*')
       if (error) throw error
-      return (data as RunningTimer | null) ?? null
+      return (data ?? []) as RunningTimer[]
     },
     // a timer left running in another tab should surface here before long
     refetchInterval: 60_000,
@@ -72,11 +73,6 @@ export function useStartTimer() {
     onError: (error: Error) => toast(error.message, 'error'),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['timer'] })
-      // Starting stops whatever was running, and a finished session touches its task, project
-      // and area — see useStopTimer below.
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: areaKeys.all })
     },
   })
 }
@@ -86,8 +82,9 @@ export function useStopTimer() {
   const toast = useToast()
 
   return useMutation({
-    mutationFn: async (): Promise<StopResult> => {
-      const { data, error } = await supabase.rpc('rpc_stop_timer')
+    /** The entry to stop — each card stops its own clock, not just the newest. */
+    mutationFn: async (entryId: string): Promise<StopResult> => {
+      const { data, error } = await supabase.rpc('rpc_stop_timer', { p_entry_id: entryId })
       if (error) throw error
       return data as unknown as StopResult
     },
