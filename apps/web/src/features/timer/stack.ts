@@ -14,6 +14,21 @@ export function atTimerLimit(running: readonly unknown[]): boolean {
 }
 
 /**
+ * The clock running on this very item, if any — the entry its Stop button stops. A project's
+ * own clock is the one with no task: a clock on one of its tasks is that task's, not the
+ * project's.
+ */
+export function runningOn<T extends { project_id: string; task_id: string | null }>(
+  timers: readonly T[],
+  itemType: 'task' | 'project',
+  itemId: string,
+): T | undefined {
+  return timers.find((t) =>
+    itemType === 'task' ? t.task_id === itemId : t.project_id === itemId && !t.task_id,
+  )
+}
+
+/**
  * The deck, newest clock first — the card shown whole while the deck is closed — and how many
  * sit under it, for the "+N" badge. Sorted here rather than trusted from the view, which has no
  * order of its own.

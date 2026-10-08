@@ -1,6 +1,6 @@
 import { useToast } from '../../components/ui/Toast'
 import { useRunningTimer, useStartTimer, useStopTimer } from './queries'
-import { atTimerLimit, TIMER_LIMIT_REASON } from './stack'
+import { atTimerLimit, runningOn, TIMER_LIMIT_REASON } from './stack'
 
 interface TimerButtonProps {
   itemType: 'task' | 'project'
@@ -25,9 +25,7 @@ export function TimerButton({
   const toast = useToast()
 
   const timers = running.data ?? []
-  const thisOne = timers.find((t) =>
-    itemType === 'task' ? t.task_id === itemId : t.project_id === itemId && !t.task_id,
-  )
+  const thisOne = runningOn(timers, itemType, itemId)
 
   const busy = start.isPending || stop.isPending
   // `aria-disabled`, not `disabled`: a disabled button swallows the tap, and on a phone there is
