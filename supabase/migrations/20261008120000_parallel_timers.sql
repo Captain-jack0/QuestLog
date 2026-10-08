@@ -2,8 +2,8 @@
 --
 -- Until now starting a timer stopped the one already running (time_tracking.sql:58) and a
 -- partial unique index allowed one open entry per user (time_tracking.sql:21-22). Both go. What
--- stays unique is the item: one open entry per task, and one open project-level entry per
--- project — a project's own clock and a clock on one of its tasks may run together.
+-- stays unique is the item: one open entry per task; a new project-level clock cannot start while
+-- an open project-level entry exists (a project's own clock and a clock on one of its tasks may run together).
 --
 -- Only the task half is an index. Deleting a task nulls `task_id` on its entries
 -- (history_survives_task_delete.sql), so a task clock still running then turns into a

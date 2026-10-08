@@ -340,11 +340,13 @@ select is(
 -- cannot read the table at the same time; nothing above can race, so the lock is read back
 -- from the catalogue. Drop it and these go red.
 select ok(
-  pg_get_functiondef('rpc_start_timer(text,uuid,text)'::regprocedure) ~ 'pg_advisory_xact_lock',
+  pg_get_functiondef('rpc_start_timer(text,uuid,text)'::regprocedure)
+    ~ '\n\s*perform pg_advisory_xact_lock\(hashtextextended\(v_user::text, 45\)\)',
   'rpc_start_timer takes the per-user advisory lock');
 
 select ok(
-  pg_get_functiondef('rpc_stop_timer(uuid)'::regprocedure) ~ 'pg_advisory_xact_lock',
+  pg_get_functiondef('rpc_stop_timer(uuid)'::regprocedure)
+    ~ '\n\s*perform pg_advisory_xact_lock\(hashtextextended\(v_user::text, 45\)\)',
   'rpc_stop_timer takes the same lock');
 
 select * from finish();
