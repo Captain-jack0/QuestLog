@@ -1,12 +1,13 @@
--- TM-01 · One clock at a time, honest seconds, capped XP.
+-- TM-01 · Up to three clocks at once (issue #45), honest seconds, capped XP.
 begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(23);
+select plan(43);
 
 insert into auth.users (id, email) values
-  ('88888888-8888-8888-8888-888888888888', 'timer@example.com');
+  ('88888888-8888-8888-8888-888888888888', 'timer@example.com'),
+  ('99999999-9999-9999-9999-999999999999', 'other@example.com');
 
 create function login(p_user uuid) returns void language plpgsql as $$
 begin
@@ -15,6 +16,11 @@ begin
   execute 'set local role authenticated';
 end;
 $$;
+
+-- The second user's own project, for the per-user checks further down. Seeded as the owner:
+-- nothing here is under test.
+insert into projects (id, user_id, title)
+values ('bbbb0000-0000-0000-0000-000000000099', '99999999-9999-9999-9999-999999999999', 'Theirs');
 
 select login('88888888-8888-8888-8888-888888888888');
 
@@ -27,7 +33,9 @@ insert into tasks (id, user_id, project_id, title) values
   ('bbbb0000-0000-0000-0000-000000000003', '88888888-8888-8888-8888-888888888888',
    'bbbb0000-0000-0000-0000-000000000002', 'Write the timer'),
   ('bbbb0000-0000-0000-0000-000000000004', '88888888-8888-8888-8888-888888888888',
-   'bbbb0000-0000-0000-0000-000000000002', 'Write the tests');
+   'bbbb0000-0000-0000-0000-000000000002', 'Write the tests'),
+  ('bbbb0000-0000-0000-0000-00000000000a', '88888888-8888-8888-8888-888888888888',
+   'bbbb0000-0000-0000-0000-000000000002', 'One too many');
 
 -- ---- starting ---------------------------------------------------------------------
 select ok(
@@ -40,23 +48,118 @@ select is((select count(*)::int from time_entries where ended_at is null), 1,
 select is((select task_id from v_running_timer), 'bbbb0000-0000-0000-0000-000000000003'::uuid,
           'the running timer view names the task');
 
--- starting a second one replaces the first rather than running two clocks
+-- starting a second one runs it next to the first (issue #45)
 select ok(
-  (rpc_start_timer('task', 'bbbb0000-0000-0000-0000-000000000004') ->> 'id') is not null,
+  (rpc_start_timer('task', 'bbbb0000-0000-0000-0000-000000000004', 'pomodoro') ->> 'id') is not null,
   'a second start is allowed');
 
-select is((select count(*)::int from time_entries where ended_at is null), 1,
-          'starting again leaves only one clock running');
+select is((select count(*)::int from time_entries where ended_at is null), 2,
+          'and the first clock keeps running next to it');
+
+select throws_ok(
+  $$select rpc_start_timer('task', 'bbbb0000-0000-0000-0000-000000000003')$$,
+  '23505', 'a timer is already running on this item',
+  'the same task cannot get a second clock');
+
+select ok(
+  (rpc_start_timer('project', 'bbbb0000-0000-0000-0000-000000000002') ->> 'id') is not null,
+  'a project clock runs next to clocks on its own tasks');
+
+select throws_ok(
+  $$select rpc_start_timer('project', 'bbbb0000-0000-0000-0000-000000000002')$$,
+  '23505', 'a timer is already running on this item',
+  'the same project cannot get a second project-level clock');
+
+select throws_ok(
+  $$select rpc_start_timer('task', 'bbbb0000-0000-0000-0000-00000000000a')$$,
+  '54000', 'Up to 3 timers can run at once — stop one first',
+  'a fourth clock is refused');
+
+select is((select count(*)::int from v_running_timers), 3,
+          'v_running_timers lists every running clock');
+
+select is(
+  (select array_agg(mode order by mode) from v_running_timers),
+  array['pomodoro', 'timer', 'timer'], 'each clock keeps its own mode');
+
+-- The unique indexes hold even for a writer that skips the RPC's own check.
+reset role;
+select throws_ok(
+  $$insert into time_entries (user_id, project_id, task_id)
+    values ('88888888-8888-8888-8888-888888888888', 'bbbb0000-0000-0000-0000-000000000002',
+            'bbbb0000-0000-0000-0000-000000000003')$$,
+  '23505', null, 'the database itself refuses a second open entry on a task');
+
+-- An entry id the second user cannot read, kept aside for the stop below.
+select set_config('test.foreign_entry',
+  (select id::text from time_entries where task_id = 'bbbb0000-0000-0000-0000-000000000003'),
+  true);
+
+-- Both RPCs run as their owner, past RLS, so the next two are their own `user_id = v_user` at
+-- work. The limit is per user: another account's clocks do not count against this one.
+select login('99999999-9999-9999-9999-999999999999');
+select ok(
+  (rpc_start_timer('project', 'bbbb0000-0000-0000-0000-000000000099') ->> 'id') is not null,
+  'a second user can start a clock while the first runs three');
+
+select is(
+  (rpc_stop_timer(current_setting('test.foreign_entry')::uuid) ->> 'stopped')::boolean,
+  false, 'a stop naming another user''s entry stops nothing');
+
+reset role;
+select is((select count(*)::int from time_entries
+            where user_id = '88888888-8888-8888-8888-888888888888' and ended_at is null), 3,
+          'and the first user''s three clocks still run');
+delete from time_entries where user_id = '99999999-9999-9999-9999-999999999999';
+
+-- Staggered start times, so "newest" means something inside one transaction.
+update time_entries set started_at = now() - interval '30 seconds'
+ where task_id = 'bbbb0000-0000-0000-0000-000000000003';
+update time_entries set started_at = now() - interval '20 seconds'
+ where task_id = 'bbbb0000-0000-0000-0000-000000000004';
+update time_entries set started_at = now() - interval '10 seconds'
+ where task_id is null and ended_at is null;
+
+select login('88888888-8888-8888-8888-888888888888');
+
+-- ---- the old view, for clients that predate issue #45 -------------------------------
+select is(
+  array(select attname::text from pg_attribute
+         where attrelid = 'public.v_running_timer'::regclass and attnum > 0 order by attnum),
+  array['id', 'user_id', 'started_at', 'mode', 'project_id', 'task_id', 'project_title',
+        'task_title', 'area_color', 'project_seconds_today', 'project_seconds_total'],
+  'v_running_timer keeps its columns and their order');
+
+select is((select count(*)::int from v_running_timer), 1,
+          'v_running_timer still answers with one row, so maybeSingle() keeps working');
+
+select is((select task_id from v_running_timer), null::uuid,
+          'and that row is the newest clock');
 
 select throws_ok(
   $$select rpc_start_timer('task', 'bbbb0000-0000-0000-0000-000000000009')$$,
   'P0002', 'item not found', 'a timer cannot be started on somebody else''s item');
 
 -- ---- stopping: short sessions are mis-taps ------------------------------------------
-select is((rpc_stop_timer() ->> 'discarded')::boolean, true,
-          'a session under a minute is thrown away, not logged');
+select is(
+  (rpc_stop_timer((select id from v_running_timers
+                    where task_id = 'bbbb0000-0000-0000-0000-000000000004')) ->> 'discarded')::boolean,
+  true, 'a session under a minute is thrown away, not logged');
 
-select is((select count(*)::int from time_entries), 0, 'and it leaves no row behind');
+select is(
+  (select array_agg(task_id::text order by task_id) from v_running_timers),
+  array['bbbb0000-0000-0000-0000-000000000003', null],
+  'stopping one clock by id leaves the others running');
+
+select is((rpc_stop_timer() ->> 'stopped')::boolean, true,
+          'a stop without an id still stops something');
+
+select is((select task_id from v_running_timers), 'bbbb0000-0000-0000-0000-000000000003'::uuid,
+          'and what it stops is the newest clock');
+
+do $$ begin perform rpc_stop_timer(); end $$;
+
+select is((select count(*)::int from time_entries), 0, 'and mis-taps leave no row behind');
 
 -- ---- stopping: a real session pays -------------------------------------------------
 reset role;
@@ -73,14 +176,21 @@ select ok(
   'the stored duration matches the wall clock');
 
 -- ---- the daily cap ------------------------------------------------------------------
+-- Two long sessions running side by side: each pays on its own, the day's cap covers both.
 reset role;
 insert into time_entries (user_id, project_id, started_at)
 values ('88888888-8888-8888-8888-888888888888', 'bbbb0000-0000-0000-0000-000000000002',
         now() - interval '5 hours');
+insert into time_entries (user_id, project_id, task_id, started_at)
+values ('88888888-8888-8888-8888-888888888888', 'bbbb0000-0000-0000-0000-000000000002',
+        'bbbb0000-0000-0000-0000-000000000004', now() - interval '6 hours');
 select login('88888888-8888-8888-8888-888888888888');
 
 select is((rpc_stop_timer() ->> 'xp_awarded')::int, 40,
           'the day tops out at 60 XP of focus time');
+
+select is((rpc_stop_timer() ->> 'xp_awarded')::int, 0,
+          'and a second clock stopped the same day pays nothing past it');
 
 select is(
   (select coalesce(sum(xp), 0)::int from xp_events
@@ -98,8 +208,10 @@ select ok(
     where oid = 'public.v_running_timer'::regclass),
   'v_running_timer is still security_invoker after being replaced');
 
-insert into auth.users (id, email) values
-  ('99999999-9999-9999-9999-999999999999', 'other@example.com');
+select ok(
+  (select reloptions @> array['security_invoker=true'] from pg_class
+    where oid = 'public.v_running_timers'::regclass),
+  'v_running_timers is security_invoker');
 
 -- UTC+14 and no DST: far enough from UTC that a view reading the UTC date instead of the
 -- profile's would get one of the two midnight rows below wrong at any hour this runs.
@@ -163,36 +275,46 @@ select is(
     where user_id = '88888888-8888-8888-8888-888888888888'),
   2100, 'another account''s seconds stay out even for a reader RLS does not filter');
 
--- And the view itself still answers to RLS: with the first user's clock running, a second
+-- And the views themselves still answer to RLS: with the first user's clock running, a second
 -- user gets no row — no timer, no titles, no totals.
 select login('99999999-9999-9999-9999-999999999999');
 select is((select count(*)::int from v_running_timer), 0,
           'a second user sees neither the running timer nor its project totals');
+select is((select count(*)::int from v_running_timers), 0,
+          'nor any row of v_running_timers');
 
--- Ten minutes into the session, the user moves to another task of the same project.
+-- Ten minutes into the session, the user stops it and moves to another task of the project.
 reset role;
 update time_entries set started_at = now() - interval '10 minutes'
  where user_id = '88888888-8888-8888-8888-888888888888' and ended_at is null;
 select login('88888888-8888-8888-8888-888888888888');
 
+do $$ begin perform rpc_stop_timer(); end $$;
+
 select is(
   (rpc_start_timer('task', 'bbbb0000-0000-0000-0000-000000000008') ->> 'task_id')::uuid,
   'bbbb0000-0000-0000-0000-000000000008'::uuid,
-  'the clock moves to another task of the same project');
+  'the next task of the same project gets a clock');
 
 select is((select project_seconds_total from v_running_timer), 2700,
-          'and the session it stopped is folded into the project total, which carries on');
+          'and the session just stopped is folded into the project total, which carries on');
 
--- A different project: the total is that project's, not a carry-over from the last one.
+-- A clock on another project runs alongside; each row carries its own project's total.
 select is(
   rpc_start_timer('project', 'bbbb0000-0000-0000-0000-000000000002') ->> 'task_id',
   null, 'a project-level timer carries no task');
 
 select is(
-  (select project_seconds_total from v_running_timer),
+  (select project_seconds_total from v_running_timers
+    where project_id = 'bbbb0000-0000-0000-0000-000000000002'),
   (select sum(seconds)::int from time_entries
     where project_id = 'bbbb0000-0000-0000-0000-000000000002' and ended_at is not null),
   'a timer on another project reports that project''s banked seconds');
+
+select is(
+  (select project_seconds_total from v_running_timers
+    where project_id = 'bbbb0000-0000-0000-0000-000000000005'),
+  2700, 'while the clock already running keeps its own project''s total');
 
 select * from finish();
 rollback;
