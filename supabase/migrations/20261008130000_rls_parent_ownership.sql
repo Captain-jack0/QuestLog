@@ -22,13 +22,18 @@
 --
 -- Backward compatible: policies only, no data is changed or deleted. Rows that already violate
 -- the new checks stay readable to their writer; only a later write to such a row must fix its
--- parent first. Drop + create rather than `alter policy`, so each policy reads whole in one place;
+-- parent first — and writes to such a row's children fail too, because the touch triggers
+-- (touch_parent_project / touch_parent_area) run as the caller and update it. Drop + create rather than `alter policy`, so each policy reads whole in one place;
 -- a migration runs in one transaction, so there is no window without a policy.
 --
 -- The subqueries read projects/tasks/life_areas as the caller, so their own select policies apply
 -- too; a parent the caller cannot see is a parent that fails the check. No policy below reads a
 -- table whose policy reads back, so there is no recursion. Outer columns are qualified with the
 -- table name so a same-named column on the parent can never capture them.
+--
+-- The `user_id = auth.uid()` inside each `exists` is a second lock today (the parent's select
+-- policy already hides strangers' rows) and no test can tell it apart. Once sharing (#73) widens
+-- the select policies it becomes the only lock — #73 must test writing under a shared parent.
 
 drop policy projects_all_own on projects;
 create policy projects_all_own on projects for all to authenticated
