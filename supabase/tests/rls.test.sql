@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(12);
+select plan(24);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'a@example.com'),
@@ -71,6 +71,79 @@ select throws_ok(
   null,
   'other user cannot insert rows owned by someone else'
 );
+
+-- ---- issue #66: B's own rows cannot point at A's parents ---------------------------------
+-- Foreign keys are checked past RLS, so only the parent-ownership clauses in the write policies
+-- (20261008130000_rls_parent_ownership.sql) stop these. Each throws_ok below goes green-to-red
+-- when its clause is deleted from that migration.
+insert into life_areas (id, user_id, name)
+values ('bbbbbbbb-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'Home');
+insert into projects (id, user_id, title)
+values ('bbbbbbbb-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222', 'Garden');
+insert into tasks (id, user_id, project_id, title)
+values ('bbbbbbbb-0000-0000-0000-000000000003', '22222222-2222-2222-2222-222222222222',
+        'bbbbbbbb-0000-0000-0000-000000000002', 'Dig');
+
+select throws_ok(
+  $$insert into tasks (user_id, project_id, title)
+    values ('22222222-2222-2222-2222-222222222222',
+            'aaaaaaaa-0000-0000-0000-000000000002', 'Planted')$$,
+  '42501', null, 'a task cannot be added to someone else''s project');
+select throws_ok(
+  $$update tasks set project_id = 'aaaaaaaa-0000-0000-0000-000000000002'
+     where id = 'bbbbbbbb-0000-0000-0000-000000000003'$$,
+  '42501', null, 'nor moved under it');
+select throws_ok(
+  $$insert into projects (user_id, area_id, title)
+    values ('22222222-2222-2222-2222-222222222222',
+            'aaaaaaaa-0000-0000-0000-000000000001', 'Planted')$$,
+  '42501', null, 'a project cannot be attached to someone else''s area');
+select throws_ok(
+  $$update projects set area_id = 'aaaaaaaa-0000-0000-0000-000000000001'
+     where id = 'bbbbbbbb-0000-0000-0000-000000000002'$$,
+  '42501', null, 'nor moved into it');
+select throws_ok(
+  $$insert into focus_items (user_id, date, task_id)
+    values ('22222222-2222-2222-2222-222222222222', current_date,
+            'aaaaaaaa-0000-0000-0000-000000000003')$$,
+  '42501', null, 'someone else''s task cannot be put in focus');
+select throws_ok(
+  $$insert into focus_items (user_id, date, project_id)
+    values ('22222222-2222-2222-2222-222222222222', current_date,
+            'aaaaaaaa-0000-0000-0000-000000000002')$$,
+  '42501', null, 'nor someone else''s project');
+select throws_ok(
+  $$insert into progress_logs (user_id, project_id, left_off)
+    values ('22222222-2222-2222-2222-222222222222',
+            'aaaaaaaa-0000-0000-0000-000000000002', 'planted')$$,
+  '42501', null, 'progress cannot be logged on someone else''s project');
+select throws_ok(
+  $$insert into progress_logs (user_id, project_id, task_id, left_off)
+    values ('22222222-2222-2222-2222-222222222222', 'bbbbbbbb-0000-0000-0000-000000000002',
+            'aaaaaaaa-0000-0000-0000-000000000003', 'planted')$$,
+  '42501', null, 'nor on someone else''s task');
+select throws_ok(
+  $$insert into progress_logs (user_id, project_id, task_id, left_off, next_step_task_id)
+    values ('22222222-2222-2222-2222-222222222222', 'bbbbbbbb-0000-0000-0000-000000000002',
+            'bbbbbbbb-0000-0000-0000-000000000003', 'planted',
+            'aaaaaaaa-0000-0000-0000-000000000003')$$,
+  '42501', null, 'nor point its next step at someone else''s task');
+
+-- The checks must not over-reach: B's own parents still work.
+select lives_ok(
+  $$update projects set area_id = 'bbbbbbbb-0000-0000-0000-000000000001'
+     where id = 'bbbbbbbb-0000-0000-0000-000000000002'$$,
+  'a project can still move into its owner''s own area');
+select lives_ok(
+  $$insert into focus_items (user_id, date, task_id)
+    values ('22222222-2222-2222-2222-222222222222', current_date,
+            'bbbbbbbb-0000-0000-0000-000000000003')$$,
+  'an own task can still be put in focus');
+select lives_ok(
+  $$insert into progress_logs (user_id, project_id, task_id, left_off)
+    values ('22222222-2222-2222-2222-222222222222', 'bbbbbbbb-0000-0000-0000-000000000002',
+            'bbbbbbbb-0000-0000-0000-000000000003', 'dug')$$,
+  'progress can still be logged on an own task');
 
 -- ---- anonymous is locked out (in this local role) ---------------------------------
 -- This proves the local test role, not production. 20260818120100_rls.sql:29-30 says
