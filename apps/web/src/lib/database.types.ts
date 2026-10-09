@@ -604,6 +604,37 @@ export type Database = {
           },
         ]
       }
+      v_running_timers: {
+        Row: {
+          area_color: string | null
+          id: string | null
+          mode: string | null
+          project_id: string | null
+          project_seconds_today: number | null
+          project_seconds_total: number | null
+          project_title: string | null
+          started_at: string | null
+          task_id: string | null
+          task_title: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'time_entries_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'time_entries_task_id_fkey'
+            columns: ['task_id']
+            isOneToOne: false
+            referencedRelation: 'tasks'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Functions: {
       award_xp: {
@@ -662,7 +693,7 @@ export type Database = {
         Args: { p_item_id: string; p_item_type: string; p_mode?: string }
         Returns: Json
       }
-      rpc_stop_timer: { Args: never; Returns: Json }
+      rpc_stop_timer: { Args: { p_entry_id?: string }; Returns: Json }
       rpc_update_status: {
         Args: {
           p_item_id: string
