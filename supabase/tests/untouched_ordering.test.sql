@@ -8,7 +8,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(35);
+select plan(36);
 
 insert into auth.users (id, email) values
   ('44444444-4444-4444-4444-444444444444', 'owner@example.com'),
@@ -287,9 +287,13 @@ select login('55555555-5555-5555-5555-555555555555');
 -- rpc_update_status, not rpc_snooze: a snooze no longer touches anything for anyone
 -- (20261007120000_snooze_is_not_a_touch.sql), so it could not tell the condition from its
 -- absence. A status change is a touch on every path.
+-- Since #74 the RPC asks for a role on the task's project, so the planted task is refused at the
+-- door; the planted project is the stranger's own and still goes through.
+select throws_ok(
+  $$select rpc_update_status('task', 'dddd0000-0000-0000-0000-0000000000f9',
+    'in_progress', 'planted', 'reach up')$$,
+  'P0002', 'item not found', 'a planted task cannot be moved through the RPC (#74)');
 do $$ begin
-  perform rpc_update_status('task', 'dddd0000-0000-0000-0000-0000000000f9',
-    'in_progress', 'planted', 'reach up');
   perform rpc_update_status('project', 'dddd0000-0000-0000-0000-0000000000f8',
     'in_progress', 'planted', 'reach up');
 end $$;
