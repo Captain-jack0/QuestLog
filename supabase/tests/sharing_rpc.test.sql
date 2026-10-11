@@ -130,7 +130,7 @@ select is(
   array['p_item_type text, p_item_id uuid',
         'p_date date, p_items jsonb',
         'p_item_type text, p_item_id uuid, p_until date',
-        'p_item_type text, p_item_id uuid, p_mode text',
+        'p_item_type text, p_item_id uuid, p_mode text, p_beats boolean',
         'p_item_type text, p_item_id uuid, p_new_status item_status, p_left_off text, p_next_step text, p_note text, p_source text, p_next_step_task_id uuid'],
   'no RPC signature changed');
 select is(
@@ -144,7 +144,7 @@ select is(
   (select bool_and(has_function_privilege('authenticated', f, 'execute'))
      from unnest(array['public.rpc_update_status(text, uuid, item_status, text, text, text, text, uuid)',
                        'public.rpc_groom_stale(text, uuid)', 'public.rpc_pick_focus(date, jsonb)',
-                       'public.rpc_snooze(text, uuid, date)', 'public.rpc_start_timer(text, uuid, text)']) f),
+                       'public.rpc_snooze(text, uuid, date)', 'public.rpc_start_timer(text, uuid, text, boolean)']) f),
   true, 'authenticated can still call every RPC');
 select is(has_function_privilege('authenticated', 'public.digest_payload(uuid)', 'execute'), false,
           'digest_payload stays service_role only');
