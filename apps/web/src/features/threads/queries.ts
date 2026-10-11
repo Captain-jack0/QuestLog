@@ -27,7 +27,8 @@ export const threadKeys = {
   all: ['threads'] as const,
 }
 
-/** v_hanging_threads already excludes snoozed items and sorts by oldest activity. */
+/** v_hanging_threads holds tasks only (#44), already excludes snoozed items and sorts by oldest
+ *  activity. */
 export function useHangingThreads() {
   return useQuery({
     queryKey: threadKeys.all,

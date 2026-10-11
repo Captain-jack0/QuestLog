@@ -144,16 +144,10 @@ export function TodayScreen() {
               </h3>
               <div className="grid gap-3 xl:grid-cols-2">
                 {section.threads.map((thread) => {
-                  // v_hanging_threads gives a project row its *own* title as project_title — the
-                  // union's second leg selects p.title into both columns
-                  // (focus_snooze_views.sql:158-159) — so printing it under the heading spelled the
-                  // same words twice. A project's context is the area it lives in; only a task also
-                  // sits inside a project. Fixed here rather than in the view: project_id on that
-                  // row is load-bearing (the Link below routes on it), and a migration would sit in
-                  // CI green while production kept the duplicate — see the lesson
-                  // migration-uretime-gitmiyor-2026-09-01.
-                  const inProject = thread.item_type === 'task' ? thread.project_title : null
-                  const context = [thread.area_name, inProject].filter(Boolean).join(' · ')
+                  // Every thread is a task (#44); this says which area and project it belongs to.
+                  const context = [thread.area_name, thread.project_title]
+                    .filter(Boolean)
+                    .join(' · ')
 
                   return (
                     <Card
