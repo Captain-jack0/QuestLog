@@ -701,6 +701,10 @@ export type Database = {
         }
         Returns: Json
       }
+      rpc_resolve_pomodoro: {
+        Args: { p_continued: boolean; p_entry_id: string }
+        Returns: Json
+      }
       rpc_stop_timer: { Args: { p_entry_id?: string }; Returns: Json }
       rpc_timer_heartbeat: { Args: never; Returns: Json }
       rpc_update_status: {

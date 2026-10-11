@@ -17,6 +17,15 @@
 -- `p_beats => true`, which the new client does: its entries start seen. Counting null as
 -- `started_at` instead would cut every old-client session to nothing after five minutes.
 --
+-- A pomodoro is the exception (CEO decision "D"): a locked phone puts the app to sleep mid-
+-- session, so a pomodoro whose beats stopped is not ended — it waits, off screen, for the user to
+-- say on return whether it ran on (rpc_timer_heartbeat lists it as `needs_confirm`,
+-- rpc_resolve_pomodoro takes the answer). Yes: it is still running — a pomodoro has no planned
+-- end, pomodoro.ts cycles 25/5 until stopped — so it is seen again from now. No: it ends at its
+-- last beat, as a timer would have. Unanswered, it waits until the 12-hour cap, where the sweep
+-- ends it at its last beat. Only beaten pomodoros wait; a null `last_seen_at` has no rule to
+-- suspend.
+--
 -- Bases: rpc_start_timer — 20261009130000_sharing_role_aware_rpcs.sql (#74); rpc_stop_timer and
 -- v_running_timers — 20261008120000_parallel_timers.sql (#45). Bodies verbatim except the lines
 -- marked `#48`. rpc_start_timer gains a defaulted argument, so the old signature is dropped (a
@@ -36,6 +45,19 @@ language sql stable set search_path = public as $$
   select least(
     case when p_last_seen_at < now() - interval '5 minutes' then p_last_seen_at else now() end,
     p_started_at + interval '12 hours');
+$$;
+
+/**
+ * A pomodoro waiting for its "did it keep going?" answer (header): beaten once, unbeaten for
+ * over 5 minutes, under the 12-hour cap. Its cutoff stays its last beat — the "no" answer — but
+ * no sweep applies it.
+ */
+create function timer_awaits_answer(p_mode text, p_started_at timestamptz, p_last_seen_at timestamptz)
+returns boolean
+language sql stable set search_path = public as $$
+  select coalesce(p_mode = 'pomodoro'
+                  and p_last_seen_at < now() - interval '5 minutes'
+                  and p_started_at + interval '12 hours' > now(), false);
 $$;
 
 /**
@@ -95,7 +117,10 @@ begin
 end;
 $$;
 
-/** Ends every expired open entry of `p_user` at its cutoff. Returns one finish result each. */
+/**
+ * Ends every expired open entry of `p_user` at its cutoff, except pomodoros awaiting their
+ * answer. Returns one finish result each.
+ */
 create function stop_expired_timers(p_user uuid)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
@@ -108,6 +133,7 @@ begin
     select * from time_entries
      where user_id = p_user and ended_at is null
        and timer_cutoff(started_at, last_seen_at) < now()
+       and not timer_awaits_answer(mode, started_at, last_seen_at)
      order by started_at
        for update
   loop
@@ -125,6 +151,8 @@ revoke execute on function stop_expired_timers(uuid) from public, anon, authenti
 /**
  * The open app's pulse. Closes whatever expired since the last beat — reported back as
  * `auto_stopped`, so the app can say so — then marks the caller's remaining clocks as seen.
+ * Pomodoros awaiting their answer are not seen — a beat is not a "yes" — but listed as
+ * `needs_confirm`, for the app to ask. Titles only of projects the caller can still open (#74).
  * Only the caller's own entries: `user_id = v_user`, as everywhere past RLS.
  */
 create function rpc_timer_heartbeat()
@@ -133,6 +161,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_user uuid := auth.uid();
   v_stopped jsonb;
+  v_ask json;
 begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
@@ -143,13 +172,75 @@ begin
   v_stopped := stop_expired_timers(v_user);
 
   update time_entries set last_seen_at = now()
-   where user_id = v_user and ended_at is null;
+   where user_id = v_user and ended_at is null
+     and not timer_awaits_answer(mode, started_at, last_seen_at);
 
-  return json_build_object('auto_stopped', v_stopped);
+  select coalesce(json_agg(json_build_object(
+           'id', e.id,
+           'started_at', e.started_at,
+           'last_seen_at', e.last_seen_at,
+           'project_title', case when project_role(e.project_id) is not null then p.title end,
+           'task_title', case when project_role(e.project_id) is not null then t.title end)
+           order by e.started_at), '[]'::json)
+    into v_ask
+    from time_entries e
+    join projects p on p.id = e.project_id
+    left join tasks t on t.id = e.task_id
+   where e.user_id = v_user and e.ended_at is null
+     and timer_awaits_answer(e.mode, e.started_at, e.last_seen_at);
+
+  return json_build_object('auto_stopped', v_stopped, 'needs_confirm', v_ask);
 end;
 $$;
 
 grant execute on function rpc_timer_heartbeat() to authenticated;
+
+/**
+ * The user's answer to "did your pomodoro keep going?" for one entry of their own. Yes: it is
+ * still running, seen from now. No: it ends at its last beat and is paid like a stop. An entry
+ * that no longer awaits an answer — answered in another tab, or past the 12-hour cap, which the
+ * next sweep ends at its last beat — is left alone: `resolved: false`.
+ */
+create function rpc_resolve_pomodoro(p_entry_id uuid, p_continued boolean)
+returns json
+language plpgsql security definer set search_path = public as $$
+declare
+  v_user uuid := auth.uid();
+  v_entry time_entries%rowtype;
+begin
+  if v_user is null then
+    raise exception 'not authenticated' using errcode = '28000';
+  end if;
+  if p_continued is null then
+    raise exception 'p_continued must be true or false' using errcode = '22023';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text, 45));
+
+  -- `user_id = v_user` is the only lock here: this runs as the owner, past RLS. Somebody else's
+  -- entry is "not found", not "forbidden", so ids cannot be probed.
+  select * into v_entry from time_entries
+   where id = p_entry_id and user_id = v_user and ended_at is null and mode = 'pomodoro'
+     for update;
+  if not found then
+    raise exception 'pomodoro not found' using errcode = 'P0002';
+  end if;
+
+  if not timer_awaits_answer(v_entry.mode, v_entry.started_at, v_entry.last_seen_at) then
+    return json_build_object('id', v_entry.id, 'resolved', false);
+  end if;
+
+  if p_continued then
+    update time_entries set last_seen_at = now() where id = v_entry.id;
+    return json_build_object('id', v_entry.id, 'resolved', true, 'continued', true);
+  end if;
+
+  return (finish_time_entry(v_user, v_entry, v_entry.last_seen_at)
+          || '{"resolved": true, "continued": false}'::jsonb)::json;
+end;
+$$;
+
+grant execute on function rpc_resolve_pomodoro(uuid, boolean) to authenticated;
 
 -- ---------------------------------------------------------------------------------------
 -- rpc_start_timer — base: 20261009130000_sharing_role_aware_rpcs.sql (#74)
@@ -193,6 +284,31 @@ begin
   -- #48: an expired clock is already gone from the user's screen; it must not hold the item or
   -- a slot of three either.
   perform stop_expired_timers(v_user);
+
+  -- #48: nor may a pomodoro still awaiting its answer lock the user out. Starting over on its
+  -- item, or needing its slot, answers "no" for it: it ends at its last beat. The app asks on
+  -- return before anything can be started, so this is a start from another device or tab.
+  for v_entry in
+    select * from time_entries
+     where user_id = v_user and ended_at is null
+       and timer_awaits_answer(mode, started_at, last_seen_at)
+       and task_id is not distinct from v_task
+       and (v_task is not null or project_id = v_project)
+       for update
+  loop
+    perform finish_time_entry(v_user, v_entry, v_entry.last_seen_at);
+  end loop;
+
+  if (select count(*) from time_entries where user_id = v_user and ended_at is null) >= 3 then
+    select * into v_entry from time_entries
+     where user_id = v_user and ended_at is null
+       and timer_awaits_answer(mode, started_at, last_seen_at)
+     order by started_at limit 1
+       for update;
+    if found then
+      perform finish_time_entry(v_user, v_entry, v_entry.last_seen_at);
+    end if;
+  end if;
 
   if exists (
     select 1 from time_entries
@@ -253,6 +369,8 @@ begin
   select * into v_entry from time_entries
    where user_id = v_user and ended_at is null
      and (p_entry_id is null or id = p_entry_id)
+     -- #48: "the newest running" is a clock on screen, never a pomodoro awaiting its answer.
+     and (p_entry_id is not null or not timer_awaits_answer(mode, started_at, last_seen_at))
    order by started_at desc limit 1
      for update;
 
@@ -260,8 +378,9 @@ begin
     return json_build_object('stopped', false, 'seconds', 0, 'xp_awarded', 0);
   end if;
 
-  -- #48: what is left after the sweep is live, so its cutoff is now().
-  return finish_time_entry(v_user, v_entry, now())::json;
+  -- #48: what is left after the sweep is live — cutoff now() — or a pomodoro awaiting its
+  -- answer, which a stop answers "no": its cutoff, the last beat. Sign-out stops these too.
+  return finish_time_entry(v_user, v_entry, timer_cutoff(v_entry.started_at, v_entry.last_seen_at))::json;
 end;
 $$;
 
