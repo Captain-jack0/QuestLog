@@ -6,6 +6,13 @@
 -- Columns, order and types unchanged (`create or replace view` cannot drop any): item_type is
 -- always 'task' now, cast so its type stays the text the union used to resolve to. The owner
 -- filter and security_invoker (#74) are kept as they were.
+--
+-- display_status (added last — the only place `create or replace view` may add a column) is the
+-- status Today and the digest group and label by: an in_progress task under a project the owner
+-- paused or blocked on purpose reads as its project's status, so it sits with the parked work
+-- instead of queueing as active. Blocked gets the same treatment as paused: both are the two
+-- "set aside" states the parked heading already holds, and a blocked project stalls its tasks
+-- just the same. `status` stays the task's real status — anything that writes still uses it.
 create or replace view v_hanging_threads with (security_invoker = true) as
 with latest_log as (
   select distinct on (coalesce(task_id, project_id))
@@ -23,7 +30,9 @@ select 'task'::text as item_type, t.id as item_id, t.user_id, t.title, t.status,
        nt.title as next_step_task_title,
        nt.status as next_step_task_status,
        nt.project_id as next_step_task_project_id,
-       l.logged_by
+       l.logged_by,
+       case when t.status = 'in_progress' and p.status in ('paused', 'blocked') then p.status
+            else t.status end as display_status
   from tasks t
   join projects p on p.id = t.project_id
   left join life_areas a on a.id = p.area_id
@@ -36,7 +45,8 @@ select 'task'::text as item_type, t.id as item_id, t.user_id, t.title, t.status,
 -- Base: 20261009130000_sharing_role_aware_rpcs.sql:581-623. Only the 'threads' key changes: each
 -- thread carries its `status` (added key — older readers ignore it), and the limit is five
 -- oldest per heading (in_progress / paused+blocked) instead of five overall. Owner filter (#74)
--- unchanged.
+-- unchanged. #44 follow-up: each thread also carries display_status (see the view), and the
+-- headings — so the per-heading limit — are split by it, the same split Today makes.
 create or replace function digest_payload(p_user uuid)
 returns json
 language sql security definer set search_path = public as $$
@@ -69,11 +79,12 @@ language sql security definer set search_path = public as $$
                         'area_name', h.area_name,
                         'next_step', h.next_step,
                         'last_activity_at', h.last_activity_at,
-                        'status', h.status
+                        'status', h.status,
+                        'display_status', h.display_status
                       ) order by h.last_activity_at)
         from (
           select h.*,
-                 row_number() over (partition by h.status = 'in_progress'
+                 row_number() over (partition by h.display_status = 'in_progress'
                                     order by h.last_activity_at) as rank_in_heading
             from v_hanging_threads h
            where exists (select 1 from projects x where x.id = h.project_id and x.user_id = p_user)

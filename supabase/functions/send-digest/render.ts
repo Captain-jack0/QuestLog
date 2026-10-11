@@ -10,6 +10,9 @@ export interface DigestPayload {
     last_activity_at: string
     /** in_progress | paused | blocked. Absent only from a payload built before #44. */
     status?: string
+    /** What the thread is grouped and labelled by: its project's paused/blocked when the task
+     *  itself is in_progress, else status. Absent from a payload built before it existed. */
+    display_status?: string
   }[]
 }
 
@@ -58,7 +61,11 @@ export function renderDigest(payload: DigestPayload, unsubscribeUrl: string): st
       <tr><td style="padding:12px 0;border-bottom:1px solid #EEE">
         <div style="font:600 16px/1.3 -apple-system,Segoe UI,sans-serif;color:#1F2933">${escape(thread.title)}</div>
         <div style="font:400 12px/1.5 -apple-system,Segoe UI,sans-serif;color:#6B7280">${escape(
-          [showStatus ? statusLabel(thread.status) : null, thread.area_name, thread.project_title]
+          [
+            showStatus ? statusLabel(shownStatus(thread)) : null,
+            thread.area_name,
+            thread.project_title,
+          ]
             .filter(Boolean)
             .join(' · '),
         )}</div>
@@ -107,10 +114,14 @@ export function renderDigest(payload: DigestPayload, unsubscribeUrl: string): st
 </body></html>`
 }
 
+const shownStatus = (thread: Thread) => thread.display_status ?? thread.status
+
 /** Paused and blocked are parked; anything else — including a payload from before #44 that
- *  carries no status — stays under Active, where every thread used to be. */
+ *  carries no status — stays under Active, where every thread used to be. Grouped by
+ *  display_status, falling back to status for a payload that predates it. */
 export function groupThreads(threads: readonly Thread[]): { active: Thread[]; parked: Thread[] } {
-  const isParked = (thread: Thread) => thread.status === 'paused' || thread.status === 'blocked'
+  const isParked = (thread: Thread) =>
+    shownStatus(thread) === 'paused' || shownStatus(thread) === 'blocked'
   return {
     active: threads.filter((thread) => !isParked(thread)),
     parked: threads.filter(isParked),
