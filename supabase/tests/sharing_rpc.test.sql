@@ -165,8 +165,9 @@ select is(
 
 -- ---- personal views: a member's screens show only their own data ---------------------------
 select login('e0000000-0000-0000-0000-000000000001');
--- 5 tasks of P1, R's task in P4 + P1, P2, P3: everything in O's projects, whoever created it.
-select is((select count(*)::int from v_hanging_threads), 9, 'O sees every thread of their projects');
+-- 5 tasks of P1 + R's task in P4: every task in O's projects, whoever created it. Projects
+-- themselves are not threads (#44).
+select is((select count(*)::int from v_hanging_threads), 6, 'O sees every thread of their projects');
 select is((select logged_by from v_hanging_threads where item_id = 'f0000000-0000-0000-0000-0000000000ce'),
           'e0000000-0000-0000-0000-000000000003'::uuid,
           'including the editor''s task, with the editor as logged_by');
@@ -359,14 +360,13 @@ select is(
   (select array_agg(e ->> 'title' order by e ->> 'title')
      from json_array_elements(digest_payload('e0000000-0000-0000-0000-000000000004') -> 'focus') e),
   array['Finish me', 'Shared'], 'a current member''s focus keeps its titles');
--- Threads follow the project owner, as on Today. Titles are checked rather than a count, so the
--- task branch and the project branch of v_hanging_threads are each measured.
+-- Threads follow the project owner, as on Today.
 select ok((digest_payload('e0000000-0000-0000-0000-000000000001') -> 'threads')::jsonb
             @> '[{"title": "E''s task"}]',
           'the owner''s digest lists a task a member added to their project');
-select ok((digest_payload('e0000000-0000-0000-0000-000000000001') -> 'threads')::jsonb
-            @> '[{"title": "Shared", "project_title": "Shared"}]',
-          'and their own project thread');
+select ok(not (digest_payload('e0000000-0000-0000-0000-000000000001') -> 'threads')::jsonb
+            @> '[{"title": "Shared"}]',
+          'and no project thread: threads are tasks only (#44)');
 select is((digest_payload('e0000000-0000-0000-0000-000000000006') -> 'threads')::text, '[]',
           'a former member''s digest carries no thread of the owner''s (title, project, area)');
 select is((digest_payload('e0000000-0000-0000-0000-000000000003') -> 'threads')::text, '[]',
