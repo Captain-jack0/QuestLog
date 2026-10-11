@@ -160,8 +160,8 @@ select is(
   array['item_type', 'item_id', 'user_id', 'title', 'status', 'updated_at', 'project_id',
         'project_title', 'area_id', 'area_name', 'area_color', 'left_off', 'next_step', 'logged_at',
         'last_activity_at', 'next_step_task_id', 'next_step_task_title', 'next_step_task_status',
-        'next_step_task_project_id', 'logged_by'],
-  'v_hanging_threads keeps its columns in order and ends with logged_by');
+        'next_step_task_project_id', 'logged_by', 'display_status'],
+  'v_hanging_threads keeps its columns in order, display_status (#44) appended last');
 
 -- ---- personal views: a member's screens show only their own data ---------------------------
 select login('e0000000-0000-0000-0000-000000000001');
