@@ -424,3 +424,7 @@ verify_jwt = false
 [functions.send-push]
 # cron only, authorised by the service-role key inside the function
 verify_jwt = true
+
+[functions.send-invite]
+# the inviter's JWT; rpc_create_invite runs as that user
+verify_jwt = true
