@@ -1,9 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
 import { areaKeys } from '../areas/queries'
-import { autoStoppedMessage, runHeartbeat, type AutoStopped } from './autoStop'
+import {
+  autoStoppedMessage,
+  resolvePomodoro,
+  runHeartbeat,
+  type AwaitingPomodoro,
+  type Beat,
+} from './autoStop'
 import {
   sumSecondsByProject,
   sumSecondsByTask,
@@ -92,22 +98,24 @@ export function useStopTimer() {
       if (error) throw error
       return data as unknown as StopResult
     },
-    onSuccess: (result) => {
-      if (result.discarded) {
-        toast('Too short to count — nothing logged')
-      } else if (result.xp_awarded > 0) {
-        toast(`+${result.xp_awarded} ✨ for ${Math.round(result.seconds / 60)} min focus`, 'xp')
-      } else if (result.stopped) {
-        toast(
-          result.daily_cap_reached
-            ? `Logged ${Math.round(result.seconds / 60)} min — daily focus XP is capped`
-            : `Logged ${Math.round(result.seconds / 60)} min`,
-        )
-      }
-    },
+    onSuccess: (result) => toastStop(toast, result),
     onError: (error: Error) => toast(error.message, 'error'),
     onSettled: () => invalidateAfterStop(queryClient),
   })
+}
+
+function toastStop(toast: ReturnType<typeof useToast>, result: StopResult) {
+  if (result.discarded) {
+    toast('Too short to count — nothing logged')
+  } else if (result.xp_awarded > 0) {
+    toast(`+${result.xp_awarded} ✨ for ${Math.round(result.seconds / 60)} min focus`, 'xp')
+  } else if (result.stopped) {
+    toast(
+      result.daily_cap_reached
+        ? `Logged ${Math.round(result.seconds / 60)} min — daily focus XP is capped`
+        : `Logged ${Math.round(result.seconds / 60)} min`,
+    )
+  }
 }
 
 function invalidateAfterStop(queryClient: QueryClient) {
@@ -122,11 +130,12 @@ function invalidateAfterStop(queryClient: QueryClient) {
 }
 
 /** One heartbeat. A lost beat is the case the net exists for — the server ends the clock at the
- *  last one that landed — so an error is not raised; a later beat reports what it closed. */
-async function heartbeat(): Promise<AutoStopped[]> {
+ *  last one that landed — so an error is not raised; a later beat reports what it closed. Null,
+ *  not an empty beat, so a lost one does not close an open question. */
+async function heartbeat(): Promise<Beat | null> {
   const { data, error } = await supabase.rpc('rpc_timer_heartbeat')
-  if (error) return []
-  return (data as unknown as { auto_stopped: AutoStopped[] }).auto_stopped
+  if (error) return null
+  return data as unknown as Beat
 }
 
 /**
@@ -137,11 +146,15 @@ async function heartbeat(): Promise<AutoStopped[]> {
  * Deliberately no stop on pagehide, though the issue's note asks for one: it also fires on
  * reload and bfcache, and would stop clocks running in other tabs — the beat already ends a left
  * clock within a minute of leaving.
+ *
+ * A pomodoro is not ended that way (decision D): the beat lists it as awaiting, and the first
+ * of those is returned here for TimerBar to ask about; `answer` sends the reply.
  */
 export function useTimerSafetyNet(timers: RunningTimer[]) {
   const queryClient = useQueryClient()
   const toast = useToast()
   const running = timers.length > 0
+  const [awaiting, setAwaiting] = useState<AwaitingPomodoro[]>([])
 
   useEffect(
     () =>
@@ -152,14 +165,44 @@ export function useTimerSafetyNet(timers: RunningTimer[]) {
           toast(autoStoppedMessage(stopped))
           invalidateAfterStop(queryClient)
         },
+        onNeedsConfirm: setAwaiting,
       }),
     [running, queryClient, toast],
   )
+
+  const resolve = useMutation({
+    mutationFn: (vars: { id: string; continued: boolean }) =>
+      resolvePomodoro(
+        (args) => supabase.rpc('rpc_resolve_pomodoro', args),
+        vars.id,
+        vars.continued,
+      ),
+    onSuccess: (result) => {
+      if (result.continued) toast('Pomodoro still running')
+      else if (result.resolved) toastStop(toast, result as StopResult)
+    },
+    onError: (error: Error) => toast(error.message, 'error'),
+    onSettled: (_data, _error, vars) => {
+      // Answered or not, this one is not asked again until a beat lists it anew.
+      setAwaiting((all) => all.filter((p) => p.id !== vars.id))
+      invalidateAfterStop(queryClient)
+    },
+  })
+
+  return {
+    awaiting: awaiting[0],
+    answering: resolve.isPending,
+    answer: (id: string, continued: boolean) => resolve.mutate({ id, continued }),
+  }
 }
 
-/** Stops every running clock — for sign-out (stopThenSignOut), which would leave them counting. */
+/**
+ * Stops every open clock — for sign-out (stopThenSignOut), which would leave them counting.
+ * Read from the table, not v_running_timers: a pomodoro awaiting its answer is off screen but
+ * open, and a stop ends it at its last beat.
+ */
 export async function stopAllTimers() {
-  const { data } = await supabase.from('v_running_timers').select('id')
+  const { data } = await supabase.from('time_entries').select('id').is('ended_at', null)
   await Promise.all(
     (data ?? []).map((t) => supabase.rpc('rpc_stop_timer', { p_entry_id: t.id as string })),
   )

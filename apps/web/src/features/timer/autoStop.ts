@@ -18,12 +18,60 @@ export function autoStoppedMessage(stopped: AutoStopped[]): string {
   return `${what} stopped while you were away — ${minutes} min logged${xp > 0 ? ` · +${xp} ✨` : ''}`
 }
 
+/** A pomodoro whose beats stopped — a locked phone — waiting for "did it keep going?" (#48 D). */
+export interface AwaitingPomodoro {
+  id: string
+  started_at: string
+  last_seen_at: string
+  project_title: string | null
+  task_title: string | null
+}
+
+/** What one beat answers: clocks the server closed, and pomodoros it is waiting to ask about. */
+export interface Beat {
+  auto_stopped: AutoStopped[]
+  needs_confirm: AwaitingPomodoro[]
+}
+
+/** rpc_resolve_pomodoro's answer: a stop result for "no", `continued` for "yes". */
+export interface ResolveResult {
+  id: string
+  resolved: boolean
+  continued?: boolean
+  stopped?: boolean
+  seconds?: number
+  xp_awarded?: number
+  discarded?: boolean
+  daily_cap_reached?: boolean
+}
+
+/**
+ * Sends the user's answer for one pomodoro: yes keeps it running from now, no ends it at its
+ * last beat. `call` is the RPC, injected so the arguments can be checked without a server.
+ */
+export async function resolvePomodoro(
+  call: (args: { p_entry_id: string; p_continued: boolean }) => PromiseLike<{
+    data: unknown
+    error: unknown
+  }>,
+  entryId: string,
+  continued: boolean,
+): Promise<ResolveResult> {
+  const { data, error } = await call({ p_entry_id: entryId, p_continued: continued })
+  if (error) throw error
+  return data as ResolveResult
+}
+
 export const HEARTBEAT_MS = 60_000
 
 interface HeartbeatOptions {
-  /** One beat; resolves to what the server closed since the last one. */
-  beat: () => Promise<AutoStopped[]>
+  /** One beat; resolves to what the server closed since the last one and what it asks about,
+   *  or null when the beat was lost — which then reports nothing. */
+  beat: () => Promise<Beat | null>
   onAutoStopped: (stopped: AutoStopped[]) => void
+  /** The server's whole current list, on every beat that landed — empty included, so a question
+   *  answered in another tab closes here too. Replace, do not append. */
+  onNeedsConfirm: (awaiting: AwaitingPomodoro[]) => void
   running: boolean
   targets?: PageWakeTargets
   isVisible?: () => boolean
@@ -36,13 +84,16 @@ interface HeartbeatOptions {
 export function runHeartbeat({
   beat,
   onAutoStopped,
+  onNeedsConfirm,
   running,
   targets,
   isVisible = () => document.visibilityState === 'visible',
 }: HeartbeatOptions): () => void {
   const go = () =>
-    void beat().then((stopped) => {
-      if (stopped.length > 0) onAutoStopped(stopped)
+    void beat().then((result) => {
+      if (!result) return
+      if (result.auto_stopped.length > 0) onAutoStopped(result.auto_stopped)
+      onNeedsConfirm(result.needs_confirm)
     })
   go()
   if (!running) return () => {}
