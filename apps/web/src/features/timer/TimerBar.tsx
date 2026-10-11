@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { onPageWake } from '../../lib/pageWake'
 import { formatDuration, pomodoroPhase } from './pomodoro'
-import { useRunningTimer, useStopTimer, type RunningTimer } from './queries'
+import { useRunningTimer, useStopTimer, useTimerSafetyNet, type RunningTimer } from './queries'
 import { timerDeck } from './stack'
 import { timerBarSeconds } from './totals'
 
@@ -19,6 +19,7 @@ import { timerBarSeconds } from './totals'
 export function TimerBar() {
   const running = useRunningTimer()
   const stop = useStopTimer()
+  useTimerSafetyNet(running.data ?? [])
   const [now, setNow] = useState(() => Date.now())
   const [open, setOpen] = useState(false)
 

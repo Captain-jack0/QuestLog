@@ -1,7 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
 import { areaKeys } from '../areas/queries'
+import { autoStoppedMessage, runHeartbeat, type AutoStopped } from './autoStop'
 import {
   sumSecondsByProject,
   sumSecondsByTask,
@@ -67,6 +69,8 @@ export function useStartTimer() {
         p_item_type: vars.itemType,
         p_item_id: vars.itemId,
         p_mode: vars.mode ?? 'timer',
+        // this client beats (useTimerSafetyNet), so the entry starts seen (issue #48)
+        p_beats: true,
       })
       if (error) throw error
     },
@@ -102,17 +106,63 @@ export function useStopTimer() {
       }
     },
     onError: (error: Error) => toast(error.message, 'error'),
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['timer'] })
-      queryClient.invalidateQueries({ queryKey: ['gamification'] })
-      // A finished session touches its task (20261005120000_untouched_first_ordering.sql), which
-      // moves it in the list on screen — and nothing else would refetch that list. The touch
-      // travels up, so the project and area lists moved as well.
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: areaKeys.all })
-    },
+    onSettled: () => invalidateAfterStop(queryClient),
   })
+}
+
+function invalidateAfterStop(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: ['timer'] })
+  queryClient.invalidateQueries({ queryKey: ['gamification'] })
+  // A finished session touches its task (20261005120000_untouched_first_ordering.sql), which
+  // moves it in the list on screen — and nothing else would refetch that list. The touch
+  // travels up, so the project and area lists moved as well.
+  queryClient.invalidateQueries({ queryKey: ['tasks'] })
+  queryClient.invalidateQueries({ queryKey: ['projects'] })
+  queryClient.invalidateQueries({ queryKey: areaKeys.all })
+}
+
+/** One heartbeat. A lost beat is the case the net exists for — the server ends the clock at the
+ *  last one that landed — so an error is not raised; a later beat reports what it closed. */
+async function heartbeat(): Promise<AutoStopped[]> {
+  const { data, error } = await supabase.rpc('rpc_timer_heartbeat')
+  if (error) return []
+  return (data as unknown as { auto_stopped: AutoStopped[] }).auto_stopped
+}
+
+/**
+ * Keeps the server from counting a clock nobody is watching (issue #48). The app beats while
+ * clocks run; the server ends an entry at its last beat once that is 5 minutes old, and the beat
+ * after a long absence reports what it ended, which is toasted here.
+ *
+ * Deliberately no stop on pagehide, though the issue's note asks for one: it also fires on
+ * reload and bfcache, and would stop clocks running in other tabs — the beat already ends a left
+ * clock within a minute of leaving.
+ */
+export function useTimerSafetyNet(timers: RunningTimer[]) {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+  const running = timers.length > 0
+
+  useEffect(
+    () =>
+      runHeartbeat({
+        beat: heartbeat,
+        running,
+        onAutoStopped: (stopped) => {
+          toast(autoStoppedMessage(stopped))
+          invalidateAfterStop(queryClient)
+        },
+      }),
+    [running, queryClient, toast],
+  )
+}
+
+/** Stops every running clock — for sign-out (stopThenSignOut), which would leave them counting. */
+export async function stopAllTimers() {
+  const { data } = await supabase.from('v_running_timers').select('id')
+  await Promise.all(
+    (data ?? []).map((t) => supabase.rpc('rpc_stop_timer', { p_entry_id: t.id as string })),
+  )
 }
 
 /**
