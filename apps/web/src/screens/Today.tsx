@@ -173,7 +173,7 @@ export function TodayScreen() {
                       </div>
                       <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
                         <ItemTypeChip itemType={thread.item_type} />
-                        {section.showStatus && <StatusChip status={thread.status} />}
+                        {section.showStatus && <StatusChip status={thread.display_status} />}
                         {context && <span>{context}</span>}
                       </p>
 

@@ -7,13 +7,18 @@ import {
   type DigestPayload,
 } from '../../../../../supabase/functions/send-digest/render'
 
-const thread = (title: string, status?: string): DigestPayload['threads'][number] => ({
+const thread = (
+  title: string,
+  status?: string,
+  display_status?: string,
+): DigestPayload['threads'][number] => ({
   title,
   project_title: 'Proj',
   area_name: 'Work',
   next_step: null,
   last_activity_at: '2026-10-01T00:00:00Z',
   status,
+  display_status,
 })
 
 const payload = (threads: DigestPayload['threads']): DigestPayload => ({
@@ -51,6 +56,30 @@ describe('digest thread grouping', () => {
     expect(html.indexOf('>Paused &amp; blocked<')).toBeLessThan(html.indexOf('Parked one'))
     expect(html).toContain('Blocked · Work · Proj')
     expect(html.match(/· Work · Proj/g)).toHaveLength(1)
+  })
+
+  it('groups by display_status: an in_progress task of a paused project is parked', () => {
+    const { active, parked } = groupThreads([
+      thread('moving', 'in_progress', 'in_progress'),
+      thread('held', 'in_progress', 'paused'),
+    ])
+    expect(active.map((t) => t.title)).toEqual(['moving'])
+    expect(parked.map((t) => t.title)).toEqual(['held'])
+  })
+
+  it('falls back to status for a payload without display_status', () => {
+    const { active, parked } = groupThreads([thread('a', 'in_progress'), thread('b', 'paused')])
+    expect(active.map((t) => t.title)).toEqual(['a'])
+    expect(parked.map((t) => t.title)).toEqual(['b'])
+  })
+
+  it('labels a parked row by display_status', () => {
+    const html = renderDigest(
+      payload([thread('Held one', 'in_progress', 'paused')]),
+      'https://x/unsub',
+    )
+    expect(html).not.toContain('>Active<')
+    expect(html).toContain('Paused · Work · Proj')
   })
 
   it('leaves out an empty heading', () => {

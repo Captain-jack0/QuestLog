@@ -6,7 +6,11 @@ export interface HangingThread {
   item_type: 'task' | 'project'
   item_id: string
   title: string
+  /** The task's real status — what any write starts from. */
   status: ItemStatus
+  /** What Today groups and labels by: the project's paused/blocked when the task is in_progress
+   *  under it, else status (#44). */
+  display_status: ItemStatus
   project_id: string
   project_title: string
   area_name: string | null
@@ -36,7 +40,7 @@ export function useHangingThreads() {
       const { data, error } = await supabase
         .from('v_hanging_threads')
         .select(
-          'item_type, item_id, title, status, project_id, project_title, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at',
+          'item_type, item_id, title, status, display_status, project_id, project_title, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at',
         )
         .order('last_activity_at', { ascending: true })
         .limit(20)
