@@ -8,8 +8,15 @@ export interface DigestPayload {
     area_name: string | null
     next_step: string | null
     last_activity_at: string
+    /** in_progress | paused | blocked. Absent only from a payload built before #44. */
+    status?: string
+    /** What the thread is grouped and labelled by: its project's paused/blocked when the task
+     *  itself is in_progress, else status. Absent from a payload built before it existed. */
+    display_status?: string
   }[]
 }
+
+type Thread = DigestPayload['threads'][number]
 
 const escape = (value: string) =>
   value.replace(/[&<>"']/g, (c) => {
@@ -47,13 +54,20 @@ export function renderDigest(payload: DigestPayload, unsubscribeUrl: string): st
        </ul>`
     : ''
 
-  const threadsHtml = threads
-    .map(
-      (thread) => `
+  const threadRows = (list: Thread[], showStatus: boolean) =>
+    list
+      .map(
+        (thread) => `
       <tr><td style="padding:12px 0;border-bottom:1px solid #EEE">
         <div style="font:600 16px/1.3 -apple-system,Segoe UI,sans-serif;color:#1F2933">${escape(thread.title)}</div>
         <div style="font:400 12px/1.5 -apple-system,Segoe UI,sans-serif;color:#6B7280">${escape(
-          [thread.area_name, thread.project_title].filter(Boolean).join(' · '),
+          [
+            showStatus ? statusLabel(shownStatus(thread)) : null,
+            thread.area_name,
+            thread.project_title,
+          ]
+            .filter(Boolean)
+            .join(' · '),
         )}</div>
         ${
           thread.next_step
@@ -61,6 +75,21 @@ export function renderDigest(payload: DigestPayload, unsubscribeUrl: string): st
             : ''
         }
       </td></tr>`,
+      )
+      .join('')
+
+  // Same split as Today's card: work in motion on top, deliberately parked work below with its
+  // status spelled out. An empty heading is left out.
+  const { active, parked } = groupThreads(threads)
+  const threadsHtml = [
+    { heading: 'Active', list: active, showStatus: false },
+    { heading: 'Paused &amp; blocked', list: parked, showStatus: true },
+  ]
+    .filter((section) => section.list.length > 0)
+    .map(
+      (section) =>
+        `<p style="margin:24px 0 4px;font:600 12px/1.4 -apple-system,Segoe UI,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6B7280">${section.heading}</p>
+             <table role="presentation" width="100%">${threadRows(section.list, section.showStatus)}</table>`,
     )
     .join('')
 
@@ -76,12 +105,7 @@ export function renderDigest(payload: DigestPayload, unsubscribeUrl: string): st
         🔥 ${streak.current}-day streak${streak.best > streak.current ? ` · best ${streak.best}` : ''}
       </p>
       ${focusHtml}
-      ${
-        threads.length
-          ? `<p style="margin:24px 0 4px;font:600 12px/1.4 -apple-system,Segoe UI,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#6B7280">Hanging threads</p>
-             <table role="presentation" width="100%">${threadsHtml}</table>`
-          : ''
-      }
+      ${threadsHtml}
       <p style="margin:28px 0 0;font:400 12px/1.5 -apple-system,Segoe UI,sans-serif;color:#6B7280">
         <a href="${unsubscribeUrl}" style="color:#6B7280">Stop these emails</a>
       </p>
@@ -89,3 +113,20 @@ export function renderDigest(payload: DigestPayload, unsubscribeUrl: string): st
   </table>
 </body></html>`
 }
+
+const shownStatus = (thread: Thread) => thread.display_status ?? thread.status
+
+/** Paused and blocked are parked; anything else — including a payload from before #44 that
+ *  carries no status — stays under Active, where every thread used to be. Grouped by
+ *  display_status, falling back to status for a payload that predates it. */
+export function groupThreads(threads: readonly Thread[]): { active: Thread[]; parked: Thread[] } {
+  const isParked = (thread: Thread) =>
+    shownStatus(thread) === 'paused' || shownStatus(thread) === 'blocked'
+  return {
+    active: threads.filter((thread) => !isParked(thread)),
+    parked: threads.filter(isParked),
+  }
+}
+
+const statusLabel = (status: string | undefined) =>
+  status === 'paused' ? 'Paused' : status === 'blocked' ? 'Blocked' : null
