@@ -15,6 +15,7 @@ export default {
         muted: themed('muted'),
         line: themed('line'),
         accent: themed('accent'),
+        'accent-ink': themed('accent-ink'),
         success: themed('success'),
         flame: themed('flame'),
         alert: themed('alert'),

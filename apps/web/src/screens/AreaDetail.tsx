@@ -97,11 +97,9 @@ export function AreaDetailScreen() {
               {/* Done cards fade via a local opacity on the title and the progress bar only —
                   never on the Card itself. A card-wide opacity composites every pixel in it
                   (chip included) against --paper, and the Done chip (success-ink on
-                  success/20, see StatusChip.tsx) is already only 4.27:1 in the calm theme at
-                  full strength: any further blend pushes it under the 4.5:1 floor with no
-                  opacity value that recovers it (that 4.27:1 is pre-existing — the same chip
-                  renders at full strength everywhere else in the app, e.g. ProjectDetail.tsx).
-                  So the chip is left untouched here, and opacity-75 is applied only to the title
+                  success/20, see StatusChip.tsx) is only 4.87:1 in the calm theme at full
+                  strength: a further blend pushes it toward the 4.5:1 floor (StatusChip.test.ts
+                  guards the full-strength chip). So the chip is left untouched here, and opacity-75 is applied only to the title
                   (ink on the card's own surface: 6.53:1 calm, 8.29:1 quest) and the progress
                   bar. The "Completed" label stays plain text-muted (4.83:1) — muted plus
                   opacity would drop under 4.5:1 in calm.

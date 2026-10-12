@@ -15,6 +15,7 @@
   --muted: 148 168 214;
   --line: 32 51 104;
   --accent: 76 141 255;
+  --accent-ink: 106 162 255;
   --success: 62 213 152;
   --flame: 255 168 76;
   --success-ink: 126 235 190;
@@ -33,10 +34,11 @@
   --muted: 107 114 128;
   --line: 233 233 228;
   --accent: 47 79 181;
+  --accent-ink: 47 79 181;
   --success: 47 158 105;
   --flame: 232 131 58;
-  --success-ink: 31 122 80;
-  --flame-ink: 180 83 10;
+  --success-ink: 29 112 74;
+  --flame-ink: 166 76 9;
   --alert: 225 29 72;
   --alert-ink: 159 18 57;
   /* Same black, far lighter — a 0.55 shadow would look like soot on paper. */
