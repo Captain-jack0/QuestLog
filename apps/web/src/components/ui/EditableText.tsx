@@ -113,7 +113,7 @@ export function EditableText({
       disabled={disabled}
       aria-label={`${label} — click to edit`}
       onClick={() => setEditing(true)}
-      className={`min-h-[44px] w-full whitespace-pre-wrap rounded-lg px-2 py-1 text-left hover:bg-paper disabled:hover:bg-transparent ${
+      className={`min-h-[44px] w-full whitespace-pre-wrap break-words rounded-lg px-2 py-1 text-left hover:bg-paper disabled:hover:bg-transparent ${
         empty ? 'text-muted' : ''
       } ${className}`}
     >

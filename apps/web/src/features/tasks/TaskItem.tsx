@@ -146,7 +146,9 @@ export function TaskItem({
         {/* pt-3 lines the glyph up with the first line of the 44px title button rather than
             centring it against a title that may wrap to two lines. */}
         <PriorityMark priority={task.priority} className="pt-3" />
-        {title}
+        {/* min-w-0, as in the row view: a flex item will not shrink below its longest word, so an
+            unbroken title used to push the difficulty select and ⋯ out of the card (#54). */}
+        <div className="min-w-0 flex-1">{title}</div>
         <select
           aria-label={`Difficulty for ${task.title}: ${DIFFICULTY_LABELS[task.difficulty]}`}
           disabled={pending}
