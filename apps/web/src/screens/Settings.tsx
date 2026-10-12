@@ -11,6 +11,8 @@ import { useProfile } from '../features/gamification/queries'
 import { downloadJson, fetchExportBundle, useUpdateProfile } from '../features/settings/queries'
 import { timeZones } from '../features/settings/timezones'
 import { ThemePicker } from '../features/settings/ThemePicker'
+import { stopAllTimers } from '../features/timer/queries'
+import { stopThenSignOut } from '../features/timer/autoStop'
 import { pushSupported, subscribeToPush, unsubscribeFromPush } from '../features/settings/push'
 import { localDateKey } from '../lib/time'
 import { profileSchema, type ProfileInput } from '../lib/schemas'
@@ -232,7 +234,11 @@ export function SettingsScreen() {
             Deleting your account removes every row above. It is not self-service yet — email
             support and it is done by hand, after you export.
           </p>
-          <Button variant="danger" block onClick={() => void supabase.auth.signOut()}>
+          <Button
+            variant="danger"
+            block
+            onClick={() => void stopThenSignOut(stopAllTimers, () => supabase.auth.signOut())}
+          >
             Sign out
           </Button>
         </Card>
