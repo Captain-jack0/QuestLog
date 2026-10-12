@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test'
 
 /**
- * The one flow that has to keep working: sign up, build a thread, park it with context,
- * and see it waiting on Today. Runs against the local Supabase stack.
+ * The one flow that has to keep working: sign up, build a thread, park its project,
+ * and see the task waiting on Today. Runs against the local Supabase stack.
  */
 test('a captain can sign up, log a thread and find it waiting on Today', async ({ page }) => {
+  // mobile-safari ran 29-38s of the 45s limit, and the toast wait below adds ~2.6s.
+  test.slow()
   const email = `smoke-${Date.now()}@example.com`
 
   await test.step('sign up', async () => {
@@ -54,36 +56,53 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByText('1/1 done')).toBeVisible()
   })
 
-  await test.step('park the project so it hangs', async () => {
+  await test.step('start a second task', async () => {
+    await page.getByRole('textbox', { name: 'New task' }).fill('Hanging task')
+    await page.getByRole('button', { name: 'Add', exact: true }).click()
+    await page.getByRole('radio', { name: 'Status for Hanging task: In progress' }).click()
+    // In progress needs no resume sheet, so it goes straight to the RPC: a flat progress_update 8
+    // (next_step_task.sql:159), the check-in having fired on the completion above. Wait the toast
+    // out (Toast.tsx:29) — the pause below also pays +8, and two of them on screen at once would
+    // make the next assertion ambiguous.
+    const started = page.getByRole('status').filter({ hasText: '+8 ✨' })
+    await expect(started).toBeVisible()
+    await expect(started).toHaveCount(0)
+  })
+
+  await test.step('park the project so its task hangs', async () => {
     await page.getByRole('radio', { name: 'Project status: Paused' }).click()
     await page.getByLabel('Where did you leave off?').fill('first task done')
     await page.getByLabel("What's the next step?").fill('plan the second one')
     await page.getByRole('button', { name: /Mark as paused/i }).click()
     // Pausing is not a completion, so it pays the flat progress_update 8 (next_step_task.sql:159)
-    // and the check-in already fired above — 8 is the whole award. The '+35 ✨' from the previous
-    // step is usually still on screen here, which is what a bare '✨' used to match as well.
+    // and the check-in already fired above — 8 is the whole award.
     await expect(page.getByRole('status').filter({ hasText: '+8 ✨' })).toBeVisible()
   })
 
-  await test.step('Today shows the thread with its next step', async () => {
+  await test.step('Today shows the task, parked with its project', async () => {
     await page.getByRole('link', { name: 'Today' }).click()
     await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible()
-    await expect(page.getByText('plan the second one')).toBeVisible()
-    // Paused, so it sits under the parked heading with its status spelled out — and with nothing
-    // in progress, the Active list drops its heading rather than showing an empty one.
+    // The task is in progress, but its project is paused, so it reads as paused (display_status)
+    // and sits under the parked heading with that status spelled out and where it lives. With
+    // nothing else in progress, the Active list drops its heading rather than showing an empty one.
     const parked = page.getByRole('region', { name: 'Paused & blocked' })
-    await expect(parked.getByText('plan the second one')).toBeVisible()
+    await expect(parked.getByText('Hanging task')).toBeVisible()
     await expect(parked.getByText('Paused', { exact: true })).toBeVisible()
+    await expect(parked.getByText('Work · Test project')).toBeVisible()
+    // Hanging threads are tasks only: the paused project itself, and its next step, stay off.
+    await expect(page.getByText('plan the second one')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Drop project: Test project' })).toHaveCount(0)
     await expect(page.getByRole('heading', { name: 'Active', exact: true })).toHaveCount(0)
     await expect(page.getByText(/1-day streak/)).toBeVisible()
   })
 
   await test.step('focus can be picked and is worth 5 XP', async () => {
     await page.getByRole('button', { name: /Pick up to 3/ }).click()
-    // Scoped to the sheet, not the page: every thread card behind the overlay carries a
-    // "Drop project: Test project" button that /Test project/ matches too, and the overlay
-    // eats the click. No `.first()` either — if a second match ever appears in here, this
-    // should fail loudly rather than quietly pick one.
+    // Scoped to the sheet, not the page: every thread card behind the overlay carries its own
+    // buttons ("Drop task: Hanging task"), and the overlay eats clicks that land on them, so a
+    // page-wide name match is one project rename away from picking the wrong one. No `.first()`
+    // either — if a second match ever appears in here, this should fail loudly rather than
+    // quietly pick one.
     const picker = page.getByRole('dialog', { name: "Pick today's focus" })
     await picker.getByRole('button', { name: /Test project/ }).click()
     await picker.getByRole('button', { name: /Focus on 1 today/ }).click()
