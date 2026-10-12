@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -42,4 +43,7 @@ export default defineConfig({
   // .env* lives at the monorepo root, next to .env.example
   envDir: '../..',
   server: { port: 5173 },
+  // Vitest blanks every .css import (even ?raw) unless listed here; StatusChip.test.ts reads
+  // the theme tokens from index.css to check chip contrast.
+  test: { css: { include: [/index\.css/] } },
 })
