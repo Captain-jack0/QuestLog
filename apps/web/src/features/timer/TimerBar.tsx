@@ -1,9 +1,11 @@
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { onPageWake } from '../../lib/pageWake'
+import type { AwaitingPomodoro } from './autoStop'
 import { formatDuration, pomodoroPhase } from './pomodoro'
-import { useRunningTimer, useStopTimer, type RunningTimer } from './queries'
+import { useRunningTimer, useStopTimer, useTimerSafetyNet, type RunningTimer } from './queries'
 import { timerDeck } from './stack'
 import { timerBarSeconds } from './totals'
 
@@ -19,6 +21,7 @@ import { timerBarSeconds } from './totals'
 export function TimerBar() {
   const running = useRunningTimer()
   const stop = useStopTimer()
+  const safetyNet = useTimerSafetyNet(running.data ?? [])
   const [now, setNow] = useState(() => Date.now())
   const [open, setOpen] = useState(false)
 
@@ -45,7 +48,18 @@ export function TimerBar() {
     if (hidden === 0) setOpen(false)
   }, [hidden])
 
-  if (!ticking) return null
+  // The awaiting pomodoro is off v_running_timers, so it may be the only clock: ask either way.
+  const awaiting = safetyNet.awaiting
+  const question = awaiting && (
+    <PomodoroQuestion
+      key={awaiting.id}
+      pomodoro={awaiting}
+      busy={safetyNet.answering}
+      onAnswer={(continued) => safetyNet.answer(awaiting.id, continued)}
+    />
+  )
+
+  if (!ticking) return question || null
 
   const expanded = open && hidden > 0
   const toggle = () => setOpen((o) => !o)
@@ -77,36 +91,79 @@ export function TimerBar() {
   )
 
   return (
-    <section
-      aria-label="Running timers"
-      className="fixed inset-x-0 bottom-[72px] z-20 px-4 md:bottom-4 md:left-auto md:right-4 md:w-80 md:px-0"
-    >
-      {expanded ? (
-        <ul className="mx-auto flex max-w-md flex-col gap-2">
-          {cards.map((timer, i) => (
-            <li key={timer.id}>{card(timer, i === 0 && badge)}</li>
-          ))}
-        </ul>
-      ) : (
-        <div className="relative mx-auto max-w-md">
-          {/* Farthest edge first, so the nearer one paints over it. Each sits a few px higher
+    <>
+      {question}
+      <section
+        aria-label="Running timers"
+        className="fixed inset-x-0 bottom-[72px] z-20 px-4 md:bottom-4 md:left-auto md:right-4 md:w-80 md:px-0"
+      >
+        {expanded ? (
+          <ul className="mx-auto flex max-w-md flex-col gap-2">
+            {cards.map((timer, i) => (
+              <li key={timer.id}>{card(timer, i === 0 && badge)}</li>
+            ))}
+          </ul>
+        ) : (
+          <div className="relative mx-auto max-w-md">
+            {/* Farthest edge first, so the nearer one paints over it. Each sits a few px higher
               and a little narrower than the card in front. */}
-          {cards
-            .slice(1)
-            .map((timer, i) => (
-              <div
-                key={timer.id}
-                aria-hidden
-                onClick={toggle}
-                className="absolute inset-0 rounded-card border border-line bg-surface shadow-quest"
-                style={{ transform: `translateY(-${(i + 1) * 5}px) scale(${1 - (i + 1) * 0.04})` }}
-              />
-            ))
-            .reverse()}
-          {card(cards[0], badge)}
-        </div>
-      )}
-    </section>
+            {cards
+              .slice(1)
+              .map((timer, i) => (
+                <div
+                  key={timer.id}
+                  aria-hidden
+                  onClick={toggle}
+                  className="absolute inset-0 rounded-card border border-line bg-surface shadow-quest"
+                  style={{
+                    transform: `translateY(-${(i + 1) * 5}px) scale(${1 - (i + 1) * 0.04})`,
+                  }}
+                />
+              ))
+              .reverse()}
+            {card(cards[0], badge)}
+          </div>
+        )}
+      </section>
+    </>
+  )
+}
+
+/**
+ * "Did your pomodoro keep going?" — asked on return about a pomodoro whose beats stopped, a
+ * locked phone being the usual reason (issue #48, decision D). It has to be answered: Escape and
+ * the backdrop do nothing, and the sheet's focus trap keeps the keyboard on the two buttons.
+ */
+function PomodoroQuestion({
+  pomodoro,
+  busy,
+  onAnswer,
+}: {
+  pomodoro: AwaitingPomodoro
+  busy: boolean
+  onAnswer: (continued: boolean) => void
+}) {
+  const lastSeen = new Date(pomodoro.last_seen_at).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const name = pomodoro.task_title ?? pomodoro.project_title
+
+  return (
+    <BottomSheet open onClose={() => {}} title="Did your pomodoro keep going?">
+      <p className="mb-4 text-sm text-muted">
+        {name ? `🍅 ${name} — ` : '🍅 '}the app lost sight of it at {lastSeen}, likely when the
+        screen locked.
+      </p>
+      <div className="flex flex-col gap-2">
+        <Button block disabled={busy} onClick={() => onAnswer(true)}>
+          Yes, it kept going
+        </Button>
+        <Button variant="ghost" block disabled={busy} onClick={() => onAnswer(false)}>
+          No, end it at {lastSeen}
+        </Button>
+      </div>
+    </BottomSheet>
   )
 }
 

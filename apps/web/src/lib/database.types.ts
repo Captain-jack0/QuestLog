@@ -399,6 +399,7 @@ export type Database = {
           created_at: string
           ended_at: string | null
           id: string
+          last_seen_at: string | null
           mode: string
           project_id: string
           seconds: number | null
@@ -410,6 +411,7 @@ export type Database = {
           created_at?: string
           ended_at?: string | null
           id?: string
+          last_seen_at?: string | null
           mode?: string
           project_id: string
           seconds?: number | null
@@ -421,6 +423,7 @@ export type Database = {
           created_at?: string
           ended_at?: string | null
           id?: string
+          last_seen_at?: string | null
           mode?: string
           project_id?: string
           seconds?: number | null
@@ -690,10 +693,20 @@ export type Database = {
         Returns: Json
       }
       rpc_start_timer: {
-        Args: { p_item_id: string; p_item_type: string; p_mode?: string }
+        Args: {
+          p_beats?: boolean
+          p_item_id: string
+          p_item_type: string
+          p_mode?: string
+        }
+        Returns: Json
+      }
+      rpc_resolve_pomodoro: {
+        Args: { p_continued: boolean; p_entry_id: string }
         Returns: Json
       }
       rpc_stop_timer: { Args: { p_entry_id?: string }; Returns: Json }
+      rpc_timer_heartbeat: { Args: never; Returns: Json }
       rpc_update_status: {
         Args: {
           p_item_id: string
