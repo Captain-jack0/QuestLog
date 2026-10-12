@@ -1,4 +1,6 @@
+import { useToast } from '../../components/ui/Toast'
 import { useRunningTimer, useStartTimer, useStopTimer } from './queries'
+import { atTimerLimit, runningOn, TIMER_LIMIT_REASON } from './stack'
 
 interface TimerButtonProps {
   itemType: 'task' | 'project'
@@ -9,7 +11,7 @@ interface TimerButtonProps {
   disabled?: boolean
 }
 
-/** Start/stop for one item. Shows Stop when this very item is the one running. */
+/** Start/stop for one item. Shows Stop when this very item is one of the clocks running. */
 export function TimerButton({
   itemType,
   itemId,
@@ -20,24 +22,25 @@ export function TimerButton({
   const running = useRunningTimer()
   const start = useStartTimer()
   const stop = useStopTimer()
+  const toast = useToast()
 
-  const current = running.data
-  const isThisOne =
-    current !== null &&
-    current !== undefined &&
-    (itemType === 'task'
-      ? current.task_id === itemId
-      : current.project_id === itemId && !current.task_id)
+  const timers = running.data ?? []
+  const thisOne = runningOn(timers, itemType, itemId)
 
   const busy = start.isPending || stop.isPending
+  // `aria-disabled`, not `disabled`: a disabled button swallows the tap, and on a phone there is
+  // no hover to show the title — the tap has to reach us so the toast can say why.
+  const full = atTimerLimit(timers)
+  const begin = (mode?: 'pomodoro') =>
+    full ? toast(TIMER_LIMIT_REASON) : start.mutate({ itemType, itemId, mode })
 
-  if (isThisOne) {
+  if (thisOne) {
     return (
       <button
         type="button"
         aria-label={`Stop the timer on ${title}`}
         disabled={busy}
-        onClick={() => stop.mutate()}
+        onClick={() => stop.mutate(thisOne.id)}
         className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-xs font-semibold text-accent disabled:opacity-50"
       >
         ⏹ Stop
@@ -51,8 +54,10 @@ export function TimerButton({
         type="button"
         aria-label={`Start a timer on ${title}`}
         disabled={busy || disabled}
-        onClick={() => start.mutate({ itemType, itemId })}
-        className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
+        aria-disabled={full || undefined}
+        title={full ? TIMER_LIMIT_REASON : undefined}
+        onClick={() => begin()}
+        className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
       >
         ▶ Timer
       </button>
@@ -61,8 +66,10 @@ export function TimerButton({
           type="button"
           aria-label={`Start a pomodoro on ${title}`}
           disabled={busy || disabled}
-          onClick={() => start.mutate({ itemType, itemId, mode: 'pomodoro' })}
-          className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40"
+          aria-disabled={full || undefined}
+          title={full ? TIMER_LIMIT_REASON : undefined}
+          onClick={() => begin('pomodoro')}
+          className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
         >
           🍅 25m
         </button>

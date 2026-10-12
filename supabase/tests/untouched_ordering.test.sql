@@ -8,7 +8,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(33);
+select plan(35);
 
 insert into auth.users (id, email) values
   ('44444444-4444-4444-4444-444444444444', 'owner@example.com'),
@@ -250,25 +250,40 @@ select throws_ok(
   'P0002', 'item not found', 'snoozing a task that is not there still fails');
 
 -- ---- somebody else's write cannot reach up ------------------------------------------------
--- The foreign keys are checked past RLS, so a stranger *can* point a task of their own at a
--- project they cannot see, and a project of their own at an area they cannot see.
+-- The foreign keys are checked past RLS, so until issue #66 a stranger could point a task of
+-- their own at a project they cannot see, and a project of their own at an area they cannot
+-- see. The write policies now refuse both (20261008130000_rls_parent_ownership.sql).
 select login('55555555-5555-5555-5555-555555555555');
+select throws_ok(
+  $$insert into tasks (id, user_id, project_id, title)
+    values ('dddd0000-0000-0000-0000-0000000000f9', '55555555-5555-5555-5555-555555555555',
+            'dddd0000-0000-0000-0000-0000000000b9', 'Planted task')$$,
+  '42501', null, 'a stranger cannot hang a task under a project they do not own');
+select throws_ok(
+  $$insert into projects (id, user_id, area_id, title)
+    values ('dddd0000-0000-0000-0000-0000000000f8', '55555555-5555-5555-5555-555555555555',
+            'dddd0000-0000-0000-0000-0000000000a9', 'Planted project')$$,
+  '42501', null, 'nor attach a project to an area they do not own');
+
+-- Rows written before #66 closed the hole are still in production, and RLS never sees a
+-- security definer RPC. So the same two rows are planted past RLS (the superuser, as the old
+-- policy would have let the stranger), and from here on only the ownership condition in the
+-- touch triggers (20261007120000_snooze_is_not_a_touch.sql) stands between them and the owner's
+-- project and area. Planting them as the superuser also means the trigger on this very insert
+-- runs without RLS, so the first assertion below measures that condition and nothing else.
+reset role;
 insert into tasks (id, user_id, project_id, title)
 values ('dddd0000-0000-0000-0000-0000000000f9', '55555555-5555-5555-5555-555555555555',
         'dddd0000-0000-0000-0000-0000000000b9', 'Planted task');
+insert into projects (id, user_id, area_id, title)
+values ('dddd0000-0000-0000-0000-0000000000f8', '55555555-5555-5555-5555-555555555555',
+        'dddd0000-0000-0000-0000-0000000000a9', 'Planted project');
 select login('44444444-4444-4444-4444-444444444444');
 
 select is((select updated_at from projects where id = 'dddd0000-0000-0000-0000-0000000000b9'),
           now() - interval '10 days', 'a stranger''s task does not touch a project they do not own');
 
--- The direct write above is stopped twice over (the project's RLS policy would filter it too).
--- Inside a security definer RPC there is no RLS left to lean on: the UPDATE runs as the function
--- owner and so do the triggers. Only the ownership condition stands between the stranger's own
--- rows and the owner's project and area.
 select login('55555555-5555-5555-5555-555555555555');
-insert into projects (id, user_id, area_id, title)
-values ('dddd0000-0000-0000-0000-0000000000f8', '55555555-5555-5555-5555-555555555555',
-        'dddd0000-0000-0000-0000-0000000000a9', 'Planted project');
 -- rpc_update_status, not rpc_snooze: a snooze no longer touches anything for anyone
 -- (20261007120000_snooze_is_not_a_touch.sql), so it could not tell the condition from its
 -- absence. A status change is a touch on every path.
