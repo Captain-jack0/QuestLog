@@ -112,7 +112,7 @@ export function LandingScreen() {
             <Link
               to="/login"
               state={{ mode: 'signup' }}
-              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-sm font-semibold text-accent transition"
+              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-sm font-semibold transition"
             >
               Start free
             </Link>
@@ -142,7 +142,7 @@ export function LandingScreen() {
               <Link
                 to="/login"
                 state={{ mode: 'signup' }}
-                className="btn-primary flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold text-accent transition"
+                className="btn-primary flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold transition"
               >
                 Start your log
                 <i className="pi pi-arrow-right icon-md" aria-hidden />
@@ -258,7 +258,7 @@ export function LandingScreen() {
             <Link
               to="/login"
               state={{ mode: 'signup' }}
-              className="btn-primary mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold text-accent transition"
+              className="btn-primary mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold transition"
             >
               Start your log
               <i className="pi pi-arrow-right icon-md" aria-hidden />

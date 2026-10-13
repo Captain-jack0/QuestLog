@@ -40,7 +40,7 @@ function Crashed() {
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold text-accent"
+        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold"
       >
         Reload
       </button>

@@ -229,8 +229,16 @@ body::before {
 }
 
 /* ---- shared interaction colours ----------------------------------------------------
-   Ghost-by-default: buttons are transparent at rest, gaining colour only on hover.
-   Primary fills solid on hover; quiet variants tint subtly.
+   The primary action is filled at rest: Button's primary variant is solid accent with paper
+   text, so the one thing to press on a screen is findable without hovering (accent behind
+   paper holds AA in both themes). Its hover is a brightness step in Button.tsx, not a rule
+   here. Everything else stays ghost — transparent at rest, gaining colour only on hover.
+
+   `.btn-primary` is the same filled look for hand-rolled controls that are not a <Button> (Login,
+   Landing, the crash screen, the tab bar's +, inline Save, timer Stop): accent ground, paper
+   text, the same brightness hover, and no hover on a disabled control. Paper on accent is
+   5.8:1 (quest) and 6.9:1 (calm) at rest, and the accent edge clears 5:1 against the page and
+   card surfaces, so it reads on the Landing sections as well. Focus is the global ring above.
 
    Accent tints run on three steps, and they mean different things:
      0.06  a wash over a whole card      (.card-hover — large area, so the faintest step)
@@ -244,9 +252,14 @@ body::before {
    carry over — and it would not survive the arithmetic anyway. Over `--surface` the two values
    this used to hold resolve to rgb(44 81 154) at 0.45 and rgb(47 86 163) at 0.5: under 10/255
    apart on one channel, on a 1px line. That is drift, not intent, so it is one value. */
-.btn-primary:hover {
+.btn-primary {
   background-color: rgb(var(--accent));
   color: rgb(var(--paper));
+}
+
+/* :not(:disabled), not :enabled — Landing's CTAs are links, which are never :enabled. */
+.btn-primary:not(:disabled):hover {
+  filter: brightness(1.1);
 }
 
 .btn-quiet:hover {

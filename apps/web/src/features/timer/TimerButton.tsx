@@ -41,7 +41,7 @@ export function TimerButton({
         aria-label={`Stop the timer on ${title}`}
         disabled={busy}
         onClick={() => stop.mutate(thisOne.id)}
-        className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-xs font-semibold text-accent disabled:opacity-50"
+        className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-xs font-semibold disabled:opacity-50"
       >
         ⏹ Stop
       </button>
