@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { NAV_ITEMS } from './navigation'
 import { Button } from './ui/Button'
+import { Icon } from './ui/Icon'
 
 /** Desktop navigation: a fixed rail so the content never has to hunt for the tab bar. */
 export function SideNav({ onQuickAdd }: { onQuickAdd: () => void }) {
@@ -9,7 +10,9 @@ export function SideNav({ onQuickAdd }: { onQuickAdd: () => void }) {
       aria-label="Main"
       className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-1 border-r border-line bg-surface px-3 py-6 md:flex lg:w-64"
     >
-      <p className="mb-4 px-3 text-lead font-bold">QuestLog 🧭</p>
+      <p className="mb-4 flex items-center gap-2 px-3 text-lead font-bold">
+        QuestLog <Icon name="explore" className="icon-lg" />
+      </p>
 
       {NAV_ITEMS.map((item) => (
         <NavLink
@@ -22,7 +25,7 @@ export function SideNav({ onQuickAdd }: { onQuickAdd: () => void }) {
             }`
           }
         >
-          <span className="text-lead leading-none">{item.icon}</span>
+          <Icon name={item.icon} className="icon-xl" />
           {item.label}
         </NavLink>
       ))}

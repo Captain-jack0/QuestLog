@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { Icon } from '../components/ui/Icon'
 import { StatusChip } from '../components/ui/StatusChip'
 import { StatusPicker } from '../components/ui/StatusPicker'
 import { PickerSheet } from '../components/ui/PickerSheet'
@@ -215,9 +216,9 @@ export function ProjectDetailScreen() {
           to keep level. */}
       <Link
         to={`/areas/${project.data.area_id ?? ''}`}
-        className="inline-flex min-h-[44px] items-center text-body font-medium text-muted"
+        className="inline-flex min-h-[44px] items-center gap-1 text-body font-medium text-muted"
       >
-        ← {area.data?.name ?? 'Area'}
+        <Icon name="arrow_back" /> {area.data?.name ?? 'Area'}
       </Link>
 
       {/* One card for the whole project header. The meta line and the status chips used to sit
@@ -263,7 +264,9 @@ export function ProjectDetailScreen() {
                 in minutes. The live count is TimerBar's job, so this moves when a timer stops. */}
             {focusSeconds ? (
               <span className="text-muted">
-                <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+                <span aria-hidden>
+                  <Icon name="timer" /> {formatMinutes(focusSeconds)}
+                </span>
                 <span className="sr-only">
                   {formatMinutes(focusSeconds)} focused on this project
                 </span>

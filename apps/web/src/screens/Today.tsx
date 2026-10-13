@@ -5,6 +5,7 @@ import { CardSkeleton } from '../components/ui/Skeleton'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { Icon } from '../components/ui/Icon'
 import { StatusChip } from '../components/ui/StatusChip'
 import { ItemTypeChip, itemTypeLabel } from '../components/ui/ItemTypeChip'
 import { useToast } from '../components/ui/Toast'
@@ -59,10 +60,10 @@ export function TodayScreen() {
         <h1 className="text-title-lg font-bold">Welcome back, {name}</h1>
         <div className="mt-2 flex items-center gap-3 text-body">
           <span className="rounded-full bg-flame/10 px-3 py-1 font-semibold text-flame-ink tabular">
-            🔥 {streak.data?.current ?? 0}-day streak
+            <Icon name="local_fire_department" /> {streak.data?.current ?? 0}-day streak
           </span>
           <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent tabular">
-            ✨ {todayXp.data ?? 0} XP today
+            <Icon name="stars" /> {todayXp.data ?? 0} XP today
           </span>
         </div>
       </header>
@@ -219,7 +220,7 @@ export function TodayScreen() {
                             })
                           }
                         >
-                          Done ✓
+                          <Icon name="check" /> Done
                         </Button>
                         <Button
                           variant="ghost"
@@ -237,7 +238,7 @@ export function TodayScreen() {
                             })
                           }
                         >
-                          Update ✎
+                          <Icon name="edit" /> Update
                         </Button>
                         <Button
                           variant="ghost"
@@ -246,16 +247,15 @@ export function TodayScreen() {
                             setSnoozeFor({ itemType: thread.item_type, itemId: thread.item_id })
                           }
                         >
-                          Snooze 💤
+                          <Icon name="bedtime" /> Snooze
                         </Button>
                       </div>
 
                       {/* Its own line, and not a fourth button in the row above. At 390px the card's
                       inner width is 322px, so four `flex-1` buttons get 74.5px each — 58.5px of
-                      it usable after the padding — while "Update ✎" measures 64.3px and
-                      "Snooze 💤" 69.5px in Inter 600 at 14px: two of the four labels would wrap
-                      and the row would grow 44px → 53px anyway. The same 44px as a fixed-width
-                      icon leaves 68.7px, still 0.9px short of Snooze.
+                      it usable after the padding — while "Snooze" with its 14px icon measures
+                      about 66px in Inter 600 at 14px: it would wrap and the row would grow
+                      44px → 53px anyway.
 
                       Weight, not only width, decides the rest: those three keep the thread — this
                       one ends it — and an equal-width button sitting against "Done ✓" is the one

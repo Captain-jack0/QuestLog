@@ -1,5 +1,6 @@
 import { Card } from '../../components/ui/Card'
 import { EditableText } from '../../components/ui/EditableText'
+import { Icon } from '../../components/ui/Icon'
 import { StatusChip } from '../../components/ui/StatusChip'
 import { StatusPicker } from '../../components/ui/StatusPicker'
 import { compactFieldClass } from '../../components/ui/field'
@@ -194,14 +195,16 @@ export function TaskItem({
           onClick={onMove}
           className="btn-quiet min-h-[44px] rounded-full border border-line px-2 text-caption font-semibold text-muted disabled:opacity-40"
         >
-          ⇄ Move
+          <Icon name="swap_horiz" /> Move
         </button>
         {/* Beside the timer because it is the timer's own history: what the button has already
             banked on this task. Minutes, not mm:ss — this is a summary, and the live count is
             TimerBar's job. */}
         {focusSeconds ? (
           <span className="ml-auto shrink-0 text-micro text-muted">
-            <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+            <span aria-hidden>
+              <Icon name="timer" /> {formatMinutes(focusSeconds)}
+            </span>
             <span className="sr-only">{formatMinutes(focusSeconds)} focused so far</span>
           </span>
         ) : null}

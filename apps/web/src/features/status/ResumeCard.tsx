@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '../../components/ui/Button'
 import { fieldClass } from '../../components/ui/field'
+import { Icon } from '../../components/ui/Icon'
 import { relativeTime } from '../../lib/time'
 
 interface ResumeCardProps {
@@ -104,7 +105,7 @@ export function ResumeCard({
           onClick={() => setEditing(true)}
           className="-mt-1 min-h-[44px] rounded-lg px-2 text-body font-semibold text-accent"
         >
-          ✎ Edit
+          <Icon name="edit" /> Edit
         </button>
       </div>
 

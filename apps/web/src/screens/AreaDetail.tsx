@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { Icon } from '../components/ui/Icon'
 import { StatusChip } from '../components/ui/StatusChip'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
@@ -45,7 +46,7 @@ export function AreaDetailScreen() {
   return (
     <div>
       <Link to="/areas" className="text-body font-medium text-muted">
-        ← Areas
+        <Icon name="arrow_back" /> Areas
       </Link>
 
       <header className="mb-4 mt-2 flex items-start justify-between gap-3">
@@ -153,7 +154,9 @@ export function AreaDetailScreen() {
                       for "Completed" above. */}
                   {focusSeconds ? (
                     <p className="mt-1 text-caption text-muted">
-                      <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+                      <span aria-hidden>
+                        <Icon name="timer" /> {formatMinutes(focusSeconds)}
+                      </span>
                       <span className="sr-only">{formatMinutes(focusSeconds)} focused</span>
                     </p>
                   ) : null}

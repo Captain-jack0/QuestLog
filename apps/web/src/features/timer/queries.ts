@@ -216,7 +216,7 @@ export async function stopAllTimers() {
  * Keyed on the task ids, not on the project: `time_entries.project_id` is snapshotted when the
  * timer starts (time_tracking.sql:52-53,67-68) and no trigger re-points it, so a task moved to
  * another project keeps entries filed under the old one. Asking by project would drop that
- * task's whole history the moment ⇄ Move is pressed.
+ * task's whole history the moment Move is pressed.
  *
  * ponytail: no aggregate and no limit — with config.toml's max_rows = 1000 a screen whose
  * tasks hold more than 1000 sessions between them would silently undercount. Roughly three

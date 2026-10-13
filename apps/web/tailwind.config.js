@@ -76,6 +76,7 @@ export default {
         sm: '0.625rem',
         md: ['0.75rem', '1rem'],
         lg: '1rem',
+        xl: '1.5rem',
       },
       borderRadius: {
         card: '1rem',
