@@ -213,10 +213,10 @@ export function ProjectDetailScreen() {
       {/* inline-flex, not a bare min-height: min-height does not apply to an inline box, so on
           an <a> the utility alone would have measured the same 17px it was meant to fix. Centred,
           unlike the thread title in Today, because this link stands alone with nothing beside it
-          to keep level. */}
+          to keep level. From md the top bar's breadcrumb does this job instead. */}
       <Link
         to={`/areas/${project.data.area_id ?? ''}`}
-        className="inline-flex min-h-[44px] items-center gap-1 text-body font-medium text-muted"
+        className="inline-flex min-h-[44px] items-center gap-1 text-body font-medium text-muted md:hidden"
       >
         <Icon name="arrow_back" /> {area.data?.name ?? 'Area'}
       </Link>

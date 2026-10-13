@@ -45,7 +45,8 @@ export function AreaDetailScreen() {
 
   return (
     <div>
-      <Link to="/areas" className="text-body font-medium text-muted">
+      {/* From md the top bar's breadcrumb (and the rail) take over. */}
+      <Link to="/areas" className="text-body font-medium text-muted md:hidden">
         <Icon name="arrow_back" /> Areas
       </Link>
 

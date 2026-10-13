@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { startOfLocalDay } from '../../lib/time'
+import { focusXpTotal } from '../../lib/xp'
 import type { Database } from '../../lib/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -125,16 +126,29 @@ export function useXpHistory(weeks = 12) {
   })
 }
 
+/** Today's XP rows, fetched once and summed two ways by the hooks below (same key, one request). */
+const todayXpQuery = {
+  queryKey: gamificationKeys.todayXp,
+  queryFn: async (): Promise<{ xp: number; action_type: string }[]> => {
+    const { data, error } = await supabase
+      .from('xp_events')
+      .select('xp, action_type')
+      .gte('created_at', startOfLocalDay().toISOString())
+    if (error) throw error
+    return data
+  },
+}
+
+const sumXp = (rows: { xp: number }[]) => rows.reduce((sum, row) => sum + row.xp, 0)
+
 export function useTodayXp() {
+  return useQuery({ ...todayXpQuery, select: sumXp })
+}
+
+/** Today's focus_time XP alone — the part finish_time_entry caps (FOCUS_XP_DAILY_CAP). */
+export function useTodayFocusXp() {
   return useQuery({
-    queryKey: gamificationKeys.todayXp,
-    queryFn: async (): Promise<number> => {
-      const { data, error } = await supabase
-        .from('xp_events')
-        .select('xp')
-        .gte('created_at', startOfLocalDay().toISOString())
-      if (error) throw error
-      return data.reduce((sum, row) => sum + row.xp, 0)
-    },
+    ...todayXpQuery,
+    select: focusXpTotal,
   })
 }

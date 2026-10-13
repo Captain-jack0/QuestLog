@@ -2,46 +2,51 @@ import { NavLink } from 'react-router-dom'
 import { NAV_ITEMS, type NavItem } from './navigation'
 import { Icon } from './ui/Icon'
 
-/** Mobile navigation. Hidden from md up, where SideNav takes over. */
-export function TabBar({ onQuickAdd }: { onQuickAdd: () => void }) {
+/**
+ * Mobile navigation: the rail's five, nothing else. Quick add lives in the top bar now (CEO,
+ * 2026-10-13), so every slot is a place, not an action.
+ */
+export function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
-      <div className="mx-auto flex max-w-md items-center justify-around px-2 py-1">
-        {NAV_ITEMS.slice(0, 2).map((item) => (
-          <Tab key={item.to} {...item} />
+      <ul className="mx-auto grid max-w-md grid-cols-5 px-1 py-1">
+        {NAV_ITEMS.map((item) => (
+          <li key={item.to}>
+            <Tab {...item} />
+          </li>
         ))}
-        <button
-          type="button"
-          aria-label="Quick add"
-          onClick={onQuickAdd}
-          className="btn-primary flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full border-2 border-accent text-title-lg shadow-lg active:scale-95"
-        >
-          +
-        </button>
-        {NAV_ITEMS.slice(2).map((item) => (
-          <Tab key={item.to} {...item} />
-        ))}
-      </div>
+      </ul>
     </nav>
   )
 }
 
+/** Active is a filled pill behind the icon and bolder ink, not colour alone. */
 function Tab({ to, label, icon }: NavItem) {
   return (
     <NavLink
       to={to}
       end={to === '/'}
       className={({ isActive }) =>
-        `flex min-h-[44px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 text-micro ${
-          isActive ? 'font-semibold text-accent' : 'font-normal text-muted'
+        `flex min-h-[48px] flex-col items-center justify-center gap-0.5 rounded-xl text-micro ${
+          isActive ? 'text-accent-ink' : 'font-normal text-muted'
         }`
       }
     >
-      <Icon name={icon} className="icon-xl" />
-      <span className="mt-0.5">{label}</span>
+      {({ isActive }) => (
+        <>
+          <span
+            className={`flex h-7 w-12 items-center justify-center rounded-full ${
+              isActive ? 'bg-accent/15' : ''
+            }`}
+          >
+            <Icon name={icon} className="icon-xl" />
+          </span>
+          {label}
+        </>
+      )}
     </NavLink>
   )
 }
