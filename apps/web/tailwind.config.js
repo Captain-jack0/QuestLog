@@ -13,6 +13,8 @@ export default {
       colors: {
         paper: themed('paper'),
         surface: themed('surface'),
+        'surface-raised': themed('surface-raised'),
+        'surface-sunken': themed('surface-sunken'),
         ink: themed('ink'),
         muted: themed('muted'),
         line: themed('line'),
@@ -37,8 +39,44 @@ export default {
       // arbitrary value did, so nothing reflows.
       // This `extend` adds to the default scale, it does not replace it — text-sm/text-2xl etc.
       // are untouched.
+      // After `2xs` come the type roles from docs/design/stitch/DESIGN.md. Each carries its own
+      // line-height, tracking and weight, so a role is one class instead of four. Nothing uses
+      // them yet — screens move over in one pass (#57), and `2xs` goes once `micro` replaces it.
+      // Headings in the app stop at `display-sm`; the `display-lg` pair is for the landing page.
       fontSize: {
         '2xs': '0.6875rem',
+        micro: [
+          '0.6875rem',
+          { lineHeight: '0.875rem', letterSpacing: '0.04em', fontWeight: '600' },
+        ],
+        caption: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em', fontWeight: '500' }],
+        body: ['0.875rem', { lineHeight: '1.25rem' }],
+        'body-medium': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '500' }],
+        lead: [
+          '1.125rem',
+          { lineHeight: '1.625rem', letterSpacing: '-0.005em', fontWeight: '500' },
+        ],
+        'lead-mobile': ['1rem', { lineHeight: '1.5rem', fontWeight: '500' }],
+        'title-md': [
+          '1.25rem',
+          { lineHeight: '1.625rem', letterSpacing: '-0.01em', fontWeight: '600' },
+        ],
+        'title-lg': [
+          '1.5rem',
+          { lineHeight: '1.875rem', letterSpacing: '-0.015em', fontWeight: '700' },
+        ],
+        'display-sm': [
+          '1.875rem',
+          { lineHeight: '2.25rem', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
+        'display-lg': [
+          '3rem',
+          { lineHeight: '3.25rem', letterSpacing: '-0.03em', fontWeight: '800' },
+        ],
+        'display-lg-mobile': [
+          '2rem',
+          { lineHeight: '2.375rem', letterSpacing: '-0.025em', fontWeight: '800' },
+        ],
       },
       // Icon glyph sizes, a scale of their own so icons don't ride the text scale (a type-scale
       // change must not resize icons, nor the reverse). Emitted as `icon-*` by the plugin below.
@@ -53,6 +91,11 @@ export default {
       },
       boxShadow: {
         quest: '0 0 0 1px rgb(var(--line) / 1), 0 8px 24px -12px rgb(var(--accent) / 0.55)',
+        // Whole values live in index.css: the themes differ in shape (a halo on the sky, a
+        // ring on paper), which a colour token alone cannot express.
+        float: 'var(--shadow-float)',
+        'glow-accent': 'var(--shadow-glow-accent)',
+        'glow-flame': 'var(--shadow-glow-flame)',
       },
     },
   },
