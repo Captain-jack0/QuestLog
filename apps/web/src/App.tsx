@@ -5,6 +5,7 @@ import { TabBar } from './components/TabBar'
 import { SideNav } from './components/SideNav'
 import { QuickAddSheet } from './components/QuickAddSheet'
 import { TimerBar } from './features/timer/TimerBar'
+import { useRealtimeSync } from './features/realtime/useRealtimeSync'
 import { LoginScreen } from './screens/Login'
 import { LandingScreen } from './screens/Landing'
 import { TodayScreen } from './screens/Today'
@@ -48,6 +49,8 @@ export default function App() {
  */
 function AppShell() {
   const [addOpen, setAddOpen] = useState(false)
+  // RequireAuth renders the shell only with a session.
+  useRealtimeSync(useAuth().session!.user.id)
 
   return (
     <div className="flex min-h-dvh">

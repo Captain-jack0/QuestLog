@@ -49,6 +49,35 @@ export function bodyLockStyle(scrollY: number, gutter: number): LockStyle {
   }
 }
 
+// Ref-counted so nested sheets pin once and unpin once, whatever order they close in: only
+// the first lock snapshots the body and scroll offset (a later one would read the pinned
+// body and scrollY 0), only the last unlock hands them back.
+let lockCount = 0
+let unpin: (() => void) | null = null
+
+export function lockBody(): void {
+  lockCount += 1
+  if (lockCount > 1) return
+  const body = document.body
+  const scrollY = window.scrollY
+  const gutter = window.innerWidth - document.documentElement.clientWidth
+  const previous = {} as LockStyle
+  for (const key of LOCK_KEYS) previous[key] = body.style[key]
+  Object.assign(body.style, bodyLockStyle(scrollY, gutter))
+  unpin = () => {
+    Object.assign(body.style, previous)
+    // The body was pinned, so the browser forgot where the page was; put it back.
+    window.scrollTo(0, scrollY)
+  }
+}
+
+export function unlockBody(): void {
+  lockCount -= 1
+  if (lockCount > 0) return
+  unpin?.()
+  unpin = null
+}
+
 export function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -97,22 +126,11 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   useEffect(() => {
     if (!open) return
-    // Sheets swap, they never stack: a sheet that opens another closes itself first, in the
-    // same commit (TaskSheet.tsx). React runs this effect's cleanup before the next one's
-    // setup, so the unpin always lands before the next pin and `previous` never snapshots
-    // another sheet's lock. The hand-off is covered by e2e/sheet-keyboard.spec.ts — get it
-    // backwards and the body stays pinned with no sheet left to unpin it.
-    const body = document.body
-    const scrollY = window.scrollY
-    const gutter = window.innerWidth - document.documentElement.clientWidth
-    const previous = {} as LockStyle
-    for (const key of LOCK_KEYS) previous[key] = body.style[key]
-    Object.assign(body.style, bodyLockStyle(scrollY, gutter))
-    return () => {
-      Object.assign(body.style, previous)
-      // The body was pinned, so the browser forgot where the page was; put it back.
-      window.scrollTo(0, scrollY)
-    }
+    // A sheet that opens another usually closes itself in the same commit (TaskSheet.tsx);
+    // React runs this cleanup before the next setup, so the lock is released and retaken.
+    // The hand-off is covered by e2e/sheet-keyboard.spec.ts.
+    lockBody()
+    return unlockBody
   }, [open])
 
   if (!open) return null

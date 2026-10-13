@@ -4,16 +4,18 @@
  * same numbers everywhere, the way they would in the real app.
  */
 
+import type { ItemStatus } from '../../lib/schemas'
+
 export interface PreviewTask {
   title: string
-  status: 'done' | 'in_progress' | 'paused' | 'idea'
+  status: ItemStatus
   difficulty: 'S' | 'M' | 'L'
 }
 
 export interface PreviewProject {
   id: string
   title: string
-  status: 'in_progress' | 'paused' | 'blocked' | 'idea'
+  status: ItemStatus
   waited: string
   leftOff: string
   nextStep: string
@@ -59,7 +61,7 @@ export const AREAS: PreviewArea[] = [
         tasks: [
           { title: 'Export the numbers', status: 'done', difficulty: 'M' },
           { title: 'Write the summary', status: 'paused', difficulty: 'L' },
-          { title: 'Make the charts', status: 'idea', difficulty: 'M' },
+          { title: 'Make the charts', status: 'dropped', difficulty: 'M' },
         ],
       },
       {
@@ -99,6 +101,15 @@ export const AREAS: PreviewArea[] = [
         leftOff: 'Bought the brackets, never opened the box',
         nextStep: 'Find the drill bits',
         tasks: [{ title: 'Find the drill bits', status: 'idea', difficulty: 'S' }],
+      },
+      {
+        id: 'garden',
+        title: 'Plan the garden',
+        status: 'planned',
+        waited: '5 days',
+        leftOff: 'Spring beds measured, nothing bought yet',
+        nextStep: 'Sketch where the tomatoes go',
+        tasks: [{ title: 'Sketch the beds', status: 'planned', difficulty: 'S' }],
       },
     ],
   },
