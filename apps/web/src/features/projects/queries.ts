@@ -5,6 +5,7 @@ import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import { OPEN_STATUSES, type ProgressLog, type Project, type ProjectInput } from '../../lib/schemas'
 import { areaKeys } from '../areas/queries'
 import { aggregateProjectStats, type ProjectStats } from './stats'
+import { HISTORY_LIMIT } from './timeline'
 
 export type { ProjectStats }
 
@@ -46,7 +47,7 @@ export function useProgressLogs(projectId: string | undefined) {
         .select('*, next_step_task:tasks!progress_logs_next_step_task_id_fkey(title)')
         .eq('project_id', projectId!)
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(HISTORY_LIMIT)
       if (error) throw error
       return data as unknown as ProgressLogWithNextTask[]
     },

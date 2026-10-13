@@ -14,9 +14,10 @@ import { useToast } from '../components/ui/Toast'
 import { compactFieldClass, rowFieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useArea, useAreas } from '../features/areas/queries'
-import { useProfile, useProjectXp } from '../features/gamification/queries'
+import { useProfile, useProjectXp, useProjectXpEvents } from '../features/gamification/queries'
 import { HistoryTimeline } from '../features/projects/HistoryTimeline'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
+import { HISTORY_LIMIT, projectTimeline } from '../features/projects/timeline'
 import {
   useMoveProject,
   useProgressLogs,
@@ -43,7 +44,7 @@ import { isOptimistic } from '../lib/optimistic'
 import { formatDateKey } from '../lib/time'
 import { formatMinutes } from '../features/timer/pomodoro'
 import { TimerButton } from '../features/timer/TimerButton'
-import { useProjectTotals, useTaskTotals } from '../features/timer/queries'
+import { useProjectSessions, useProjectTotals, useTaskTotals } from '../features/timer/queries'
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
@@ -120,6 +121,8 @@ export function ProjectDetailScreen() {
   // so hiding a done task behind a filter must not move it. taskOrder.test.ts guards the count.
   const progress = taskProgress(tasks.data ?? [])
   const earnedXp = useProjectXp(projectId).data ?? 0
+  const xpEvents = useProjectXpEvents(projectId)
+  const sessions = useProjectSessions(projectId, HISTORY_LIMIT)
   const staleDays = profile.data?.stale_days ?? 14
 
   const {
@@ -543,7 +546,14 @@ export function ProjectDetailScreen() {
         <h2 id="history-heading" className="mb-3 text-title-md">
           History
         </h2>
-        {logs.data && <HistoryTimeline logs={logs.data} />}
+        {logs.data && (
+          <HistoryTimeline
+            entries={projectTimeline(logs.data, xpEvents.data ?? [], sessions.data ?? [])}
+          />
+        )}
+        {(xpEvents.isError || sessions.isError) && (
+          <p className="mt-3 text-caption text-muted">Some history could not load.</p>
+        )}
       </section>
 
       <PickerSheet

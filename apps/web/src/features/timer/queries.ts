@@ -308,3 +308,34 @@ export function useDailyFocus(days = 56) {
     },
   })
 }
+
+export interface FocusSession {
+  id: string
+  ended_at: string
+  seconds: number
+  mode: string
+}
+
+/**
+ * This user's finished sessions on one project, newest first, for History. time_entries is
+ * RLS-scoped to its owner. Under the `timer` key, so stopping a clock adds the session.
+ *
+ * ponytail: the newest `limit` only (History pages nothing yet); older sessions fall off the end.
+ */
+export function useProjectSessions(projectId: string | undefined, limit: number) {
+  return useQuery({
+    queryKey: ['timer', 'project-sessions', projectId, limit] as const,
+    enabled: Boolean(projectId),
+    queryFn: async (): Promise<FocusSession[]> => {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('id, ended_at, seconds, mode')
+        .eq('project_id', projectId!)
+        .not('ended_at', 'is', null)
+        .order('ended_at', { ascending: false })
+        .limit(limit)
+      if (error) throw error
+      return data as FocusSession[]
+    },
+  })
+}

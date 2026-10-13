@@ -114,9 +114,14 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(noted).toBeVisible()
     await expect(noted).toHaveCount(0)
 
-    await expect(
-      page.getByRole('region', { name: 'History' }).getByText('rigged the mainsail'),
-    ).toBeVisible()
+    const history = page.getByRole('region', { name: 'History' })
+    await expect(history.getByText('rigged the mainsail')).toBeVisible()
+    // History folds the XP a status update paid into that update's own row (same transaction, written within
+    // microseconds): the completion's log carries check-in 10 + M task 25, spelled out for screen readers.
+    const completion = history.getByRole('listitem').filter({ hasText: 'task finished' })
+    await expect(completion.getByText('+35 XP', { exact: true })).toBeVisible()
+    await expect(completion).toContainText('Daily check-in')
+    await expect(completion).toContainText('Task completed')
     // The note rides along; it must not rewrite the context it was added beside.
     await expect(nextStep).toHaveText('plan the second one')
     // The header's XP chip reads this user's own events on the project (sr-only wording): check-in
@@ -257,5 +262,16 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
 
     await page.getByRole('link', { name: /Work/ }).click()
     await expect(projectCards).toHaveText([/Quiet sibling/, /Test project/])
+  })
+
+  await test.step('Progress charts switch to the last seven days', async () => {
+    await page.getByRole('link', { name: 'Progress', exact: true }).click()
+    await page.getByRole('radio', { name: 'Daily', exact: true }).click()
+    await expect(page.getByRole('radio', { name: 'Daily', exact: true })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    // Today's bar holds the whole run's XP: 59 on the project and 5 for the focus pick.
+    await expect(page.getByRole('img', { name: /^Today, .+: 64 XP$/ })).toBeVisible()
   })
 })
