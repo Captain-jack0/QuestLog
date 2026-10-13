@@ -11,7 +11,10 @@ function themeTokens(selector: string): Record<string, Rgb> {
   expect(start, selector).toBeGreaterThanOrEqual(0)
   const block = css.slice(start, css.indexOf('}', start))
   return Object.fromEntries(
-    [...block.matchAll(/--([\w-]+):\s*(\d+) (\d+) (\d+);/g)].map((m) => [m[1], [+m[2], +m[3], +m[4]]]),
+    [...block.matchAll(/--([\w-]+):\s*(\d+) (\d+) (\d+);/g)].map((m) => [
+      m[1],
+      [+m[2], +m[3], +m[4]],
+    ]),
   )
 }
 
@@ -20,12 +23,14 @@ const channel = (c: number) => {
   const s = c / 255
   return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
 }
-const luminance = ([r, g, b]: Rgb) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+const luminance = ([r, g, b]: Rgb) =>
+  0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
 const contrast = (a: Rgb, b: Rgb) => {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
   return (hi + 0.05) / (lo + 0.05)
 }
-const over = (fg: Rgb, alpha: number, bg: Rgb) => fg.map((v, i) => v * alpha + bg[i] * (1 - alpha)) as Rgb
+const over = (fg: Rgb, alpha: number, bg: Rgb) =>
+  fg.map((v, i) => v * alpha + bg[i] * (1 - alpha)) as Rgb
 
 const themes = {
   quest: themeTokens("[data-theme='quest']"),
