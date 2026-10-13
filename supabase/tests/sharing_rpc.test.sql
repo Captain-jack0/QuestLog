@@ -130,7 +130,7 @@ select is(
   array['p_item_type text, p_item_id uuid',
         'p_date date, p_items jsonb',
         'p_item_type text, p_item_id uuid, p_until date',
-        'p_item_type text, p_item_id uuid, p_mode text',
+        'p_item_type text, p_item_id uuid, p_mode text, p_beats boolean',
         'p_item_type text, p_item_id uuid, p_new_status item_status, p_left_off text, p_next_step text, p_note text, p_source text, p_next_step_task_id uuid'],
   'no RPC signature changed');
 select is(
@@ -144,7 +144,7 @@ select is(
   (select bool_and(has_function_privilege('authenticated', f, 'execute'))
      from unnest(array['public.rpc_update_status(text, uuid, item_status, text, text, text, text, uuid)',
                        'public.rpc_groom_stale(text, uuid)', 'public.rpc_pick_focus(date, jsonb)',
-                       'public.rpc_snooze(text, uuid, date)', 'public.rpc_start_timer(text, uuid, text)']) f),
+                       'public.rpc_snooze(text, uuid, date)', 'public.rpc_start_timer(text, uuid, text, boolean)']) f),
   true, 'authenticated can still call every RPC');
 select is(has_function_privilege('authenticated', 'public.digest_payload(uuid)', 'execute'), false,
           'digest_payload stays service_role only');
@@ -160,13 +160,14 @@ select is(
   array['item_type', 'item_id', 'user_id', 'title', 'status', 'updated_at', 'project_id',
         'project_title', 'area_id', 'area_name', 'area_color', 'left_off', 'next_step', 'logged_at',
         'last_activity_at', 'next_step_task_id', 'next_step_task_title', 'next_step_task_status',
-        'next_step_task_project_id', 'logged_by'],
-  'v_hanging_threads keeps its columns in order and ends with logged_by');
+        'next_step_task_project_id', 'logged_by', 'display_status'],
+  'v_hanging_threads keeps its columns in order, display_status (#44) appended last');
 
 -- ---- personal views: a member's screens show only their own data ---------------------------
 select login('e0000000-0000-0000-0000-000000000001');
--- 5 tasks of P1, R's task in P4 + P1, P2, P3: everything in O's projects, whoever created it.
-select is((select count(*)::int from v_hanging_threads), 9, 'O sees every thread of their projects');
+-- 5 tasks of P1 + R's task in P4: every task in O's projects, whoever created it. Projects
+-- themselves are not threads (#44).
+select is((select count(*)::int from v_hanging_threads), 6, 'O sees every thread of their projects');
 select is((select logged_by from v_hanging_threads where item_id = 'f0000000-0000-0000-0000-0000000000ce'),
           'e0000000-0000-0000-0000-000000000003'::uuid,
           'including the editor''s task, with the editor as logged_by');
@@ -359,14 +360,13 @@ select is(
   (select array_agg(e ->> 'title' order by e ->> 'title')
      from json_array_elements(digest_payload('e0000000-0000-0000-0000-000000000004') -> 'focus') e),
   array['Finish me', 'Shared'], 'a current member''s focus keeps its titles');
--- Threads follow the project owner, as on Today. Titles are checked rather than a count, so the
--- task branch and the project branch of v_hanging_threads are each measured.
+-- Threads follow the project owner, as on Today.
 select ok((digest_payload('e0000000-0000-0000-0000-000000000001') -> 'threads')::jsonb
             @> '[{"title": "E''s task"}]',
           'the owner''s digest lists a task a member added to their project');
-select ok((digest_payload('e0000000-0000-0000-0000-000000000001') -> 'threads')::jsonb
-            @> '[{"title": "Shared", "project_title": "Shared"}]',
-          'and their own project thread');
+select ok(not (digest_payload('e0000000-0000-0000-0000-000000000001') -> 'threads')::jsonb
+            @> '[{"title": "Shared"}]',
+          'and no project thread: threads are tasks only (#44)');
 select is((digest_payload('e0000000-0000-0000-0000-000000000006') -> 'threads')::text, '[]',
           'a former member''s digest carries no thread of the owner''s (title, project, area)');
 select is((digest_payload('e0000000-0000-0000-0000-000000000003') -> 'threads')::text, '[]',
