@@ -12,8 +12,21 @@ export type ItemStatus = Database['public']['Enums']['item_status']
 export type Priority = Database['public']['Enums']['priority']
 export type Difficulty = Database['public']['Enums']['difficulty']
 
-/** Pastel edges only — the UI stays quiet (docs/02 §3). */
+/**
+ * Area edge colours. Only ever a thin strip or a dot, never a fill — the UI stays quiet
+ * (docs/02 §3). The spectrum comes first so new areas start from it (DESIGN.md "Life Domain
+ * Spectrum"); the original pastels stay listed so areas saved with them still show a selected
+ * swatch. Stored colours are never rewritten — the schema accepts any hex.
+ */
 export const AREA_COLORS = [
+  '#56D4DD',
+  '#79C0FF',
+  '#7EE787',
+  '#FFA657',
+  '#D2A8FF',
+  '#F2CC60',
+  '#FF7EB6',
+  '#F778BA',
   '#A5B4FC',
   '#BFDBFE',
   '#A7F3D0',
