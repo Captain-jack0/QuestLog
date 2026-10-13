@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
@@ -18,6 +18,8 @@ import {
 import {
   activeAreasLastWeek,
   calendarWeeks,
+  dailyFocus,
+  dailyXp,
   dailyXpTotals,
   effectiveStreak,
   intensity,
@@ -25,11 +27,12 @@ import {
   INTENSITY_SHADES,
   weeklyFocus,
   weeklyXp,
+  type DayBucket,
   xpInLastDays,
   type XpEvent,
 } from '../features/gamification/aggregate'
 import { badgeProgress, type BadgeCounts } from '../features/gamification/badgeProgress'
-import { WeeklyBarChart } from '../features/gamification/WeeklyBarChart'
+import { BarChart, type ChartBar } from '../features/gamification/BarChart'
 import { useDailyFocus } from '../features/timer/queries'
 import { formatMinutes } from '../features/timer/pomodoro'
 import { LOCALE } from '../lib/time'
@@ -37,6 +40,7 @@ import { levelForXp, XP, xpForLevel } from '../lib/xp'
 
 const CALENDAR_WEEKS = 12
 const CHART_WEEKS = 8
+const CHART_DAYS = 7
 /** streaks.freeze_tokens is checked `between 0 and 2` in the schema. */
 const MAX_SHIELDS = 2
 
@@ -121,7 +125,11 @@ export function ProgressScreen() {
         )}
       </section>
 
-      <WeeklyCharts history={history} />
+      <Charts
+        history={history}
+        timeZone={profile.data?.timezone}
+        timeZonePending={profile.isPending}
+      />
 
       <AreaLevels />
 
@@ -297,66 +305,131 @@ function ActivityGrid({ events }: { events: XpEvent[] }) {
   )
 }
 
-function WeeklyCharts({ history }: { history: ReturnType<typeof useXpHistory> }) {
+type ChartRange = 'weekly' | 'daily'
+
+const RANGES: [ChartRange, string][] = [
+  ['weekly', 'Weekly'],
+  ['daily', 'Daily'],
+]
+
+/** "Today, Tue, Oct 13" for the last bucket, the bare date for the rest. */
+const dayName = (day: DayBucket, i: number) =>
+  i === CHART_DAYS - 1 ? `Today, ${day.date}` : day.date
+
+/** XP and focus side by side, both by week or both by day. The choice is state, not stored. */
+function Charts({
+  history,
+  timeZone,
+  timeZonePending,
+}: {
+  history: ReturnType<typeof useXpHistory>
+  /** The profile's timezone; undefined when the profile failed, and the daily buckets then fall
+   * back to the browser's timezone. */
+  timeZone: string | undefined
+  timeZonePending: boolean
+}) {
+  const [range, setRange] = useState<ChartRange>('weekly')
   const focus = useDailyFocus(CALENDAR_WEEKS * 7)
-  const xpWeeks = weeklyXp(history.data ?? [], CHART_WEEKS)
-  const focusWeeks = weeklyFocus(focus.data ?? [], CHART_WEEKS)
-  const totalWeekXp = xpWeeks.reduce((sum, w) => sum + w.xp, 0)
-  const totalFocus = focusWeeks.reduce((sum, w) => sum + w.seconds, 0)
+  const daily = range === 'daily'
+  // Daily buckets cut at midnight in the profile's timezone: wait for it, or the bars would
+  // shift once it lands. Weekly buckets don't use it.
+  const tzWait = daily && timeZonePending
+  const period = daily ? `${CHART_DAYS} days` : `${CHART_WEEKS} weeks`
+
+  const xpBars: ChartBar[] = daily
+    ? dailyXp(history.data ?? [], timeZone, CHART_DAYS).map((day, i) => ({
+        key: day.key,
+        label: day.label,
+        value: day.xp,
+        valueText: day.xp ? String(day.xp) : '',
+        ariaLabel: `${dayName(day, i)}: ${day.xp} XP`,
+      }))
+    : weeklyXp(history.data ?? [], CHART_WEEKS).map((week) => ({
+        key: week.weekStart,
+        label: week.label.split(' ')[0],
+        value: week.xp,
+        valueText: week.xp ? String(week.xp) : '',
+        ariaLabel: `Week of ${week.label}: ${week.xp} XP`,
+      }))
+  const focusBars: ChartBar[] = daily
+    ? dailyFocus(focus.data ?? [], timeZone, CHART_DAYS).map((day, i) => ({
+        key: day.key,
+        label: day.label,
+        value: day.seconds,
+        valueText: day.seconds > 0 ? formatMinutes(day.seconds) : '',
+        ariaLabel: `${dayName(day, i)}: ${formatMinutes(day.seconds)} focused`,
+      }))
+    : weeklyFocus(focus.data ?? [], CHART_WEEKS).map((week) => ({
+        key: week.weekStart,
+        label: week.label.split(' ')[0],
+        value: week.seconds,
+        valueText: week.seconds > 0 ? formatMinutes(week.seconds) : '',
+        ariaLabel: `Week of ${week.label}: ${formatMinutes(week.seconds)} focused`,
+      }))
+  const totalXp = xpBars.reduce((sum, bar) => sum + bar.value, 0)
+  const totalFocus = focusBars.reduce((sum, bar) => sum + bar.value, 0)
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <section>
-        <SectionHeading icon="bar_chart">XP per week</SectionHeading>
-        {history.isError ? (
-          <p className="text-flame-ink">Could not load your XP history. Pull down to retry.</p>
-        ) : history.isPending ? (
-          <CardSkeleton rows={1} />
-        ) : (
-          <Card>
-            <WeeklyBarChart
-              tone="accent"
-              bars={xpWeeks.map((week) => ({
-                key: week.weekStart,
-                label: week.label.split(' ')[0],
-                value: week.xp,
-                valueText: week.xp ? String(week.xp) : '',
-                ariaLabel: `Week of ${week.label}: ${week.xp} XP`,
-              }))}
-            />
-            <p className="mt-2 text-caption text-muted">
-              {totalWeekXp} XP in the last {CHART_WEEKS} weeks
-            </p>
-          </Card>
-        )}
-      </section>
+    <div className="space-y-3">
+      <div
+        role="radiogroup"
+        aria-label="Chart range"
+        className="flex w-fit rounded-full bg-surface"
+      >
+        {RANGES.map(([value, label]) => {
+          const active = range === value
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setRange(value)}
+              className={`min-h-[44px] rounded-full px-4 text-caption font-semibold transition ${
+                active ? 'bg-accent/10 text-accent-ink' : 'text-muted hover:bg-line/40'
+              }`}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
 
-      <section>
-        <SectionHeading icon="timer">Focus time per week</SectionHeading>
-        {focus.isError ? (
-          <p className="text-flame-ink">Could not load your focus time. Pull down to retry.</p>
-        ) : focus.isPending ? (
-          <CardSkeleton rows={1} />
-        ) : (
-          <Card>
-            <WeeklyBarChart
-              tone="success"
-              bars={focusWeeks.map((week) => ({
-                key: week.weekStart,
-                label: week.label.split(' ')[0],
-                value: week.seconds,
-                valueText: week.seconds > 0 ? formatMinutes(week.seconds) : '',
-                ariaLabel: `Week of ${week.label}: ${formatMinutes(week.seconds)} focused`,
-              }))}
-            />
-            <p className="mt-2 text-caption text-muted">
-              {totalFocus > 0
-                ? `${formatMinutes(totalFocus)} tracked in the last ${CHART_WEEKS} weeks`
-                : 'Start a timer on a task to see your focus here.'}
-            </p>
-          </Card>
-        )}
-      </section>
+      <div className="grid gap-6 md:grid-cols-2">
+        <section>
+          <SectionHeading icon="bar_chart">XP per {daily ? 'day' : 'week'}</SectionHeading>
+          {history.isError ? (
+            <p className="text-flame-ink">Could not load your XP history. Pull down to retry.</p>
+          ) : history.isPending || tzWait ? (
+            <CardSkeleton rows={1} />
+          ) : (
+            <Card>
+              <BarChart tone="accent" bars={xpBars} />
+              <p className="mt-2 text-caption text-muted">
+                {totalXp} XP in the last {period}
+              </p>
+            </Card>
+          )}
+        </section>
+
+        <section>
+          <SectionHeading icon="timer">Focus time per {daily ? 'day' : 'week'}</SectionHeading>
+          {focus.isError ? (
+            <p className="text-flame-ink">Could not load your focus time. Pull down to retry.</p>
+          ) : focus.isPending || tzWait ? (
+            <CardSkeleton rows={1} />
+          ) : (
+            <Card>
+              <BarChart tone="success" bars={focusBars} />
+              <p className="mt-2 text-caption text-muted">
+                {totalFocus > 0
+                  ? `${formatMinutes(totalFocus)} tracked in the last ${period}`
+                  : 'Start a timer on a task to see your focus here.'}
+              </p>
+            </Card>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

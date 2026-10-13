@@ -14,12 +14,12 @@ export interface ChartBar {
 export const TONE = { accent: 'bg-accent/80', success: 'bg-success' } as const
 
 /**
- * One bar per week, no axes, no library. Heights are relative to the best week (barHeights) so a
- * quiet stretch still reads as a shape. Each column is full height and the bar sits in a
- * `flex-1 min-h-0` slot of definite height: a percentage height inside an auto-height column
- * resolves to 0, which is how the bars once vanished.
+ * One bar per bucket (a week or a day), no axes, no library. Heights are relative to the best
+ * bucket (barHeights) so a quiet stretch still reads as a shape. Each column is full height and the
+ * bar sits in a `flex-1 min-h-0` slot of definite height: a percentage height inside an
+ * auto-height column resolves to 0, which is how the bars once vanished.
  */
-export function WeeklyBarChart({ bars, tone }: { bars: ChartBar[]; tone: keyof typeof TONE }) {
+export function BarChart({ bars, tone }: { bars: ChartBar[]; tone: keyof typeof TONE }) {
   const heights = barHeights(bars.map((bar) => bar.value))
 
   return (
