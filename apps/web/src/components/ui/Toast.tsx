@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
+import { Icon } from './Icon'
 
 type Tone = 'info' | 'xp' | 'error'
 
@@ -46,7 +47,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 already carries the meaning, so the glyph is decorative to a screen reader. */}
             {t.tone === 'error' && (
               <span aria-hidden="true" className="mr-1.5">
-                ⚠
+                <Icon name="warning" />
               </span>
             )}
             {t.message}

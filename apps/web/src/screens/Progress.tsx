@@ -1,6 +1,7 @@
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { EmptyState } from '../components/ui/EmptyState'
+import { Icon } from '../components/ui/Icon'
 import {
   useAreaStats,
   useBadges,
@@ -78,9 +79,15 @@ export function ProgressScreen() {
             />
           </div>
           <div className="mt-3 flex gap-4 text-body text-muted">
-            <span className="tabular">✨ {total} XP total</span>
-            <span className="tabular">🔥 {streak.data?.current ?? 0} current</span>
-            <span className="tabular">🏔 {streak.data?.best ?? 0} best</span>
+            <span className="tabular">
+              <Icon name="stars" /> {total} XP total
+            </span>
+            <span className="tabular">
+              <Icon name="local_fire_department" /> {streak.data?.current ?? 0} current
+            </span>
+            <span className="tabular">
+              <Icon name="military_tech" /> {streak.data?.best ?? 0} best
+            </span>
           </div>
         </Card>
       )}

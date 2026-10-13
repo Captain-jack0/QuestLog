@@ -1,3 +1,4 @@
+import { Icon } from '../../components/ui/Icon'
 import { useToast } from '../../components/ui/Toast'
 import { useRunningTimer, useStartTimer, useStopTimer } from './queries'
 import { atTimerLimit, runningOn, TIMER_LIMIT_REASON } from './stack'
@@ -43,7 +44,7 @@ export function TimerButton({
         onClick={() => stop.mutate(thisOne.id)}
         className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-caption font-semibold disabled:opacity-50"
       >
-        ⏹ Stop
+        <Icon name="stop" /> Stop
       </button>
     )
   }
@@ -59,7 +60,7 @@ export function TimerButton({
         onClick={() => begin()}
         className="min-h-[44px] rounded-full bg-paper px-3 text-caption font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
       >
-        ▶ Timer
+        <Icon name="play_arrow" /> Timer
       </button>
       {withPomodoro && (
         <button

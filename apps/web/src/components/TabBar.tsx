@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { NAV_ITEMS } from './navigation'
+import { NAV_ITEMS, type NavItem } from './navigation'
+import { Icon } from './ui/Icon'
 
 /** Mobile navigation. Hidden from md up, where SideNav takes over. */
 export function TabBar({ onQuickAdd }: { onQuickAdd: () => void }) {
@@ -28,7 +29,7 @@ export function TabBar({ onQuickAdd }: { onQuickAdd: () => void }) {
   )
 }
 
-function Tab({ to, label, icon }: { to: string; label: string; icon: string }) {
+function Tab({ to, label, icon }: NavItem) {
   return (
     <NavLink
       to={to}
@@ -39,7 +40,7 @@ function Tab({ to, label, icon }: { to: string; label: string; icon: string }) {
         }`
       }
     >
-      <span className="text-lead leading-none">{icon}</span>
+      <Icon name={icon} className="icon-xl" />
       <span className="mt-0.5">{label}</span>
     </NavLink>
   )

@@ -1,3 +1,4 @@
+import { Icon, type IconName } from '../../components/ui/Icon'
 import { statusLabel, statusTone } from '../../components/ui/StatusChip'
 import { DIFFICULTY_LABELS, PRIORITY_LABELS, type ItemStatus } from '../../lib/schemas'
 import { clearedFilters, TASK_VIEWS, type TaskListPrefs, type TaskView } from './listPrefs'
@@ -15,7 +16,7 @@ const FILTER_STATUSES: ItemStatus[] = ['in_progress', 'paused', 'blocked']
  */
 const SORT_LABELS: Record<SortKey, string> = { untouched: 'Untouched', priority: 'Priority' }
 
-const VIEW_GLYPHS: Record<TaskView, string> = { card: '▦', row: '☰' }
+const VIEW_ICONS: Record<TaskView, IconName> = { card: 'grid_view', row: 'view_list' }
 const VIEW_LABELS: Record<TaskView, string> = { card: 'Card view', row: 'Row view' }
 
 /** Every control in the bar is the same 44px pill; only the selected paint differs. */
@@ -172,7 +173,7 @@ export function TaskListControls({
                     active ? 'bg-accent/10 text-accent' : IDLE
                   }`}
                 >
-                  <span aria-hidden>{VIEW_GLYPHS[view]}</span>
+                  <Icon name={VIEW_ICONS[view]} className="icon-lg" />
                   <span className="sr-only">{VIEW_LABELS[view]}</span>
                 </button>
               )
