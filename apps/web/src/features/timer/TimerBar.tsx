@@ -5,6 +5,7 @@ import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { onPageWake } from '../../lib/pageWake'
+import { localTime } from '../../lib/time'
 import type { AwaitingPomodoro } from './autoStop'
 import { formatDuration, pomodoroPhase } from './pomodoro'
 import { useRunningTimer, useStopTimer, useTimerSafetyNet, type RunningTimer } from './queries'
@@ -161,10 +162,7 @@ function PomodoroQuestion({
   busy: boolean
   onAnswer: (continued: boolean) => void
 }) {
-  const lastSeen = new Date(pomodoro.last_seen_at).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const lastSeen = localTime(pomodoro.last_seen_at)
   const name = pomodoro.task_title ?? pomodoro.project_title
 
   return (

@@ -1,12 +1,38 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   dayLabel,
   formatDateKey,
   groupByLocalDay,
+  localTime,
   localDateKey,
   relativeTime,
+  stardate,
   startOfLocalDay,
+  untouchedLabel,
 } from './time'
+
+describe('stardate', () => {
+  it('is the year and the local day of the year, padded to three digits', () => {
+    expect(stardate(new Date(2026, 0, 1, 0, 5))).toBe('2026.001')
+    expect(stardate(new Date(2026, 9, 13, 23, 30))).toBe('2026.286')
+    expect(stardate(new Date(2024, 11, 31, 12, 0))).toBe('2024.366')
+  })
+})
+
+describe('untouchedLabel', () => {
+  const now = new Date('2026-08-19T12:00:00Z')
+  const ago = (ms: number) => new Date(now.getTime() - ms).toISOString()
+
+  it('counts whole days once a day has passed', () => {
+    expect(untouchedLabel(ago(86_400_000), now)).toBe('1d untouched')
+    expect(untouchedLabel(ago(3.5 * 86_400_000), now)).toBe('3d untouched')
+  })
+
+  it('says when it was touched inside the first day instead of "0d"', () => {
+    expect(untouchedLabel(ago(5 * 3_600_000), now)).toBe('Touched 5h ago')
+    expect(untouchedLabel(ago(0), now)).toBe('Touched just now')
+  })
+})
 
 describe('timeline day labels', () => {
   const now = new Date(2026, 7, 19, 9, 0)
@@ -44,6 +70,27 @@ describe('groupByLocalDay', () => {
 
   it('is empty for no rows', () => {
     expect(groupByLocalDay([])).toEqual([])
+  })
+})
+
+describe('English-only formatting', () => {
+  // Output alone proves nothing: a CI machine whose default locale is en-US passes either way.
+  // So pin the argument — every toLocale* call must be handed 'en-US' explicitly.
+  afterEach(() => vi.restoreAllMocks())
+
+  it('formats dates and times as en-US whatever the browser language', () => {
+    const dates = vi.spyOn(Date.prototype, 'toLocaleDateString')
+    const times = vi.spyOn(Date.prototype, 'toLocaleTimeString')
+
+    expect(formatDateKey('2026-08-19')).toBe('Aug 19, 2026')
+    expect(localTime(new Date(2026, 7, 19, 14, 5).toISOString())).toMatch(/^02:05\sPM$/)
+    expect(dayLabel(new Date(2026, 7, 12, 22, 0).toISOString(), new Date(2026, 7, 19, 12))).toBe(
+      'Wed, Aug 12',
+    )
+
+    expect(dates).toHaveBeenCalledTimes(2)
+    expect(times).toHaveBeenCalledTimes(1)
+    for (const call of [...dates.mock.calls, ...times.mock.calls]) expect(call[0]).toBe('en-US')
   })
 })
 

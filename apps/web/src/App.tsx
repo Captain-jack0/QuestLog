@@ -5,6 +5,7 @@ import { TabBar } from './components/TabBar'
 import { SideNav } from './components/SideNav'
 import { TopBar } from './components/TopBar'
 import { QuickAddSheet } from './components/QuickAddSheet'
+import type { ShellContext } from './components/shellContext'
 import { useIsDesktop } from './components/useIsDesktop'
 import { TimerBar } from './features/timer/TimerBar'
 import { useRunningTimer } from './features/timer/queries'
@@ -92,7 +93,7 @@ function AppShell() {
         <main
           className={`mx-auto w-full max-w-md flex-1 px-4 pt-4 md:max-w-5xl md:px-8 md:pb-10 md:pt-6 lg:max-w-6xl ${clearance}`}
         >
-          <Outlet />
+          <Outlet context={{ openQuickAdd: () => setAddOpen(true) } satisfies ShellContext} />
         </main>
       </div>
 

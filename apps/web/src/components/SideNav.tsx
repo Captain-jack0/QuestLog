@@ -3,7 +3,13 @@ import { Logo } from './Logo'
 import { NAV_ITEMS } from './navigation'
 import { Icon } from './ui/Icon'
 import { ProgressBar } from './ui/ProgressBar'
-import { useStreak, useTodayFocusXp, useTodayXp } from '../features/gamification/queries'
+import { effectiveStreak } from '../features/gamification/aggregate'
+import {
+  useProfile,
+  useStreak,
+  useTodayFocusXp,
+  useTodayXp,
+} from '../features/gamification/queries'
 import { groupThreads } from '../features/threads/groupThreads'
 import { useHangingThreads } from '../features/threads/queries'
 import { TimerBar } from '../features/timer/TimerBar'
@@ -58,9 +64,11 @@ export function SideNav() {
 /**
  * Streak, shields and today's XP, with today's focus XP against its daily cap. Every number is
  * the database's; a part with nothing behind it yet (no streak row before the first XP) is left
- * out rather than shown as zero.
+ * out rather than shown as zero. The streak is the effective one and waits for the profile's
+ * timezone, as on Progress.
  */
 function Standing() {
+  const profile = useProfile()
   const streak = useStreak()
   const todayXp = useTodayXp()
   const focusXp = useTodayFocusXp()
@@ -69,11 +77,11 @@ function Standing() {
 
   return (
     <div className="rounded-card border border-line bg-surface-raised p-3">
-      {streak.data && (
+      {streak.data && !profile.isPending && (
         <p className="flex items-center justify-between gap-2 text-body-medium">
           <span className="flex items-center gap-1.5 font-semibold text-flame-ink tabular">
             <Icon name="local_fire_department" className="icon-lg" />
-            {streak.data.current}d streak
+            {effectiveStreak(streak.data, profile.data?.timezone)}d streak
           </span>
           <span className="flex items-center gap-1 text-muted tabular">
             <Icon name="shield" className="icon-lg" />

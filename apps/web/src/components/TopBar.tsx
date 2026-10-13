@@ -3,7 +3,8 @@ import { LogoMark } from './Logo'
 import { NAV_ITEMS } from './navigation'
 import { Icon } from './ui/Icon'
 import { useArea } from '../features/areas/queries'
-import { useStreak, useTodayXp } from '../features/gamification/queries'
+import { effectiveStreak } from '../features/gamification/aggregate'
+import { useProfile, useStreak, useTodayXp } from '../features/gamification/queries'
 import { useProject } from '../features/projects/queries'
 
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.userAgent)
@@ -50,18 +51,23 @@ export function TopBar({ desktop, onQuickAdd }: { desktop: boolean; onQuickAdd: 
   )
 }
 
-/** Streak and today's XP, each shown only once its number is real. */
+/**
+ * Streak and today's XP, each shown only once its number is real. The streak is the effective
+ * one (Progress, Today and the rail say the same): it waits for the profile, whose timezone
+ * decides what "yesterday" is.
+ */
 function Chips() {
+  const profile = useProfile()
   const streak = useStreak()
   const todayXp = useTodayXp()
 
   return (
     <>
-      {streak.data && (
+      {streak.data && !profile.isPending && (
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-flame/10 px-2.5 py-1 text-caption font-semibold text-flame-ink tabular">
           <Icon name="local_fire_department" className="icon-lg" />
           <span className="sr-only">Streak: </span>
-          {streak.data.current}
+          {effectiveStreak(streak.data, profile.data?.timezone)}
           <span className="sr-only"> days</span>
         </span>
       )}

@@ -1,3 +1,6 @@
+/** UI is English; locale support comes later. Every toLocale* / Intl call passes this. */
+export const LOCALE = 'en-US'
+
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
@@ -24,7 +27,7 @@ export function localDateKey(now: Date = new Date()): string {
 export function formatDateKey(key: string): string {
   const [y, m, d] = key.split('-').map(Number)
   if (!y || !m || !d) return key
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+  return new Date(y, m - 1, d).toLocaleDateString(LOCALE, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -39,7 +42,7 @@ export function dayLabel(iso: string, now: Date = new Date()): string {
   const days = Math.round((today.getTime() - day.getTime()) / DAY)
   if (days === 0) return 'Today'
   if (days === 1) return 'Yesterday'
-  return day.toLocaleDateString(undefined, {
+  return day.toLocaleDateString(LOCALE, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -49,7 +52,7 @@ export function dayLabel(iso: string, now: Date = new Date()): string {
 
 /** Wall-clock time in the browser's timezone — never UTC on screen. */
 export function localTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' })
 }
 
 /** Newest-first rows into newest-first runs sharing one local calendar day. */
@@ -64,6 +67,26 @@ export function groupByLocalDay<T extends { created_at: string }>(
     else days.push({ key, items: [row] })
   }
   return days
+}
+
+/**
+ * "2026.286": the year and the local day of the year, for Today's decorative stardate label —
+ * always shown beside the real date, never instead of it. Rounded for the same DST reason as
+ * dayLabel.
+ */
+export function stardate(now: Date = new Date()): string {
+  const newYear = new Date(now.getFullYear(), 0, 1)
+  const day = Math.round((startOfLocalDay(now).getTime() - newYear.getTime()) / DAY) + 1
+  return `${now.getFullYear()}.${String(day).padStart(3, '0')}`
+}
+
+/**
+ * How long a thread has sat, in a neutral voice: "3d untouched" from the first full day, and
+ * "Touched 5h ago" inside it — "0d untouched" would read as a typo.
+ */
+export function untouchedLabel(iso: string, now: Date = new Date()): string {
+  const days = Math.floor((now.getTime() - new Date(iso).getTime()) / DAY)
+  return days >= 1 ? `${days}d untouched` : `Touched ${relativeTime(iso, now)}`
 }
 
 /** Compact relative time for timelines: "just now", "5m ago", "3d ago", "2w ago". */

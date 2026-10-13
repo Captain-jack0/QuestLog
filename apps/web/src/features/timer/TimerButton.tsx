@@ -17,6 +17,11 @@ interface TimerButtonProps {
    * controls with one name.
    */
   focus?: boolean
+  /** Focus mode only: says "Resume" instead of "Start" — the item already has time banked. */
+  resume?: boolean
+  /** Focus mode only: ghost instead of filled, for a screen that already has its one filled
+   *  button (Today's focus cards after the first). */
+  quiet?: boolean
   disabled?: boolean
 }
 
@@ -27,6 +32,8 @@ export function TimerButton({
   title,
   withPomodoro = false,
   focus = false,
+  resume = false,
+  quiet = false,
   disabled,
 }: TimerButtonProps) {
   const running = useRunningTimer()
@@ -46,17 +53,19 @@ export function TimerButton({
 
   if (focus) {
     if (thisOne) return null
+    const verb = resume ? 'Resume' : 'Start'
     return (
       <Button
         type="button"
-        aria-label={`Start 25m focus on ${title}`}
+        variant={quiet ? 'ghost' : 'primary'}
+        aria-label={`${verb} 25m focus on ${title}`}
         disabled={busy || disabled}
         aria-disabled={full || undefined}
         title={full ? TIMER_LIMIT_REASON : undefined}
         onClick={() => begin('pomodoro')}
         className="aria-disabled:opacity-40"
       >
-        <Icon name="play_arrow" /> Start 25m focus
+        <Icon name="play_arrow" /> {verb} 25m focus
       </Button>
     )
   }
