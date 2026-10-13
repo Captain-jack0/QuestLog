@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Button } from '../../components/ui/Button'
-import { fieldClass } from '../../components/ui/field'
+import { Card } from '../../components/ui/Card'
+import { fieldClass, rowFieldClass } from '../../components/ui/field'
 import { Icon } from '../../components/ui/Icon'
 import { relativeTime } from '../../lib/time'
 
@@ -10,19 +11,28 @@ interface ResumeCardProps {
   loggedAt: string | null
   fromAi?: boolean
   saving?: boolean
+  /** The life area's colour: the same edge the area's own cards carry. */
+  edgeColor?: string | null
+  /** The box's one filled action — the caller's 25-minute focus start. */
+  focusAction?: ReactNode
   onSave: (values: { leftOff: string; nextStep: string }) => void
+  /**
+   * Appends a log carrying this note and the current context unchanged. `done` runs once the
+   * write lands, so a failed save keeps the typed note on screen instead of eating it.
+   */
+  onAddNote?: (note: string, done: () => void) => void
 }
 
-/** The band's own top edge, so the project header reads as one card split by hairlines. */
-const BAND_CLASS = 'mt-4 border-t border-line pt-4'
+const LABEL_CLASS = 'text-micro uppercase text-muted'
 
 /**
  * The resume context, editable in place. Saving appends a new progress log rather than
  * rewriting the old one — the timeline stays append-only, which is the whole point.
  *
- * No longer a `Card` of its own despite the name: it is a band inside the project header
- * card, divided by a hairline. A card here would have been a card inside a card, where both
- * surfaces are `bg-surface` and the inner boundary disappears.
+ * A card of its own again, after the header: the resume box is the first thing a returning
+ * captain needs, so it gets its own boundary and the area's colour edge. The next step is the
+ * largest text in the box — it is what you act on — and "where I left off" is the quoted well
+ * beneath its label, read once and set down.
  */
 export function ResumeCard({
   leftOff,
@@ -30,11 +40,16 @@ export function ResumeCard({
   loggedAt,
   fromAi,
   saving,
+  edgeColor,
+  focusAction,
   onSave,
+  onAddNote,
 }: ResumeCardProps) {
   const [editing, setEditing] = useState(false)
   const [draftLeftOff, setDraftLeftOff] = useState('')
   const [draftNextStep, setDraftNextStep] = useState('')
+  const [noting, setNoting] = useState(false)
+  const [note, setNote] = useState('')
 
   useEffect(() => {
     if (!editing) {
@@ -45,7 +60,7 @@ export function ResumeCard({
 
   if (editing) {
     return (
-      <div className={BAND_CLASS}>
+      <Card edgeColor={edgeColor}>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -89,21 +104,22 @@ export function ResumeCard({
           </div>
           <p className="mt-2 text-caption text-muted">Saving keeps the old note in History.</p>
         </form>
-      </div>
+      </Card>
     )
   }
 
   return (
-    <div className={BAND_CLASS}>
+    <Card edgeColor={edgeColor}>
       <div className="flex items-start justify-between gap-2">
-        <h2 className="text-body font-semibold uppercase tracking-wide text-muted">
-          Where you left off
-        </h2>
+        <h2 className={`pt-3 ${LABEL_CLASS}`}>Where I left off</h2>
         <button
           type="button"
           aria-label="Edit resume context"
-          onClick={() => setEditing(true)}
-          className="-mt-1 min-h-[44px] rounded-lg px-2 text-body font-semibold text-accent"
+          onClick={() => {
+            setNoting(false)
+            setEditing(true)
+          }}
+          className="btn-quiet min-h-[44px] shrink-0 rounded-lg px-2 text-body font-semibold text-accent-ink"
         >
           <Icon name="edit" /> Edit
         </button>
@@ -111,12 +127,12 @@ export function ResumeCard({
 
       {loggedAt ? (
         <>
-          <p className="mt-1 text-lead leading-snug">{leftOff || '—'}</p>
-          <h2 className="mt-4 text-body font-semibold uppercase tracking-wide text-muted">
-            Next step
-          </h2>
-          <p className="mt-1 text-lead font-medium leading-snug">{nextStep || '—'}</p>
-          <p className="mt-3 text-caption text-muted">
+          <blockquote className="mt-1 break-words rounded-xl border border-line bg-surface-sunken px-3 py-2 text-body italic">
+            {leftOff || '—'}
+          </blockquote>
+          <h2 className={`mt-4 ${LABEL_CLASS}`}>Next step</h2>
+          <p className="mt-1 break-words text-title-md">{nextStep || '—'}</p>
+          <p className="mt-2 text-caption text-muted">
             {relativeTime(loggedAt)}
             {fromAi && ' · via AI'}
           </p>
@@ -126,6 +142,54 @@ export function ResumeCard({
           No resume context yet — write the first note, or pause the project to be asked for one.
         </p>
       )}
-    </div>
+
+      {noting && onAddNote ? (
+        <form
+          className="mt-4"
+          onSubmit={(e) => {
+            e.preventDefault()
+            const text = note.trim()
+            if (!text) return
+            onAddNote(text, () => {
+              setNote('')
+              setNoting(false)
+            })
+          }}
+        >
+          <label htmlFor="resume-micro-note" className="text-body font-semibold text-muted">
+            Micro-note
+          </label>
+          {/* Wraps like the quick-add row: the field keeps the full width at 320px and the two
+              buttons drop below it rather than squeezing it. */}
+          <div className="mt-1 flex flex-wrap gap-2">
+            <input
+              id="resume-micro-note"
+              autoFocus
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="A line for the log…"
+              className={`w-full ${rowFieldClass}`}
+            />
+            <Button type="submit" disabled={saving || !note.trim()}>
+              {saving ? 'Saving…' : 'Save note'}
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setNoting(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : (
+        (focusAction || onAddNote) && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {focusAction}
+            {onAddNote && (
+              <Button type="button" variant="ghost" onClick={() => setNoting(true)}>
+                <Icon name="add" /> Micro-note
+              </Button>
+            )}
+          </div>
+        )
+      )}
+    </Card>
   )
 }

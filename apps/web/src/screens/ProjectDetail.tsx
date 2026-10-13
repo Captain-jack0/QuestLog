@@ -8,12 +8,14 @@ import { Icon } from '../components/ui/Icon'
 import { StatusChip } from '../components/ui/StatusChip'
 import { StatusPicker } from '../components/ui/StatusPicker'
 import { PickerSheet } from '../components/ui/PickerSheet'
+import { PriorityBadge } from '../components/ui/PriorityBadge'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
 import { compactFieldClass, rowFieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useArea, useAreas } from '../features/areas/queries'
-import { useProfile } from '../features/gamification/queries'
+import { useProfile, useProjectXp } from '../features/gamification/queries'
+import { HistoryTimeline } from '../features/projects/HistoryTimeline'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import {
   useMoveProject,
@@ -38,7 +40,7 @@ import { ResumeCard } from '../features/status/ResumeCard'
 import { needsResumeContext } from '../features/status/statusChange'
 import { useUpdateStatus } from '../features/status/useUpdateStatus'
 import { isOptimistic } from '../lib/optimistic'
-import { relativeTime } from '../lib/time'
+import { formatDateKey } from '../lib/time'
 import { formatMinutes } from '../features/timer/pomodoro'
 import { TimerButton } from '../features/timer/TimerButton'
 import { useProjectTotals, useTaskTotals } from '../features/timer/queries'
@@ -53,8 +55,16 @@ import {
   type Task,
 } from '../lib/schemas'
 
-/** Same summary as the History section below, so the two collapsibles read as one pattern. */
-const SUMMARY_CLASS = 'cursor-pointer text-body font-semibold uppercase tracking-wide text-muted'
+/** Micro labels: the task groups and the closed bucket's toggle speak the same small caps. */
+const GROUP_CLASS = 'mb-2 text-micro uppercase text-muted'
+const SUMMARY_CLASS = 'min-h-[44px] cursor-pointer py-3 text-micro uppercase text-muted'
+
+/**
+ * Header chips beside StatusChip — Idea's quiet pair, so the contrast is already tested. Allowed
+ * to wrap, unlike a status: an area name runs to 60 characters, wider than a 320px card.
+ */
+const CHIP_CLASS =
+  'inline-flex max-w-full items-center gap-1.5 break-words rounded-full bg-line/30 px-2 py-0.5 text-micro text-muted'
 
 export function ProjectDetailScreen() {
   const { projectId = '' } = useParams()
@@ -109,6 +119,7 @@ export function ProjectDetailScreen() {
   // Deliberately the unfiltered query data: the bar reports the project, not the current view,
   // so hiding a done task behind a filter must not move it. taskOrder.test.ts guards the count.
   const progress = taskProgress(tasks.data ?? [])
+  const earnedXp = useProjectXp(projectId).data ?? 0
   const staleDays = profile.data?.stale_days ?? 14
 
   const {
@@ -208,6 +219,9 @@ export function ProjectDetailScreen() {
   if (project.isPending) return <CardSkeleton rows={3} />
   if (project.isError || !project.data) return <p className="text-alert-ink">Project not found.</p>
 
+  const inProgressTasks = openTasks.filter((task) => task.status === 'in_progress')
+  const queuedTasks = openTasks.filter((task) => task.status !== 'in_progress')
+
   return (
     <div>
       {/* inline-flex, not a bare min-height: min-height does not apply to an inline box, so on
@@ -221,71 +235,116 @@ export function ProjectDetailScreen() {
         <Icon name="arrow_back" /> {area.data?.name ?? 'Area'}
       </Link>
 
-      {/* One card for the whole project header. The meta line and the status chips used to sit
-          naked on the page background, so nothing marked where "this project" ended and "its
-          tasks" began — the Tasks heading was the first bounded thing on the screen. A card
-          boundary says it in the vocabulary this screen already speaks.
-
-          The bands inside are divided by hairlines, not by cards: `bg-surface` on `bg-surface`
-          has no edge to see, so a card in a card would have cost the boundary it was meant to
-          draw. `divide-y divide-line` is the same call the task rows make.
-
-          No `edgeColor`: that prop means "life area" everywhere (AreaDetail.tsx:76), and the
-          area is already spoken for twice above — the back link and the dot in the meta line. */}
-      <Card className="mb-6 mt-2">
-        <header>
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-title-lg font-bold leading-tight">{project.data.title}</h1>
-            <span className="flex shrink-0 gap-2">
-              <Button variant="ghost" className="px-3 py-2" onClick={() => setMovingProject(true)}>
-                Move
-              </Button>
-              <Button variant="ghost" className="px-3 py-2" onClick={() => setEditing(true)}>
-                Edit
-              </Button>
-            </span>
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-body">
-            {area.data && (
-              <span className="flex items-center gap-1 text-muted">
-                <span
-                  aria-hidden
-                  className="h-2 w-2 rounded-full border border-ink/55"
-                  style={{ backgroundColor: area.data.color }}
-                />
-                {area.data.icon} {area.data.name}
+      <div className="mt-2 space-y-6">
+        {/* One card for what the project *is*: name, chips, the numbers, its status. The resume
+            box follows as a card of its own — it is what you came back for, so it gets its own
+            boundary rather than a band in here. */}
+        <Card>
+          <header>
+            <div className="flex items-start justify-between gap-3">
+              {/* The role alone, no font/leading overrides: with a `md:` role an unprefixed
+                  override loses at md+ (lessons/tailwind-rol-onek-tuzagi). */}
+              <h1 className="min-w-0 break-words text-title-lg md:text-display-sm">
+                {project.data.title}
+              </h1>
+              <span className="flex shrink-0 gap-2">
+                <Button
+                  variant="ghost"
+                  className="px-3 py-2"
+                  onClick={() => setMovingProject(true)}
+                >
+                  Move
+                </Button>
+                <Button variant="ghost" className="px-3 py-2" onClick={() => setEditing(true)}>
+                  Edit
+                </Button>
               </span>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {area.data && (
+                <span className={CHIP_CLASS}>
+                  <span
+                    aria-hidden
+                    className="h-2 w-2 rounded-full border border-ink/55"
+                    style={{ backgroundColor: area.data.color }}
+                  />
+                  {area.data.icon} {area.data.name}
+                </span>
+              )}
+              <StatusChip status={project.data.status} />
+              <PriorityBadge priority={project.data.priority} />
+              {project.data.target_date && (
+                <span className={CHIP_CLASS}>
+                  <Icon name="calendar_today" /> Due {formatDateKey(project.data.target_date)}
+                </span>
+              )}
+            </div>
+
+            {project.data.description && (
+              <p className="mt-3 text-body text-muted">{project.data.description}</p>
             )}
-            <StatusChip status={project.data.status} />
-            {/* The label, not the enum: this line reads as a sentence, and "med priority" is not
-                one. Same reason the new-task select spells the values out below. */}
-            <span className="text-muted">{PRIORITY_LABELS[project.data.priority]} priority</span>
-            {/* The same badge the task cards carry (TaskItem.tsx), one level up: what is banked,
-                in minutes. The live count is TimerBar's job, so this moves when a timer stops. */}
-            {focusSeconds ? (
-              <span className="text-muted">
-                <span aria-hidden>
-                  <Icon name="timer" /> {formatMinutes(focusSeconds)}
-                </span>
-                <span className="sr-only">
-                  {formatMinutes(focusSeconds)} focused on this project
-                </span>
-              </span>
-            ) : null}
-            {/* Still here on purpose: this pair is the only way in the app to time work on a
-                project that has not been cut into tasks yet, and docs/02:26 puts it in this
-                header by name. Removing it needs a replacement entry point first. */}
-            <TimerButton
-              itemType="project"
-              itemId={projectId}
-              title={project.data.title}
-              withPomodoro
+
+            {/* The project's numbers, from the unfiltered task list and the timer totals. The
+                "N/M done" wording stays as it was: smoke.spec.ts reads it. */}
+            {(progress.total > 0 || Boolean(focusSeconds) || earnedXp > 0) && (
+              <div className="mt-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-caption text-muted">
+                  {progress.total > 0 && (
+                    <span>
+                      {progress.done}/{progress.total} done
+                    </span>
+                  )}
+                  <span className="flex flex-wrap gap-x-3">
+                    {earnedXp > 0 && (
+                      <span>
+                        <span aria-hidden>
+                          <Icon name="stars" /> {earnedXp} XP
+                        </span>
+                        <span className="sr-only">You earned {earnedXp} XP here</span>
+                      </span>
+                    )}
+                    {/* What is banked, in minutes; the live count is TimerBar's job, so this
+                        moves when a timer stops. */}
+                    {focusSeconds ? (
+                      <span>
+                        <span aria-hidden>
+                          <Icon name="timer" /> {formatMinutes(focusSeconds)}
+                        </span>
+                        <span className="sr-only">
+                          {formatMinutes(focusSeconds)} focused on this project
+                        </span>
+                      </span>
+                    ) : null}
+                  </span>
+                </div>
+                {progress.total > 0 && (
+                  <div className="mt-2">
+                    <ProgressBar done={progress.done} total={progress.total} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* The open-ended timer stays here: it is the only way to time a project that has
+                not been cut into tasks yet (docs/02:26). Its 25-minute twin moved to the resume
+                box as that box's start, so the pair is not offered twice. */}
+            <div className="mt-4">
+              <TimerButton itemType="project" itemId={projectId} title={project.data.title} />
+            </div>
+          </header>
+
+          <div className="mt-4 border-t border-line pt-4">
+            <p className="mb-2 text-body font-medium">Project status</p>
+            <StatusPicker
+              label="Project status"
+              value={project.data.status}
+              onChange={(status) =>
+                requestStatus('project', projectId, project.data!.title, status)
+              }
             />
           </div>
-          {project.data.description && (
-            <p className="mt-2 text-body text-muted">{project.data.description}</p>
-          )}
-        </header>
+        </Card>
 
         <ResumeCard
           leftOff={latest?.left_off ?? null}
@@ -293,6 +352,10 @@ export function ProjectDetailScreen() {
           loggedAt={latest?.created_at ?? null}
           fromAi={latest?.source === 'ai'}
           saving={updateStatus.isPending}
+          edgeColor={area.data?.color}
+          focusAction={
+            <TimerButton focus itemType="project" itemId={projectId} title={project.data.title} />
+          }
           onSave={({ leftOff, nextStep }) =>
             updateStatus.mutate({
               itemType: 'project',
@@ -306,33 +369,36 @@ export function ProjectDetailScreen() {
               nextStepTaskId: latest?.next_step_task_id ?? null,
             })
           }
+          // The same progress update as an edit, with the context carried over word for word
+          // and the note riding along — the one write path that stores `progress_logs.note`.
+          onAddNote={(note, done) =>
+            updateStatus.mutate(
+              {
+                itemType: 'project',
+                itemId: projectId,
+                status: project.data!.status,
+                leftOff: latest?.left_off ?? '',
+                nextStep: latest?.next_step ?? '',
+                nextStepTaskId: latest?.next_step_task_id ?? null,
+                note,
+              },
+              { onSuccess: done },
+            )
+          }
         />
+      </div>
 
-        {/* Inside the card the resting chips (`bg-paper`) finally have a surface to stand
-            against; on the page background they were paper on paper. Same pairing the task
-            cards already use. */}
-        <div className="mt-4 border-t border-line pt-4">
-          <p className="mb-2 text-body font-medium">Project status</p>
-          <StatusPicker
-            label="Project status"
-            value={project.data.status}
-            onChange={(status) => requestStatus('project', projectId, project.data!.title, status)}
-          />
+      <section aria-labelledby="tasks-heading" className="mt-8">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-2">
+          <h2 id="tasks-heading" className="text-title-md">
+            Tasks
+          </h2>
+          {progress.total > 0 && (
+            <span className="text-caption text-muted">
+              {openTasks.length + hiddenByFilter} open · {closedTasks.length} closed
+            </span>
+          )}
         </div>
-      </Card>
-
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-body font-semibold uppercase tracking-wide text-muted">Tasks</h2>
-          <span className="text-caption text-muted">
-            {progress.done}/{progress.total} done
-          </span>
-        </div>
-        {progress.total > 0 && (
-          <div className="mb-3">
-            <ProgressBar done={progress.done} total={progress.total} />
-          </div>
-        )}
 
         {/* Wraps instead of sharing one line: with two labelled selects beside it the input
             measured 69px at 320px wide — narrower than its own placeholder. On its own row it
@@ -389,12 +455,14 @@ export function ProjectDetailScreen() {
               </option>
             ))}
           </select>
-          <Button type="submit" className="px-4">
+          {/* Ghost since the Celestial pass: the screen's one filled button is the resume box's
+              "Start 25m focus". Enter in the field still submits, so the quick path costs the
+              same keystrokes it always did. */}
+          <Button type="submit" variant="ghost" className="px-4">
             Add
           </Button>
           {/* `type="button"`: inside a form, an unqualified button submits it, and this one has
-              to hand the half-typed row to the sheet rather than insert it. Ghost so the row
-              still has one primary action — the quick add is the default path. The label is
+              to hand the half-typed row to the sheet rather than insert it. The label is
               spelled out for the screen reader the way its three neighbours are; "More…" alone
               names nothing. */}
           <Button
@@ -422,7 +490,23 @@ export function ProjectDetailScreen() {
           <EmptyState title="No tasks yet." description="Add the first one above." />
         )}
 
-        {openTasks.length > 0 && taskList(openTasks)}
+        {/* Two groups, one sort: compareTasks already puts in-progress work first, so the split
+            only names what the order was saying. The queued group is labelled by the sort that
+            orders it. */}
+        {inProgressTasks.length > 0 && (
+          <div className="mb-4">
+            <h3 className={GROUP_CLASS}>In progress</h3>
+            {taskList(inProgressTasks)}
+          </div>
+        )}
+        {queuedTasks.length > 0 && (
+          <div>
+            <h3 className={GROUP_CLASS}>
+              {prefs.sort === 'untouched' ? 'Untouched first' : 'By priority'}
+            </h3>
+            {taskList(queuedTasks)}
+          </div>
+        )}
 
         {/* Two ways to lose sight of an open task, two different ways out. */}
         {progress.total > 0 &&
@@ -453,31 +537,14 @@ export function ProjectDetailScreen() {
         )}
       </section>
 
-      <details className="mt-6">
-        <summary className={SUMMARY_CLASS}>History ({logs.data?.length ?? 0})</summary>
-        <ol className="mt-3 space-y-3 border-l border-line pl-4">
-          {logs.data?.map((log) => (
-            <li key={log.id}>
-              <p className="text-caption text-muted">
-                {relativeTime(log.created_at)}
-                {log.source === 'ai' && (
-                  <span className="ml-2 rounded-full bg-accent/10 px-2 py-0.5 font-semibold text-accent">
-                    via AI
-                  </span>
-                )}
-              </p>
-              {log.left_off && <p className="text-body">{log.left_off}</p>}
-              {log.next_step && (
-                <p className="text-body">
-                  <span className="text-muted">Next: </span>
-                  {log.next_step}
-                </p>
-              )}
-              {log.note && <p className="text-body italic text-muted">{log.note}</p>}
-            </li>
-          ))}
-        </ol>
-      </details>
+      {/* Open, not a collapsed <details> any more: the log is the project's memory, and the
+          day headings make it scannable without hiding it. */}
+      <section aria-labelledby="history-heading" className="mt-8">
+        <h2 id="history-heading" className="mb-3 text-title-md">
+          History
+        </h2>
+        {logs.data && <HistoryTimeline logs={logs.data} />}
+      </section>
 
       <PickerSheet
         open={movingProject}
