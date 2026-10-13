@@ -8,6 +8,7 @@ import { useToast } from '../components/ui/Toast'
 import { FocusPickerSheet } from '../features/focus/FocusPickerSheet'
 import { useFocusItems, usePickFocus, useToggleFocusItem } from '../features/focus/queries'
 import { useProfile, useStreak, useTodayXp } from '../features/gamification/queries'
+import { effectiveStreak } from '../features/gamification/aggregate'
 import { ThreadList } from '../features/threads/ThreadList'
 import { localDateKey } from '../lib/time'
 
@@ -35,7 +36,8 @@ export function TodayScreen() {
         <h1 className="text-title-lg font-bold">Welcome back, {name}</h1>
         <div className="mt-2 flex items-center gap-3 text-body">
           <span className="rounded-full bg-flame/10 px-3 py-1 font-semibold text-flame-ink tabular">
-            <Icon name="local_fire_department" /> {streak.data?.current ?? 0}-day streak
+            <Icon name="local_fire_department" />{' '}
+            {effectiveStreak(streak.data ?? null, profile.data?.timezone)}-day streak
           </span>
           <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent tabular">
             <Icon name="stars" /> {todayXp.data ?? 0} XP today
