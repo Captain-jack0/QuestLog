@@ -111,7 +111,59 @@ body::before {
     100% 100%;
 }
 
-[data-theme='calm'] body::before {
+/* The galaxy: a second, fainter layer on top of the first. Faint 1px stars on prime-sized tiles
+   (no two share a factor, so the pattern never visibly repeats), a milky-way band across the
+   sky, and a dim flame nebula in the bottom corner. Static on purpose: no animation, no filter,
+   no backdrop-filter, no background-attachment — just painted once. Fixed like the layer above,
+   so it never takes up room in the page (e2e/sheet-keyboard.spec.ts relies on that). */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  background-image:
+    radial-gradient(1px 1px at 17% 23%, rgb(255 255 255 / 0.45), transparent 100%),
+    radial-gradient(1px 1px at 63% 41%, rgb(255 255 255 / 0.3), transparent 100%),
+    radial-gradient(1px 1px at 81% 77%, rgb(var(--accent-ink) / 0.4), transparent 100%),
+    radial-gradient(1px 1px at 29% 69%, rgb(255 255 255 / 0.25), transparent 100%),
+    radial-gradient(1px 1px at 47% 13%, rgb(255 255 255 / 0.35), transparent 100%),
+    radial-gradient(1px 1px at 91% 31%, rgb(255 255 255 / 0.2), transparent 100%),
+    radial-gradient(1px 1px at 7% 53%, rgb(var(--success-ink) / 0.3), transparent 100%),
+    radial-gradient(1px 1px at 71% 89%, rgb(255 255 255 / 0.4), transparent 100%),
+    radial-gradient(1px 1px at 37% 97%, rgb(255 255 255 / 0.3), transparent 100%),
+    radial-gradient(1px 1px at 53% 59%, rgb(255 255 255 / 0.2), transparent 100%),
+    radial-gradient(1px 1px at 13% 7%, rgb(var(--flame-ink) / 0.35), transparent 100%),
+    radial-gradient(1px 1px at 87% 61%, rgb(255 255 255 / 0.25), transparent 100%),
+    linear-gradient(
+      115deg,
+      transparent 30%,
+      rgb(var(--accent) / 0.05) 45%,
+      rgb(var(--success) / 0.035) 52%,
+      transparent 65%
+    ),
+    radial-gradient(ellipse 55% 45% at 95% 100%, rgb(var(--flame) / 0.05), transparent 70%);
+  background-repeat: repeat;
+  background-size:
+    233px 233px,
+    317px 317px,
+    389px 389px,
+    271px 271px,
+    353px 353px,
+    293px 293px,
+    409px 409px,
+    251px 251px,
+    337px 337px,
+    379px 379px,
+    263px 263px,
+    311px 311px,
+    100% 100%,
+    100% 100%;
+}
+
+[data-theme='calm'] body::before,
+[data-theme='calm'] body::after {
   opacity: 0;
 }
 

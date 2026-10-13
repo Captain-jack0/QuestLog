@@ -16,7 +16,6 @@ import '@fontsource/inter/600.css'
 import '@fontsource/inter/700.css'
 // The display-lg type role is set at 800; without this face it would fake-bold from 700.
 import '@fontsource/inter/800.css'
-import '@fontsource/instrument-serif/400.css'
 import 'primeicons/primeicons.css'
 import './index.css'
 

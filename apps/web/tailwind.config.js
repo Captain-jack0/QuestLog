@@ -15,7 +15,7 @@ export default {
     // (`md:text-display-lg`) the override needs the same prefix (`md:font-normal`). `fontSize` is defined here, not under `extend`, so
     // Tailwind's raw names (text-xs, text-sm, ...) are not generated: the scale is roles only, and
     // ESLint (.eslintrc.cjs) rejects the raw names too. Headings in the app stop at `display-sm`;
-    // the `display-lg` pair and `display-xl` are for the landing page (plus the Login glyph and the Progress level number). `micro` is the 11px floor
+    // the `display-lg` pair is for the landing page (plus the Progress level number). `micro` is the 11px floor
     // (chart axis labels, tab labels, status chips).
     fontSize: {
       micro: ['0.6875rem', { lineHeight: '0.875rem', letterSpacing: '0.04em', fontWeight: '600' }],
@@ -44,7 +44,6 @@ export default {
         '2rem',
         { lineHeight: '2.375rem', letterSpacing: '-0.025em', fontWeight: '800' },
       ],
-      'display-xl': ['4.5rem', { lineHeight: '1', letterSpacing: '-0.03em', fontWeight: '800' }],
     },
     extend: {
       colors: {
@@ -67,7 +66,6 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       // Icon glyph sizes, a scale of their own so icons don't ride the text scale (a type-scale
       // change must not resize icons, nor the reverse). Emitted as `icon-*` by the plugin below.
