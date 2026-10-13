@@ -41,15 +41,15 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
     <BottomSheet open={open} onClose={onClose} title={project ? 'Edit project' : 'New project'}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
-          <label htmlFor="project-title" className="mb-1 block text-sm font-medium">
+          <label htmlFor="project-title" className="mb-1 block text-body font-medium">
             Title
           </label>
           <input id="project-title" autoFocus {...register('title')} className={fieldClass} />
-          {errors.title && <p className="mt-1 text-sm text-alert-ink">{errors.title.message}</p>}
+          {errors.title && <p className="mt-1 text-body text-alert-ink">{errors.title.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="project-description" className="mb-1 block text-sm font-medium">
+          <label htmlFor="project-description" className="mb-1 block text-body font-medium">
             Description
           </label>
           <textarea
@@ -62,7 +62,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="project-status" className="mb-1 block text-sm font-medium">
+            <label htmlFor="project-status" className="mb-1 block text-body font-medium">
               Status
             </label>
             <select id="project-status" {...register('status')} className={fieldClass}>
@@ -74,7 +74,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
             </select>
           </div>
           <div>
-            <label htmlFor="project-priority" className="mb-1 block text-sm font-medium">
+            <label htmlFor="project-priority" className="mb-1 block text-body font-medium">
               Priority
             </label>
             <select id="project-priority" {...register('priority')} className={fieldClass}>
@@ -88,7 +88,7 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
         </div>
 
         <div>
-          <label htmlFor="project-target" className="mb-1 block text-sm font-medium">
+          <label htmlFor="project-target" className="mb-1 block text-body font-medium">
             Target date
           </label>
           <input

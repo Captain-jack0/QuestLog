@@ -11,7 +11,9 @@ export function WeeklyXpChart({ weeks }: { weeks: WeekBucket[] }) {
     <div className="flex h-32 items-end gap-1.5">
       {weeks.map((week) => (
         <div key={week.weekStart} className="flex flex-1 flex-col items-center gap-1">
-          <span className="tabular text-2xs text-muted">{week.xp || ''}</span>
+          <span className="tabular text-micro font-normal tracking-normal text-muted">
+            {week.xp || ''}
+          </span>
           <div
             role="img"
             aria-label={`Week of ${week.label}: ${week.xp} XP`}
@@ -19,7 +21,7 @@ export function WeeklyXpChart({ weeks }: { weeks: WeekBucket[] }) {
             className="w-full rounded-t bg-accent/80"
             style={{ height: `${Math.max((week.xp / peak) * 100, week.xp > 0 ? 4 : 2)}%` }}
           />
-          <span className="text-2xs leading-none text-muted">{week.label.split(' ')[0]}</span>
+          <span className="text-micro leading-none text-muted">{week.label.split(' ')[0]}</span>
         </div>
       ))}
     </div>

@@ -55,9 +55,9 @@ export function TodayScreen() {
   return (
     <div>
       <header className="mb-6">
-        <p className="text-sm text-muted">{weekday}</p>
-        <h1 className="text-2xl font-bold">Welcome back, {name}</h1>
-        <div className="mt-2 flex items-center gap-3 text-sm">
+        <p className="text-body text-muted">{weekday}</p>
+        <h1 className="text-title-lg font-bold">Welcome back, {name}</h1>
+        <div className="mt-2 flex items-center gap-3 text-body">
           <span className="rounded-full bg-flame/10 px-3 py-1 font-semibold text-flame-ink tabular">
             🔥 {streak.data?.current ?? 0}-day streak
           </span>
@@ -69,7 +69,7 @@ export function TodayScreen() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-start">
         <section className="mb-6 lg:mb-0">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
             Today&apos;s focus
           </h2>
 
@@ -117,7 +117,7 @@ export function TodayScreen() {
         </section>
 
         <section>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
             Hanging threads
           </h2>
 
@@ -138,7 +138,7 @@ export function TodayScreen() {
             >
               <h3
                 id={`threads-${section.key}`}
-                className="mb-2 text-2xs font-semibold uppercase tracking-wide text-muted"
+                className="mb-2 text-micro font-semibold uppercase tracking-wide text-muted"
               >
                 {section.heading}
               </h3>
@@ -167,11 +167,11 @@ export function TodayScreen() {
                         >
                           {thread.title}
                         </Link>
-                        <span className="shrink-0 text-xs text-muted">
+                        <span className="shrink-0 text-caption text-muted">
                           {relativeTime(thread.last_activity_at)}
                         </span>
                       </div>
-                      <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                      <p className="flex flex-wrap items-center gap-1.5 text-caption text-muted">
                         <ItemTypeChip itemType={thread.item_type} />
                         {section.showStatus && <StatusChip status={thread.display_status} />}
                         {context && <span>{context}</span>}
@@ -181,7 +181,7 @@ export function TodayScreen() {
                       title into next_step so every other reader still has words to show, and
                       here that would print the same line twice. */}
                       {thread.next_step && thread.next_step !== thread.next_step_task_title && (
-                        <p className="mt-2 text-sm font-medium">
+                        <p className="mt-2 text-body font-medium">
                           <span className="font-normal text-muted">Next: </span>
                           {thread.next_step}
                         </p>
@@ -191,7 +191,7 @@ export function TodayScreen() {
                       log is a record of what you decided, not a to-do that tidies itself — so the
                       chip is how you see it is already done. */}
                       {thread.next_step_task_id && thread.next_step_task_status && (
-                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body">
                           <Link
                             to={`/projects/${thread.next_step_task_project_id}`}
                             className="inline-flex min-h-[44px] items-center font-medium text-accent"
@@ -205,7 +205,7 @@ export function TodayScreen() {
                       <div className="mt-3 flex gap-2">
                         <Button
                           variant="ghost"
-                          className="flex-1 px-2 py-2 text-sm"
+                          className="flex-1 px-2 py-2 text-body"
                           onClick={() =>
                             setPending({
                               itemType: thread.item_type,
@@ -223,7 +223,7 @@ export function TodayScreen() {
                         </Button>
                         <Button
                           variant="ghost"
-                          className="flex-1 px-2 py-2 text-sm"
+                          className="flex-1 px-2 py-2 text-body"
                           onClick={() =>
                             setPending({
                               itemType: thread.item_type,
@@ -241,7 +241,7 @@ export function TodayScreen() {
                         </Button>
                         <Button
                           variant="ghost"
-                          className="flex-1 px-2 py-2 text-sm"
+                          className="flex-1 px-2 py-2 text-body"
                           onClick={() =>
                             setSnoozeFor({ itemType: thread.item_type, itemId: thread.item_id })
                           }
@@ -284,7 +284,7 @@ export function TodayScreen() {
                               { onSuccess: () => toast('Dropped — its history stays.') },
                             )
                           }
-                          className="btn-quiet min-h-[44px] rounded-full border border-line px-4 text-xs font-semibold text-muted disabled:opacity-40"
+                          className="btn-quiet min-h-[44px] rounded-full border border-line px-4 text-caption font-semibold text-muted disabled:opacity-40"
                         >
                           Drop
                         </button>

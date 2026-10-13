@@ -9,6 +9,43 @@ const themed = (name) => `rgb(var(--${name}) / <alpha-value>)`
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
+    // Type roles from docs/design/stitch/DESIGN.md. Each carries its own line-height, tracking
+    // and weight, so a role is one class instead of four; an explicit `font-*`/`tracking-*`/
+    // `leading-*` on the element still wins, but only at the same breakpoint: with a prefixed role
+    // (`md:text-display-lg`) the override needs the same prefix (`md:font-normal`). `fontSize` is defined here, not under `extend`, so
+    // Tailwind's raw names (text-xs, text-sm, ...) are not generated: the scale is roles only, and
+    // ESLint (.eslintrc.cjs) rejects the raw names too. Headings in the app stop at `display-sm`;
+    // the `display-lg` pair and `display-xl` are for the landing page (plus the Login glyph and the Progress level number). `micro` is the 11px floor
+    // (chart axis labels, tab labels, status chips).
+    fontSize: {
+      micro: ['0.6875rem', { lineHeight: '0.875rem', letterSpacing: '0.04em', fontWeight: '600' }],
+      caption: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em', fontWeight: '500' }],
+      body: ['0.875rem', { lineHeight: '1.25rem' }],
+      'body-medium': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '500' }],
+      lead: ['1.125rem', { lineHeight: '1.625rem', letterSpacing: '-0.005em', fontWeight: '500' }],
+      'lead-mobile': ['1rem', { lineHeight: '1.5rem', fontWeight: '500' }],
+      'title-md': [
+        '1.25rem',
+        { lineHeight: '1.625rem', letterSpacing: '-0.01em', fontWeight: '600' },
+      ],
+      'title-lg': [
+        '1.5rem',
+        { lineHeight: '1.875rem', letterSpacing: '-0.015em', fontWeight: '700' },
+      ],
+      'display-sm': [
+        '1.875rem',
+        { lineHeight: '2.25rem', letterSpacing: '-0.02em', fontWeight: '700' },
+      ],
+      'display-lg': [
+        '3rem',
+        { lineHeight: '3.25rem', letterSpacing: '-0.03em', fontWeight: '800' },
+      ],
+      'display-lg-mobile': [
+        '2rem',
+        { lineHeight: '2.375rem', letterSpacing: '-0.025em', fontWeight: '800' },
+      ],
+      'display-xl': ['4.5rem', { lineHeight: '1', letterSpacing: '-0.03em', fontWeight: '800' }],
+    },
     extend: {
       colors: {
         paper: themed('paper'),
@@ -32,55 +69,9 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
-      // One size lives below Tailwind's smallest (`xs`, 12px): chart axis labels, tab labels and
-      // status chips. It was spelled `text-[11px]` inline, so the scale had no bottom end written
-      // down; the scale now ends xs → 2xs; the old 10px step was folded into it. A plain
-      // string, not a [size, lineHeight] pair: that emits font-size alone, exactly like the
-      // arbitrary value did, so nothing reflows.
-      // This `extend` adds to the default scale, it does not replace it — text-sm/text-2xl etc.
-      // are untouched.
-      // After `2xs` come the type roles from docs/design/stitch/DESIGN.md. Each carries its own
-      // line-height, tracking and weight, so a role is one class instead of four. Nothing uses
-      // them yet — screens move over in one pass (#57), and `2xs` goes once `micro` replaces it.
-      // Headings in the app stop at `display-sm`; the `display-lg` pair is for the landing page.
-      fontSize: {
-        '2xs': '0.6875rem',
-        micro: [
-          '0.6875rem',
-          { lineHeight: '0.875rem', letterSpacing: '0.04em', fontWeight: '600' },
-        ],
-        caption: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em', fontWeight: '500' }],
-        body: ['0.875rem', { lineHeight: '1.25rem' }],
-        'body-medium': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '500' }],
-        lead: [
-          '1.125rem',
-          { lineHeight: '1.625rem', letterSpacing: '-0.005em', fontWeight: '500' },
-        ],
-        'lead-mobile': ['1rem', { lineHeight: '1.5rem', fontWeight: '500' }],
-        'title-md': [
-          '1.25rem',
-          { lineHeight: '1.625rem', letterSpacing: '-0.01em', fontWeight: '600' },
-        ],
-        'title-lg': [
-          '1.5rem',
-          { lineHeight: '1.875rem', letterSpacing: '-0.015em', fontWeight: '700' },
-        ],
-        'display-sm': [
-          '1.875rem',
-          { lineHeight: '2.25rem', letterSpacing: '-0.02em', fontWeight: '700' },
-        ],
-        'display-lg': [
-          '3rem',
-          { lineHeight: '3.25rem', letterSpacing: '-0.03em', fontWeight: '800' },
-        ],
-        'display-lg-mobile': [
-          '2rem',
-          { lineHeight: '2.375rem', letterSpacing: '-0.025em', fontWeight: '800' },
-        ],
-      },
       // Icon glyph sizes, a scale of their own so icons don't ride the text scale (a type-scale
       // change must not resize icons, nor the reverse). Emitted as `icon-*` by the plugin below.
-      // `md` carries the 1rem line-height `text-xs` had, so icons that used it don't shift.
+      // `md` carries the 1rem line-height the old `text-xs` had, so icons that used it don't shift.
       iconSize: {
         sm: '0.625rem',
         md: ['0.75rem', '1rem'],

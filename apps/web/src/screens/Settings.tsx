@@ -95,7 +95,7 @@ export function SettingsScreen() {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold">Settings</h1>
+      <h1 className="mb-4 text-title-lg font-bold">Settings</h1>
 
       <form
         className="grid gap-3 md:grid-cols-2"
@@ -108,17 +108,17 @@ export function SettingsScreen() {
       >
         <Card>
           <h2 className="mb-3 font-semibold">Profile</h2>
-          <p className="mb-3 text-sm text-muted">{session?.user.email}</p>
+          <p className="mb-3 text-body text-muted">{session?.user.email}</p>
 
-          <label htmlFor="display-name" className="mb-1 block text-sm font-medium">
+          <label htmlFor="display-name" className="mb-1 block text-body font-medium">
             Display name
           </label>
           <input id="display-name" {...register('display_name')} className={fieldClass} />
           {errors.display_name && (
-            <p className="mt-1 text-sm text-alert-ink">{errors.display_name.message}</p>
+            <p className="mt-1 text-body text-alert-ink">{errors.display_name.message}</p>
           )}
 
-          <label htmlFor="timezone" className="mb-1 mt-3 block text-sm font-medium">
+          <label htmlFor="timezone" className="mb-1 mt-3 block text-body font-medium">
             Timezone
           </label>
           <select id="timezone" {...register('timezone')} className={fieldClass}>
@@ -128,7 +128,7 @@ export function SettingsScreen() {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-caption text-muted">
             Sets when your day rolls over for streaks, XP and the daily digest.
           </p>
         </Card>
@@ -145,18 +145,18 @@ export function SettingsScreen() {
             />
           </label>
 
-          <label htmlFor="digest-time" className="mb-1 mt-2 block text-sm font-medium">
+          <label htmlFor="digest-time" className="mb-1 mt-2 block text-body font-medium">
             Digest time
           </label>
           <input id="digest-time" type="time" {...register('digest_time')} className={fieldClass} />
           {errors.digest_time && (
-            <p className="mt-1 text-sm text-alert-ink">{errors.digest_time.message}</p>
+            <p className="mt-1 text-body text-alert-ink">{errors.digest_time.message}</p>
           )}
 
           <label className="mt-3 flex min-h-[44px] items-center justify-between gap-3">
             <span>
               Push reminders
-              <span className="block text-xs text-muted">
+              <span className="block text-caption text-muted">
                 {pushSupported()
                   ? 'A nudge later in the day, only if you have not checked in yet'
                   : 'This browser cannot do web push'}
@@ -192,7 +192,7 @@ export function SettingsScreen() {
 
         <Card>
           <h2 className="mb-3 font-semibold">Preferences</h2>
-          <label htmlFor="stale-days" className="mb-1 block text-sm font-medium">
+          <label htmlFor="stale-days" className="mb-1 block text-body font-medium">
             Call a thread stale after <span className="tabular">{staleDays}</span> days
           </label>
           <input
@@ -204,7 +204,7 @@ export function SettingsScreen() {
             {...register('stale_days', { valueAsNumber: true })}
             className="w-full accent-accent"
           />
-          <p className="text-xs text-muted">Grooming a stale thread is worth 15 ✨.</p>
+          <p className="text-caption text-muted">Grooming a stale thread is worth 15 ✨.</p>
         </Card>
 
         <Button
@@ -220,7 +220,7 @@ export function SettingsScreen() {
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <Card>
           <h2 className="mb-1 font-semibold">Your data</h2>
-          <p className="mb-3 text-sm text-muted">
+          <p className="mb-3 text-body text-muted">
             One JSON file with every area, project, task, log, XP event and badge you own.
           </p>
           <Button variant="ghost" block onClick={exportData} disabled={exporting}>
@@ -230,7 +230,7 @@ export function SettingsScreen() {
 
         <Card>
           <h2 className="mb-1 font-semibold">Account</h2>
-          <p className="mb-3 text-sm text-muted">
+          <p className="mb-3 text-body text-muted">
             Deleting your account removes every row above. It is not self-service yet — email
             support and it is done by hand, after you export.
           </p>

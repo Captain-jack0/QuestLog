@@ -154,10 +154,10 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
         </div>
 
         {!canAddTask && (
-          <label className="flex min-h-[44px] items-center justify-between gap-3 text-sm">
+          <label className="flex min-h-[44px] items-center justify-between gap-3 text-body">
             <span>
               Add as project
-              <span className="block text-xs text-muted">
+              <span className="block text-caption text-muted">
                 No project picked, so this lands in the area as one.
               </span>
             </span>
@@ -172,7 +172,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
         )}
 
         {canAddTask && (
-          <label className="flex min-h-[44px] items-center justify-between gap-3 text-sm">
+          <label className="flex min-h-[44px] items-center justify-between gap-3 text-body">
             <span>Add as project instead</span>
             <input
               type="checkbox"
@@ -187,7 +187,7 @@ export function QuickAddSheet({ open, onClose }: QuickAddSheetProps) {
         <Button type="submit" block disabled={add.isPending}>
           {add.isPending ? 'Saving…' : 'Add'}
         </Button>
-        <p className="text-center text-xs text-muted">
+        <p className="text-center text-caption text-muted">
           Enter saves and keeps the sheet open. Tap outside to close.
         </p>
       </form>

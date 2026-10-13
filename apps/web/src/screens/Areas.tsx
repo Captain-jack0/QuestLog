@@ -21,7 +21,7 @@ export function AreasScreen() {
   return (
     <div>
       <header className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Areas</h1>
+        <h1 className="text-title-lg font-bold">Areas</h1>
         <Button onClick={() => setSheetOpen(true)} className="px-3 py-2">
           + New
         </Button>
@@ -41,9 +41,9 @@ export function AreasScreen() {
         {areas.data?.map((area) => (
           <Link key={area.id} to={`/areas/${area.id}`} className="block">
             <Card edgeColor={area.color} className="h-full pl-5">
-              <div className="text-2xl">{area.icon}</div>
+              <div className="text-title-lg">{area.icon}</div>
               <div className="mt-1 font-semibold leading-tight">{area.name}</div>
-              <div className="mt-1 text-sm text-muted">
+              <div className="mt-1 text-body text-muted">
                 {counts.data?.[area.id] ?? 0} open project
                 {(counts.data?.[area.id] ?? 0) === 1 ? '' : 's'}
               </div>

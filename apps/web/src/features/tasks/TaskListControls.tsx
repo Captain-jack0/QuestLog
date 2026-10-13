@@ -19,7 +19,7 @@ const VIEW_GLYPHS: Record<TaskView, string> = { card: '▦', row: '☰' }
 const VIEW_LABELS: Record<TaskView, string> = { card: 'Card view', row: 'Row view' }
 
 /** Every control in the bar is the same 44px pill; only the selected paint differs. */
-const PILL = 'min-h-[44px] rounded-full px-3 text-xs font-semibold transition'
+const PILL = 'min-h-[44px] rounded-full px-3 text-caption font-semibold transition'
 const IDLE = 'text-muted hover:bg-line/40'
 /**
  * Pressed paint for every chip that is not a status. It says "I am on", not which axis — the
@@ -127,13 +127,13 @@ export function TaskListControls({
             When a filter is on, this line is what turns "my task vanished" into a count and
             a way back. */}
         {filtering && (
-          <p className="flex items-center gap-1 text-xs text-muted">
+          <p className="flex items-center gap-1 text-caption text-muted">
             Showing {totalCount - hiddenCount} of {totalCount}
             <span aria-hidden>·</span>
             <button
               type="button"
               onClick={() => onChange(clearedFilters(prefs))}
-              className="min-h-[44px] rounded-full px-1 text-xs font-semibold text-accent hover:bg-line/40"
+              className="min-h-[44px] rounded-full px-1 text-caption font-semibold text-accent hover:bg-line/40"
             >
               Show all
             </button>
@@ -168,7 +168,7 @@ export function TaskListControls({
                   type="button"
                   aria-pressed={active}
                   onClick={() => !active && onChange({ ...prefs, view })}
-                  className={`min-h-[44px] min-w-[44px] rounded-full text-sm font-semibold transition ${
+                  className={`min-h-[44px] min-w-[44px] rounded-full text-body font-semibold transition ${
                     active ? 'bg-accent/10 text-accent' : IDLE
                   }`}
                 >

@@ -46,7 +46,7 @@ export function ProgressScreen() {
   return (
     <div className="space-y-6 md:mx-auto md:max-w-4xl">
       <header>
-        <h1 className="text-2xl font-bold">Progress</h1>
+        <h1 className="text-title-lg font-bold">Progress</h1>
       </header>
 
       {totalXp.isError || streak.isError ? (
@@ -57,10 +57,10 @@ export function ProgressScreen() {
         <Card>
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-sm text-muted">Level</p>
-              <p className="tabular text-4xl font-bold leading-none">{level}</p>
+              <p className="text-body text-muted">Level</p>
+              <p className="tabular text-display-lg-mobile font-bold leading-none">{level}</p>
             </div>
-            <p className="tabular text-sm text-muted">
+            <p className="tabular text-body text-muted">
               {intoLevel} / {needed} XP to level {level + 1}
             </p>
           </div>
@@ -77,7 +77,7 @@ export function ProgressScreen() {
               style={{ width: `${pct}%` }}
             />
           </div>
-          <div className="mt-3 flex gap-4 text-sm text-muted">
+          <div className="mt-3 flex gap-4 text-body text-muted">
             <span className="tabular">✨ {total} XP total</span>
             <span className="tabular">🔥 {streak.data?.current ?? 0} current</span>
             <span className="tabular">🏔 {streak.data?.best ?? 0} best</span>
@@ -86,7 +86,7 @@ export function ProgressScreen() {
       )}
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Areas</h2>
+        <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">Areas</h2>
         {areas.isPending && <CardSkeleton rows={1} />}
         {areas.isError && (
           <p className="text-flame-ink">Could not load area levels. Pull down to retry.</p>
@@ -98,7 +98,7 @@ export function ProgressScreen() {
           {areas.data?.map((area) => (
             <span
               key={area.area_id}
-              className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-sm shadow-sm"
+              className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-body shadow-sm"
             >
               <span
                 aria-hidden
@@ -107,14 +107,14 @@ export function ProgressScreen() {
               />
               {area.icon} {area.name}
               <span className="tabular font-semibold text-accent">lvl {area.level}</span>
-              <span className="tabular text-xs text-muted">{area.total_xp} XP</span>
+              <span className="tabular text-caption text-muted">{area.total_xp} XP</span>
             </span>
           ))}
         </div>
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+        <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
           XP per week
         </h2>
         {history.isError ? (
@@ -129,7 +129,7 @@ export function ProgressScreen() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+        <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
           Focus time per week
         </h2>
         {focus.isError ? (
@@ -141,7 +141,7 @@ export function ProgressScreen() {
             <div className="flex h-32 items-end gap-1.5">
               {focusWeeks.map((week) => (
                 <div key={week.weekStart} className="flex flex-1 flex-col items-center gap-1">
-                  <span className="tabular text-2xs text-muted">
+                  <span className="tabular text-micro font-normal tracking-normal text-muted">
                     {week.seconds > 0 ? formatMinutes(week.seconds) : ''}
                   </span>
                   <div
@@ -152,13 +152,13 @@ export function ProgressScreen() {
                       height: `${Math.max((week.seconds / focusPeak) * 100, week.seconds > 0 ? 4 : 2)}%`,
                     }}
                   />
-                  <span className="text-2xs leading-none text-muted">
+                  <span className="text-micro leading-none text-muted">
                     {week.label.split(' ')[0]}
                   </span>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-caption text-muted">
               {totalFocus > 0
                 ? `${formatMinutes(totalFocus)} tracked in the last 8 weeks · 10 ✨ per 25 minutes, up to 60 a day`
                 : 'Start a timer on a task to see your focus here.'}
@@ -168,7 +168,7 @@ export function ProgressScreen() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+        <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
           Last {CALENDAR_WEEKS} weeks
         </h2>
         {history.isError ? (
@@ -199,13 +199,15 @@ export function ProgressScreen() {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-muted">One dot per day — filled means you showed up.</p>
+            <p className="mt-2 text-caption text-muted">
+              One dot per day — filled means you showed up.
+            </p>
           </Card>
         )}
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Badges</h2>
+        <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">Badges</h2>
         {badges.isPending && <CardSkeleton rows={1} />}
         {badges.isError && (
           <p className="text-flame-ink">Could not load badges. Pull down to retry.</p>
@@ -215,11 +217,11 @@ export function ProgressScreen() {
             const earned = badge.earned_at !== null
             return (
               <Card key={badge.id} className={earned ? '' : 'opacity-60'}>
-                <div className={`text-2xl ${earned ? '' : 'grayscale'}`}>{badge.icon}</div>
+                <div className={`text-title-lg ${earned ? '' : 'grayscale'}`}>{badge.icon}</div>
                 <p className="mt-1 font-semibold leading-tight">{badge.name}</p>
-                <p className="mt-1 text-xs text-muted">{badge.description}</p>
+                <p className="mt-1 text-caption text-muted">{badge.description}</p>
                 {earned && (
-                  <p className="mt-2 text-xs font-semibold text-success-ink">
+                  <p className="mt-2 text-caption font-semibold text-success-ink">
                     Earned {new Date(badge.earned_at!).toLocaleDateString()}
                   </p>
                 )}

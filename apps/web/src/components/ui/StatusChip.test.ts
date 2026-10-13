@@ -4,7 +4,7 @@ import { ITEM_STATUSES } from '../../lib/schemas'
 import { statusTone } from './StatusChip'
 
 describe('status chip contrast', () => {
-  // Chips are text-2xs (11px), so the large-text 3:1 exception never applies: 4.5:1 everywhere.
+  // Chips are text-micro (11px), so the large-text 3:1 exception never applies: 4.5:1 everywhere.
   for (const [theme, tokens] of Object.entries(themes)) {
     for (const status of ITEM_STATUSES) {
       it(`${status} meets 4.5:1 on a card in the ${theme} theme`, () => {

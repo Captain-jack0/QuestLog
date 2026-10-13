@@ -18,7 +18,7 @@ const labels: Record<ItemType, string> = {
  */
 export function ItemTypeChip({ itemType }: { itemType: ItemType }) {
   return (
-    <span className="shrink-0 whitespace-nowrap rounded-lg border border-line bg-paper px-1.5 py-0.5 text-2xs font-semibold text-muted">
+    <span className="shrink-0 whitespace-nowrap rounded-lg border border-line bg-paper px-1.5 py-0.5 text-micro font-semibold text-muted">
       {labels[itemType]}
     </span>
   )

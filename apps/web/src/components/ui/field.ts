@@ -15,10 +15,10 @@
 const shell = 'rounded-xl border border-line bg-paper focus:border-accent'
 
 /** Stacked field: its own label above, full width, height from vertical padding. */
-export const fieldClass = `w-full ${shell} px-4 py-3 text-base`
+export const fieldClass = `w-full ${shell} px-4 py-3 text-lead-mobile`
 
 /** Field sharing a row with other controls: touch height instead of vertical padding. */
-export const rowFieldClass = `min-h-[44px] ${shell} px-4 text-base`
+export const rowFieldClass = `min-h-[44px] ${shell} px-4 text-lead-mobile`
 
 /** Small select tucked beside other controls in a row. */
-export const compactFieldClass = `min-h-[44px] ${shell} px-3 text-sm`
+export const compactFieldClass = `min-h-[44px] ${shell} px-3 text-body`

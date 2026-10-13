@@ -38,6 +38,18 @@ Bottom tabs:  [Today]  [Areas]  [+ Quick Add]  [Progress]  [Settings]
 ## 3. Visual Design
 
 - **Typography:** Inter (UI) — clean, free, excellent at small sizes. Numbers in tabular figures for XP.
+- **Type roles:** Tailwind's raw size names (`text-xs`, `text-sm`, ...) are not generated and ESLint rejects them; sizes come from roles in `tailwind.config.js` `fontSize`. Each role carries size, line-height, tracking and weight; an explicit `font-*`/`leading-*`/`tracking-*` on the element wins, but only at the same breakpoint: a role used with a prefix (`md:text-display-lg`) re-applies its weight/line-height/tracking inside that media query and beats an unprefixed `font-normal`, so the override needs the same prefix (`md:font-normal md:leading-tight`).
+
+  | Role (`text-…`)                                 | Size / line-height        | Weight  | Use                                              |
+  | ----------------------------------------------- | ------------------------- | ------- | ------------------------------------------------ |
+  | `micro`                                         | 11 / 14                   | 600     | chips, tab labels, chart axes                    |
+  | `caption`                                       | 12 / 16                   | 500     | helper text, meta                                |
+  | `body`, `body-medium`                           | 14 / 20                   | 400/500 | default body                                     |
+  | `lead-mobile`, `lead`                           | 16 / 24, 18 / 26          | 500     | form fields, card titles                         |
+  | `title-md`, `title-lg`                          | 20 / 26, 24 / 30          | 600/700 | screen titles                                    |
+  | `display-sm`                                    | 30 / 36                   | 700     | largest app heading                              |
+  | `display-lg-mobile`, `display-lg`, `display-xl` | 32 / 38, 48 / 52, 72 / 72 | 800     | landing; Login emoji; Progress level (`-mobile`) |
+
 - **Two themes, one set of tokens:** every colour is a CSS variable, switched by `<html data-theme>`. **Quest** (default) is a deep navy night sky with a CSS starfield — the gamified identity; **Calm** is the daylight palette below, for when the tool should disappear. Settings → Appearance switches them instantly.
 - **Palette (calm, one accent):** Background `#FAFAF7` (paper), surface `#FFFFFF`, ink `#1F2933`, muted `#6B7280`, accent **indigo `#5B5BD6`**, success `#2F9E69`, warm highlight for streak flame `#E8833A`. Dark mode later (C2).
 - **Per-area colours:** user-picked from an 8-colour pastel set — used only as thin card edges/dots, so the UI stays quiet.
