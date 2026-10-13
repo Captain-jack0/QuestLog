@@ -30,16 +30,15 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
-      // Two sizes live below Tailwind's smallest (`xs`, 12px): chart axis labels, tab labels,
-      // status chips and inline icons. They were spelled `text-[10px]`/`text-[11px]` inline, so
-      // the scale had no bottom end written down. Named here as a continuation of Tailwind's own
-      // xs → 2xs → 3xs order. Deliberately plain strings, not [size, lineHeight] pairs: that
-      // emits font-size alone, exactly like the arbitrary values did, so nothing reflows.
+      // One size lives below Tailwind's smallest (`xs`, 12px): chart axis labels, tab labels and
+      // status chips. It was spelled `text-[11px]` inline, so the scale had no bottom end written
+      // down; the scale now ends xs → 2xs; the old 10px step was folded into it. A plain
+      // string, not a [size, lineHeight] pair: that emits font-size alone, exactly like the
+      // arbitrary value did, so nothing reflows.
       // This `extend` adds to the default scale, it does not replace it — text-sm/text-2xl etc.
       // are untouched.
       fontSize: {
         '2xs': '0.6875rem',
-        '3xs': '0.625rem',
       },
       // Icon glyph sizes, a scale of their own so icons don't ride the text scale (a type-scale
       // change must not resize icons, nor the reverse). Emitted as `icon-*` by the plugin below.
