@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import type { LifeArea } from '../lib/schemas'
-import { AreaCard, WeeklySplit } from './Areas'
+import { AreaCard, WeeklySplit } from '../features/areas/AreaCard'
 
 const area = { id: 'a1', user_id: 'u1', name: 'Work', color: '#123456', icon: null } as LifeArea
 const oldest = {
