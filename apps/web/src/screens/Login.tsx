@@ -6,6 +6,8 @@ import { z } from 'zod'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import { fieldClass } from '../components/ui/field'
+import { Button } from '../components/ui/Button'
+import { LogoMark } from '../components/Logo'
 
 type Mode = 'signin' | 'signup' | 'magic'
 
@@ -36,6 +38,7 @@ export function LoginScreen() {
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema), shouldUnregister: true })
 
@@ -78,88 +81,118 @@ export function LoginScreen() {
     if (mode === 'magic') setNotice('Magic link sent — check your inbox.')
   }
 
-  return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
-      <div className="mb-8 text-center">
-        <span aria-hidden className="text-display-lg">
-          🧭
-        </span>
-        <h1 className="mt-2 text-display-sm font-bold">QuestLog</h1>
-        <p className="mt-1 text-muted">
-          Never lose the thread again. Log the quest, keep the streak.
-        </p>
-      </div>
+  function switchTo(next: Mode) {
+    setMode(next)
+    setError(null)
+    setNotice(null)
+    // The control that was just pressed may have turned into plain text; keep keyboard focus
+    // in the form instead of letting it fall to <body> (WCAG 2.4.3).
+    setFocus('email')
+  }
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        className="space-y-3 rounded-card bg-surface p-5 shadow-quest"
-      >
-        <div>
-          <label htmlFor="email" className="mb-1 block text-body font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            {...register('email')}
-            className={fieldClass}
-          />
-          {errors.email && <p className="mt-1 text-body text-alert-ink">{errors.email.message}</p>}
+  return (
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10 sm:px-6">
+      <div className="rounded-card border border-line bg-surface-raised p-6 shadow-float sm:p-8">
+        <div className="text-center">
+          {/* The h1 below already says "QuestLog"; the mark is decoration here. */}
+          <span aria-hidden>
+            <LogoMark className="mx-auto h-12 w-12" />
+          </span>
+          <h1 className="mt-4 text-title-lg">QuestLog</h1>
+          <p className="mt-1 text-lead text-muted">Never lose the thread again.</p>
         </div>
 
-        {mode !== 'magic' && (
+        {/* Sign in | Create account. The current mode is plain text, not a button: e2e presses
+            the one button named "Create account" to switch, then the same name again to submit,
+            so only one control may carry that name at a time. Magic link is reached from the
+            link under the form; in that mode both halves are buttons and neither is current. */}
+        <div
+          role="group"
+          aria-label="Account"
+          className="mt-6 grid grid-cols-2 gap-1 rounded-xl border border-line bg-surface-sunken p-1"
+        >
+          {(['signin', 'signup'] as const).map((m) =>
+            m === mode ? (
+              <span
+                key={m}
+                aria-current="true"
+                className="flex min-h-[44px] items-center justify-center rounded-lg border border-line bg-surface-raised text-body-medium font-semibold text-ink"
+              >
+                {labels[m]}
+              </span>
+            ) : (
+              <button
+                key={m}
+                type="button"
+                onClick={() => switchTo(m)}
+                className="link-quiet flex min-h-[44px] items-center justify-center rounded-lg border border-transparent text-body-medium text-muted transition"
+              >
+                {labels[m]}
+              </button>
+            ),
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-6 space-y-4">
           <div>
-            <label htmlFor="password" className="mb-1 block text-body font-medium">
-              Password
+            <label htmlFor="email" className="mb-1.5 block text-micro uppercase text-muted">
+              Email
             </label>
             <input
-              id="password"
-              type="password"
-              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-              {...register('password')}
+              id="email"
+              type="email"
+              autoComplete="email"
+              {...register('email')}
               className={fieldClass}
             />
-            {errors.password && (
-              <p className="mt-1 text-body text-alert-ink">{errors.password.message}</p>
+            {errors.email && (
+              <p className="mt-1 text-body text-alert-ink">{errors.email.message}</p>
             )}
           </div>
-        )}
 
-        {error && (
-          <p role="alert" className="text-body text-alert-ink">
-            {error}
+          {mode !== 'magic' && (
+            <div>
+              <label htmlFor="password" className="mb-1.5 block text-micro uppercase text-muted">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                {...register('password')}
+                className={fieldClass}
+              />
+              {errors.password && (
+                <p className="mt-1 text-body text-alert-ink">{errors.password.message}</p>
+              )}
+            </div>
+          )}
+
+          {error && (
+            <p role="alert" className="text-body text-alert-ink">
+              {error}
+            </p>
+          )}
+          {/* Always mounted so screen readers register the live region before the text lands;
+              sr-only (out of flow) while empty, so it doesn't add a space-y gap of its own. */}
+          <p role="status" className={notice ? 'text-body text-success-ink' : 'sr-only'}>
+            {notice}
           </p>
-        )}
-        {notice && <p className="text-body text-success-ink">{notice}</p>}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-primary min-h-[44px] w-full rounded-xl border border-accent py-3 font-semibold active:scale-[0.99] disabled:opacity-60"
-        >
-          {isSubmitting ? 'Working…' : labels[mode]}
-        </button>
-      </form>
+          <Button type="submit" disabled={isSubmitting} block>
+            {isSubmitting ? 'Working…' : labels[mode]}
+          </Button>
+        </form>
 
-      <div className="mt-6 flex flex-col items-center gap-2 text-body text-muted">
-        {(['signin', 'signup', 'magic'] as const)
-          .filter((m) => m !== mode)
-          .map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => {
-                setMode(m)
-                setError(null)
-                setNotice(null)
-              }}
-              className="min-h-[44px] font-medium text-accent"
-            >
-              {labels[m]}
-            </button>
-          ))}
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => switchTo(mode === 'magic' ? 'signin' : 'magic')}
+            className="link-quiet min-h-[44px] rounded-lg px-3 text-body-medium text-accent-ink transition"
+          >
+            {mode === 'magic' ? 'Use a password instead' : 'Email me a magic link instead'}
+          </button>
+        </div>
       </div>
     </div>
   )

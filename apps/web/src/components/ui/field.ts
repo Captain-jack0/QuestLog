@@ -4,15 +4,16 @@
  * be polymorphic over three element types and forward a ref for every one of them, and it would
  * buy no shared behaviour or markup in return.
  *
- * Background rule: a field is always `bg-paper`, never `bg-surface`. Cards and bottom sheets are
- * `bg-surface`, so `bg-paper` reads as a well sunk into them; on the page itself (body is
- * `bg-paper`) `border-line` still draws the field. The reverse rule would make every field inside
- * a card invisible, which is exactly how Login used to look.
+ * Background rule: a field is always `bg-surface-sunken`, never `bg-surface`. Cards and bottom
+ * sheets are `bg-surface` (or raised), so the sunken plane reads as a well cut into them; on the
+ * page itself it sits a step below the paper, and `border-line` still draws it. In calm, sunken
+ * *is* paper (index.css), so daylight fields look exactly as they did. The reverse rule would make
+ * every field inside a card invisible, which is exactly how Login used to look.
  *
  * Nothing here cancels the outline: the global `:focus-visible` ring in index.css is the focus
  * indicator and `focus-ring.test.ts` guards it. `focus:border-accent` is decoration on top.
  */
-const shell = 'rounded-xl border border-line bg-paper focus:border-accent'
+const shell = 'rounded-xl border border-line bg-surface-sunken focus:border-accent'
 
 /** Stacked field: its own label above, full width, height from vertical padding. */
 export const fieldClass = `w-full ${shell} px-4 py-3 text-lead-mobile`
