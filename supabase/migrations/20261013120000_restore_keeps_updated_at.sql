@@ -15,6 +15,8 @@
 --
 -- Safety: security definer, but executable by service_role only — the restore script runs with
 -- the secret key. The table name is checked against a fixed list before it reaches format(%I).
+-- Rows without updated_at (life_areas in backups older than 20261005120000) are left as the
+-- upsert wrote them: the column is not null and there is nothing to put back.
 -- The flag is transaction-local and lowered before return, as in rpc_snooze.
 
 create function rpc_restore_updated_at(p_table text, p_rows jsonb) returns int
@@ -31,7 +33,8 @@ begin
   execute format(
     'update %I t set updated_at = r.updated_at
        from jsonb_to_recordset($1) as r(id uuid, updated_at timestamptz)
-      where t.id = r.id and t.updated_at is distinct from r.updated_at',
+      where t.id = r.id and r.updated_at is not null
+        and t.updated_at is distinct from r.updated_at',
     p_table) using p_rows;
   -- row_count reads the last SQL statement, so this must come before the set_config below.
   get diagnostics v_count = row_count;

@@ -44,7 +44,10 @@ const headers = {
  */
 async function restoreUpdatedAt(bundle) {
   for (const table of TOUCHED) {
-    const rows = (bundle.tables?.[table] ?? []).map(({ id, updated_at }) => ({ id, updated_at }))
+    // Backups older than the column (life_areas before 20261005120000) have nothing to restore.
+    const rows = (bundle.tables?.[table] ?? [])
+      .filter((row) => row.updated_at)
+      .map(({ id, updated_at }) => ({ id, updated_at }))
     if (rows.length === 0) continue
 
     const response = await fetch(`${url}/rest/v1/rpc/rpc_restore_updated_at`, {
@@ -60,16 +63,20 @@ async function restoreUpdatedAt(bundle) {
 
     const wanted = new Map(rows.map((row) => [row.id, Date.parse(row.updated_at)]))
     const drifted = []
-    for (const chunk of chunks([...wanted.keys()], 200)) {
+    const seen = new Set()
+    // 100 uuids keep the URL well under the 8 KB request-line limit of common gateways.
+    for (const chunk of chunks([...wanted.keys()], 100)) {
       const read = await fetch(
         `${url}/rest/v1/${table}?select=id,updated_at&id=in.(${chunk.join(',')})`,
         { headers },
       )
       if (!read.ok) throw new Error(`${table} verify: HTTP ${read.status}`)
       for (const row of await read.json()) {
+        seen.add(row.id)
         if (Date.parse(row.updated_at) !== wanted.get(row.id)) drifted.push(row.id)
       }
     }
+    for (const id of wanted.keys()) if (!seen.has(id)) drifted.push(id)
     if (drifted.length > 0) {
       throw new Error(`${table}: updated_at differs from the backup for ${drifted.join(', ')}`)
     }
