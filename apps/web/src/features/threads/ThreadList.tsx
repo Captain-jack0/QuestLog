@@ -7,12 +7,12 @@ import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { Icon } from '../../components/ui/Icon'
 import { StatusChip } from '../../components/ui/StatusChip'
-import { ItemTypeChip, itemTypeLabel } from '../../components/ui/ItemTypeChip'
+import { itemTypeLabel } from '../../components/ui/ItemTypeChip'
 import { useToast } from '../../components/ui/Toast'
 import { UpdateStatusSheet, type PendingStatusChange } from '../status/UpdateStatusSheet'
 import { dropChange } from '../status/drop'
 import { useUpdateStatus } from '../status/useUpdateStatus'
-import { relativeTime } from '../../lib/time'
+import { untouchedLabel } from '../../lib/time'
 import { groupThreads } from './groupThreads'
 import { SNOOZE_OPTIONS, useHangingThreads, useSnooze, type HangingThread } from './queries'
 
@@ -36,8 +36,8 @@ export function ThreadList() {
   // An empty list drops its heading with it.
   const { active, parked } = groupThreads(threads.data ?? [])
   const threadSections = [
-    { key: 'active', heading: 'Active', threads: active, showStatus: false },
-    { key: 'parked', heading: 'Paused & blocked', threads: parked, showStatus: true },
+    { key: 'active', heading: 'Active', threads: active },
+    { key: 'parked', heading: 'Paused & blocked', threads: parked },
   ].filter((section) => section.threads.length > 0)
 
   const change = (thread: HangingThread, status: 'done' | 'in_progress') =>
@@ -92,7 +92,6 @@ export function ThreadList() {
               <ThreadCard
                 key={`${thread.item_type}-${thread.item_id}`}
                 thread={thread}
-                showStatus={section.showStatus}
                 dropping={updateStatus.isPending}
                 onDone={() => change(thread, 'done')}
                 onUpdate={() => change(thread, 'in_progress')}
@@ -160,7 +159,6 @@ export function ThreadList() {
 
 interface ThreadCardProps {
   thread: HangingThread
-  showStatus: boolean
   dropping: boolean
   onDone: () => void
   onUpdate: () => void
@@ -168,48 +166,38 @@ interface ThreadCardProps {
   onDrop: () => void
 }
 
-function ThreadCard({
-  thread,
-  showStatus,
-  dropping,
-  onDone,
-  onUpdate,
-  onSnooze,
-  onDrop,
-}: ThreadCardProps) {
+/**
+ * Resume-first: where it stands on top (status, how long it has sat, where it lives), then the
+ * next step as the loudest line, then the task's own title as the way in. The age is plain muted
+ * text — a quiet fact, never a warning colour.
+ */
+function ThreadCard({ thread, dropping, onDone, onUpdate, onSnooze, onDrop }: ThreadCardProps) {
   // Every thread is a task (#44); this says which area and project it belongs to.
   const context = [thread.area_name, thread.project_title].filter(Boolean).join(' · ')
+  // Not when the prose is only the picked task's title: the RPC snapshots the title into
+  // next_step so every other reader still has words to show, and here that would print the same
+  // line twice — the live task link below says it instead.
+  const nextStep =
+    thread.next_step && thread.next_step !== thread.next_step_task_title ? thread.next_step : null
+  const hasNext = Boolean(nextStep || (thread.next_step_task_id && thread.next_step_task_status))
 
   return (
     <Card edgeColor={thread.area_color} className="pl-5">
-      <div className="flex items-start justify-between gap-2">
-        {/* inline-flex, not a bare min-height: min-height does not apply to an inline box, so on
-            an <a> the utility alone would change nothing. `items-start` rather than centring,
-            because a one-line title centred in a 44px box drops ~12px away from the timestamp it
-            sits opposite; this keeps the two tops level and spends the added height below. */}
-        <Link
-          to={`/projects/${thread.project_id}`}
-          className="inline-flex min-h-[44px] items-start font-semibold leading-tight"
-        >
-          {thread.title}
-        </Link>
-        <span className="shrink-0 text-caption text-muted">
-          {relativeTime(thread.last_activity_at)}
-        </span>
-      </div>
-      <p className="flex flex-wrap items-center gap-1.5 text-caption text-muted">
-        <ItemTypeChip itemType={thread.item_type} />
-        {showStatus && <StatusChip status={thread.display_status} />}
-        {context && <span>{context}</span>}
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted">
+        <StatusChip status={thread.display_status} />
+        <span>{untouchedLabel(thread.last_activity_at)}</span>
+        {context && (
+          <>
+            <span aria-hidden>·</span>
+            <span>{context}</span>
+          </>
+        )}
       </p>
 
-      {/* Not when the prose is only the picked task's title: the RPC snapshots the title into
-          next_step so every other reader still has words to show, and here that would print the
-          same line twice. */}
-      {thread.next_step && thread.next_step !== thread.next_step_task_title && (
-        <p className="mt-2 text-body font-medium">
-          <span className="font-normal text-muted">Next: </span>
-          {thread.next_step}
+      {nextStep && (
+        <p className="mt-2 text-lead">
+          <span className="text-muted">Next: </span>
+          {nextStep}
         </p>
       )}
 
@@ -228,7 +216,20 @@ function ThreadCard({
         </p>
       )}
 
-      <div className="mt-3 flex gap-2">
+      {/* The task itself, second to its next step — unless there is no next step, when the title
+          is all there is to resume from and takes the lead size. inline-flex, not a bare
+          min-height: min-height does not apply to an inline box, so on an <a> the utility alone
+          would change nothing. */}
+      <Link
+        to={`/projects/${thread.project_id}`}
+        className={`inline-flex min-h-[44px] items-center ${
+          hasNext ? 'text-body-medium text-muted hover:text-ink' : 'mt-1 text-lead font-semibold'
+        }`}
+      >
+        {thread.title}
+      </Link>
+
+      <div className="mt-2 flex gap-2">
         <Button variant="ghost" className="flex-1 px-2 py-2 text-body" onClick={onDone}>
           <Icon name="check" /> Done
         </Button>

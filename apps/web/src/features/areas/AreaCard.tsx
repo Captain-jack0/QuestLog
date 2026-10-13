@@ -79,7 +79,7 @@ export function AreaCard({
           <p className="text-micro uppercase text-muted">From {oldest.project_title}</p>
           {/* Resume-first: the next step is what the card is for. Without one, the waiting task
               itself is the next thing to pick up. */}
-          <p className="mt-1 text-lead line-clamp-2">{oldest.next_step ?? oldest.title}</p>
+          <p className="mt-1 text-lead line-clamp-2">{oldest.next_step || oldest.title}</p>
           {oldest.left_off && (
             <p className="mt-1 text-caption text-muted line-clamp-2">Left off: {oldest.left_off}</p>
           )}
