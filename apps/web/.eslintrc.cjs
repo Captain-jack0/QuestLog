@@ -22,7 +22,7 @@ module.exports = {
       ].map(([type, prop]) => ({
         selector: `${type}[${prop}=/\\btext-(2xs|xs|sm|base|lg|xl|[2-9]xl)\\b/]`,
         message:
-          'Raw Tailwind text size (text-xs, text-sm, ...). Use a type role: text-micro, caption, body, body-medium, lead, lead-mobile, title-md, title-lg, display-sm, display-lg(-mobile), display-xl.',
+          'Raw Tailwind text size (text-xs, text-sm, ...). Use a type role: text-micro, caption, body, body-medium, lead, lead-mobile, title-md, title-lg, display-sm, display-lg(-mobile).',
       })),
     ],
   },

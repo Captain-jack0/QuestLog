@@ -43,8 +43,8 @@ const FEATURES = [
   {
     icon: 'pi-stopwatch',
     label: 'Timer & pomodoro',
-    title: 'A clock that runs on one thing',
-    body: 'Start a timer or a 25-minute pomodoro on a single task. The database itself refuses a second clock, so there is never a question of what you are on.',
+    title: 'Clocks that stay on the thread',
+    body: 'Start a timer or a 25-minute pomodoro right on a task. Up to three can run side by side, each on its own task or project, so the time lands on the work it was spent on.',
   },
   {
     icon: 'pi-star',
@@ -124,16 +124,18 @@ export function LandingScreen() {
         {/* hero */}
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-caption font-semibold uppercase tracking-[0.16em] text-muted">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-sunken/60 px-3 py-1.5 text-micro uppercase text-muted">
               <i className="pi pi-sparkles icon-sm text-accent" aria-hidden />
               Built for minds that start a lot
             </p>
-            <h1 className="mt-5 font-display text-display-lg font-normal leading-[1.05] md:text-display-xl md:font-normal md:leading-[1.05]">
-              Nothing you started
-              <br />
-              has to disappear
+            {/* Inter at the role's own weight and leading, with no font-/leading- overrides: an
+                unprefixed override would lose to the md: role anyway (see tailwind.config.js).
+                No hard <br>: Inter at 800 is wider than the old serif, so a forced break left a
+                one-word line on phones and in the lg hero column. text-balance evens the wrap. */}
+            <h1 className="mt-5 text-balance text-display-lg-mobile md:text-display-lg">
+              Nothing you started has to disappear
             </h1>
-            <p className="mt-5 max-w-xl text-lead leading-relaxed text-muted">
+            <p className="mt-5 max-w-xl text-lead text-muted">
               QuestLog keeps the thread for every unfinished thing — where you left off, what comes
               next, and how long it has been waiting. So starting five things does not mean losing
               four.
@@ -170,9 +172,7 @@ export function LandingScreen() {
         <section className="border-y border-line bg-ink/5">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-20">
             <div className="mb-8 max-w-2xl">
-              <h2 className="font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
-                This is what you sign in to
-              </h2>
+              <h2 className="text-display-sm">This is what you sign in to</h2>
               <p className="mt-3 text-muted">
                 Have a poke around — the tabs work and the focus items tick off.
               </p>
@@ -183,14 +183,12 @@ export function LandingScreen() {
 
         {/* the problem */}
         <section className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
-          <h2 className="max-w-2xl font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
-            The problem was never motivation
-          </h2>
+          <h2 className="max-w-2xl text-display-sm">The problem was never motivation</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {PROBLEMS.map((item) => (
               <div key={item.title} className="border-t border-line pt-5">
                 <i className={`pi ${item.icon} text-accent`} aria-hidden />
-                <h3 className="mt-3 text-lead font-semibold leading-snug">{item.title}</h3>
+                <h3 className="mt-3 text-title-md">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </div>
             ))}
@@ -200,9 +198,7 @@ export function LandingScreen() {
         {/* how it works */}
         <section id="how" className="border-y border-line bg-ink/5 scroll-mt-20">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
-            <h2 className="font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
-              Three moves
-            </h2>
+            <h2 className="text-display-sm">Three moves</h2>
             <p className="mt-3 max-w-xl text-muted">
               No system to learn, no weekly review to fall behind on.
             </p>
@@ -210,12 +206,13 @@ export function LandingScreen() {
               {STEPS.map((step, i) => (
                 <li key={step.title} className="rounded-card border border-line bg-surface p-6">
                   <span className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-semibold text-accent">
+                    {/* accent-ink, not accent: bright accent on its own 15% tint misses 4.5:1. */}
+                    <span className="tabular flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-semibold text-accent-ink">
                       {i + 1}
                     </span>
                     <i className={`pi ${step.icon} text-muted`} aria-hidden />
                   </span>
-                  <h3 className="mt-4 text-lead font-semibold">{step.title}</h3>
+                  <h3 className="mt-4 text-title-md">{step.title}</h3>
                   <p className="mt-2 leading-relaxed text-muted">{step.body}</p>
                 </li>
               ))}
@@ -225,9 +222,7 @@ export function LandingScreen() {
 
         {/* features */}
         <section id="features" className="mx-auto max-w-6xl px-5 py-16 scroll-mt-20 lg:py-24">
-          <h2 className="max-w-2xl font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
-            The thread is the product
-          </h2>
+          <h2 className="max-w-2xl text-display-sm">The thread is the product</h2>
           <p className="mt-3 max-w-xl text-muted">
             Not another list of things you are failing to do. A place where stopping is part of the
             workflow.
@@ -239,10 +234,8 @@ export function LandingScreen() {
                 className="card-hover rounded-card border border-line bg-surface p-6"
               >
                 <i className={`pi ${item.icon} text-accent`} aria-hidden />
-                <p className="mt-3 text-caption font-semibold uppercase tracking-[0.15em] text-muted">
-                  {item.label}
-                </p>
-                <h3 className="mt-1 text-lead font-semibold leading-snug">{item.title}</h3>
+                <p className="mt-3 text-micro uppercase text-muted">{item.label}</p>
+                <h3 className="mt-1 text-title-md">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </article>
             ))}
@@ -253,7 +246,7 @@ export function LandingScreen() {
         <section className="border-t border-line bg-ink/5">
           <div className="mx-auto max-w-3xl px-5 py-20 text-center lg:py-28">
             <LogoMark className="mx-auto h-10 w-10" />
-            <h2 className="mt-6 font-display text-display-lg-mobile font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
+            <h2 className="mt-6 text-display-lg-mobile md:text-display-lg">
               Pick the thread back up
             </h2>
             <p className="mx-auto mt-4 max-w-md text-muted">

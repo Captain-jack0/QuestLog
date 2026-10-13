@@ -101,7 +101,7 @@ export function AppPreview() {
               onClick={() => openTab(item.to)}
               aria-pressed={tab === item.to}
               className={`link-quiet flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-body transition sm:flex-none ${
-                tab === item.to ? 'bg-accent/10 font-semibold text-accent' : 'text-muted'
+                tab === item.to ? 'bg-accent/10 font-semibold text-accent-ink' : 'text-muted'
               }`}
             >
               <span className="text-lead-mobile leading-none" aria-hidden>
@@ -121,13 +121,13 @@ export function AppPreview() {
                   <i className="pi pi-bolt mr-1 icon-sm" aria-hidden />
                   12-day streak
                 </span>
-                <span className="rounded-full bg-accent/10 px-3 py-1 text-caption font-semibold text-accent">
+                <span className="rounded-full bg-accent/10 px-3 py-1 text-caption font-semibold text-accent-ink">
                   <i className="pi pi-star-fill mr-1 icon-sm" aria-hidden />
                   48 XP today
                 </span>
               </div>
 
-              <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted">
+              <p className="mb-2 text-micro uppercase text-muted">
                 Today&apos;s focus — tap to tick off
               </p>
               <div className="mb-5 space-y-2">
@@ -157,21 +157,29 @@ export function AppPreview() {
                 ))}
               </div>
 
-              <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted">
-                Hanging threads
-              </p>
+              <p className="mb-2 text-micro uppercase text-muted">Hanging threads</p>
+              {/* Resume-first, as the real cards are headed: the area as a micro label over a
+                  4px area strip, the next step as the loudest line, the title beneath it. */}
               <div className="space-y-2">
                 {HANGING.slice(0, 3).map((thread) => (
-                  <div key={thread.id} className="rounded-xl border border-line p-3">
+                  <div
+                    key={thread.id}
+                    className="relative overflow-hidden rounded-xl border border-line py-3 pl-4 pr-3"
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute inset-y-0 left-0 w-1"
+                      style={{ backgroundColor: thread.areaColour }}
+                    />
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-medium leading-tight">{thread.title}</span>
+                      <span className="text-micro uppercase text-muted">{thread.areaName}</span>
                       <span className="shrink-0 text-caption text-muted">{thread.waited}</span>
                     </div>
-                    <p className="text-caption text-muted">{thread.areaName}</p>
-                    <p className="mt-2 text-body">
+                    <p className="mt-1 text-lead">
                       <span className="text-muted">Next: </span>
                       {thread.nextStep}
                     </p>
+                    <p className="mt-1 text-body text-muted">{thread.title}</p>
                   </div>
                 ))}
               </div>
@@ -232,13 +240,18 @@ export function AppPreview() {
                       key={item.id}
                       type="button"
                       onClick={() => setProjectId(item.id)}
-                      className="card-hover block w-full rounded-xl border border-line p-3 text-left"
+                      className="card-hover relative block w-full overflow-hidden rounded-xl border border-line py-3 pl-4 pr-3 text-left"
                     >
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-0 left-0 w-1"
+                        style={{ backgroundColor: area.colour }}
+                      />
                       <div className="flex items-start justify-between gap-2">
-                        <span className="font-medium leading-tight">{item.title}</span>
+                        <span className="text-body-medium">{item.title}</span>
                         <StatusChip status={item.status} />
                       </div>
-                      <p className="mt-2 text-body">
+                      <p className="mt-2 text-lead">
                         <span className="text-muted">Next: </span>
                         {item.nextStep}
                       </p>
@@ -276,14 +289,10 @@ export function AppPreview() {
               </div>
 
               <div className="mt-4 rounded-xl border border-line p-4">
-                <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-                  Where you left off
-                </p>
+                <p className="text-micro uppercase text-muted">Where you left off</p>
                 <p className="mt-1 leading-snug">{project.leftOff}</p>
-                <p className="mt-3 text-caption font-semibold uppercase tracking-wide text-muted">
-                  Next step
-                </p>
-                <p className="mt-1 font-medium leading-snug text-accent">{project.nextStep}</p>
+                <p className="mt-3 text-micro uppercase text-muted">Next step</p>
+                <p className="mt-1 text-lead">{project.nextStep}</p>
                 <p className="mt-3 text-caption text-muted">last touched {project.waited} ago</p>
               </div>
 
@@ -292,9 +301,7 @@ export function AppPreview() {
                   number the app would actually show. Only the label keeps the preview's
                   smaller type scale, matching the section headings around it. */}
               <div className="mb-2 mt-4 flex items-center justify-between gap-2">
-                <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-                  Tasks
-                </p>
+                <p className="text-micro uppercase text-muted">Tasks</p>
                 <span className="text-caption text-muted">
                   {progress.done}/{progress.total} done
                 </span>
@@ -311,7 +318,7 @@ export function AppPreview() {
                   summary keeps the preview's own type scale; only the behaviour is borrowed. */}
               {closedTasks.length > 0 && (
                 <details className="mt-3">
-                  <summary className="cursor-pointer text-caption font-semibold uppercase tracking-wide text-muted">
+                  <summary className="cursor-pointer text-micro uppercase text-muted">
                     Closed ({closedTasks.length})
                   </summary>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">{closedTasks.map(taskCard)}</div>
@@ -338,9 +345,7 @@ export function AppPreview() {
                 </div>
               </div>
 
-              <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted">
-                XP per week
-              </p>
+              <p className="mb-2 text-micro uppercase text-muted">XP per week</p>
               <div className="flex h-24 items-end gap-1.5">
                 {WEEKS.map((height, i) => (
                   <div
