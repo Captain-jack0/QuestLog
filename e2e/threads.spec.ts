@@ -144,7 +144,9 @@ test('threads filter by area and search, and say when nothing matches', async ({
     await waiting.getByRole('link', { name: harbor.task }).click()
     await page.getByRole('radio', { name: `Status for ${harbor.task}: Done` }).click()
     await page.getByRole('button', { name: /Mark as done/i }).click()
-    await expect(page.getByRole('radio', { name: `Status for ${harbor.task}: Done` })).toBeChecked()
+    // Done moves the row into the collapsed Closed bucket, out of the accessibility tree, so the
+    // visible counter is what proves the write landed.
+    await expect(page.getByText('0 open · 1 closed')).toBeVisible()
 
     await goThreads()
     await expect(waiting.getByRole('link', { name: harbor.task })).toHaveCount(0)
