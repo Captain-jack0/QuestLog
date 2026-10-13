@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path to public, extensions;
 
-select plan(7);
+select plan(19);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'istanbul@example.com'),
@@ -64,6 +64,77 @@ select ok(
 select is(
   (select (digest_payload('11111111-1111-1111-1111-111111111111') ->> 'threads')::text),
   '[]', 'no hanging threads yields an empty array, not null');
+
+-- #44: threads are tasks only, carry their status, and the limit is five per heading
+-- (in_progress = Active; paused + blocked = Paused & blocked), oldest first.
+insert into auth.users (id, email) values
+  ('44444444-4444-4444-4444-444444444444', 'busy@example.com');
+insert into projects (id, user_id, title, status) values
+  ('44440000-0000-0000-0000-000000000001', '44444444-4444-4444-4444-444444444444',
+   'A project in progress', 'in_progress');
+-- 7 in progress, 4 paused and 3 blocked; task N is N days old, so lower N = newer.
+insert into tasks (user_id, project_id, title, status, updated_at)
+select '44444444-4444-4444-4444-444444444444', '44440000-0000-0000-0000-000000000001',
+       s || '-' || n, s::item_status, now() - make_interval(days => n)
+  from (select 'in_progress' as s, n from generate_series(1, 7) n
+        union all select 'paused', n from generate_series(11, 14) n
+        union all select 'blocked', n from generate_series(21, 23) n) seed;
+
+create temp table busy as
+  select e from json_array_elements(digest_payload('44444444-4444-4444-4444-444444444444') -> 'threads') e;
+
+select is((select count(*)::int from busy where e ->> 'status' = 'in_progress'), 5,
+          'five in-progress threads, not seven');
+select is((select count(*)::int from busy where e ->> 'status' in ('paused', 'blocked')), 5,
+          'and five more paused/blocked: the limit counts per heading');
+select ok(not exists (select 1 from busy where e ->> 'status' is null),
+          'every thread carries its status');
+select is((select array_agg(e ->> 'title' order by e ->> 'title') from busy where e ->> 'status' = 'in_progress'),
+          array['in_progress-3', 'in_progress-4', 'in_progress-5', 'in_progress-6', 'in_progress-7'],
+          'the oldest five of a heading are the ones kept');
+select is((select array_agg(e ->> 'title' order by e ->> 'title') from busy where e ->> 'status' <> 'in_progress'),
+          array['blocked-21', 'blocked-22', 'blocked-23', 'paused-13', 'paused-14'],
+          'paused and blocked share one heading and one limit');
+select ok(not exists (select 1 from busy where e ->> 'title' = 'A project in progress'),
+          'an in-progress project is not a thread: only tasks are');
+
+-- #44 follow-up: an in_progress task under a project paused (or blocked) on purpose is grouped
+-- with the parked work by display_status; its own status is not touched.
+insert into auth.users (id, email) values
+  ('55555555-5555-5555-5555-555555555555', 'held@example.com');
+insert into projects (id, user_id, title, status) values
+  ('55550000-0000-0000-0000-000000000001', '55555555-5555-5555-5555-555555555555', 'Moving', 'in_progress'),
+  ('55550000-0000-0000-0000-000000000002', '55555555-5555-5555-5555-555555555555', 'Held', 'paused'),
+  ('55550000-0000-0000-0000-000000000003', '55555555-5555-5555-5555-555555555555', 'Stuck', 'blocked');
+-- 3 moving in_progress; 4 in_progress under the paused project, 2 under the blocked one.
+insert into tasks (user_id, project_id, title, status, updated_at)
+select '55555555-5555-5555-5555-555555555555', p, t || '-' || n, 'in_progress', now() - make_interval(days => n)
+  from (select '55550000-0000-0000-0000-000000000001'::uuid as p, 'moving' as t, n from generate_series(1, 3) n
+        union all select '55550000-0000-0000-0000-000000000002', 'held', n from generate_series(11, 14) n
+        union all select '55550000-0000-0000-0000-000000000003', 'stuck', n from generate_series(21, 22) n) seed;
+
+select is((select array_agg(display_status::text order by title) from v_hanging_threads
+            where user_id = '55555555-5555-5555-5555-555555555555'
+              and title in ('moving-1', 'held-11', 'stuck-21')),
+          array['paused', 'in_progress', 'blocked'],
+          'display_status takes the project''s paused/blocked over an in_progress task');
+
+create temp table held as
+  select e from json_array_elements(digest_payload('55555555-5555-5555-5555-555555555555') -> 'threads') e;
+
+select is((select array_agg(e ->> 'title' order by e ->> 'title') from held where e ->> 'display_status' = 'in_progress'),
+          array['moving-1', 'moving-2', 'moving-3'],
+          'only tasks of a moving project are Active');
+select is((select count(*)::int from held where e ->> 'display_status' in ('paused', 'blocked')), 5,
+          'the six held/stuck tasks share the parked heading and its limit of five');
+select is((select array_agg(e ->> 'title' order by e ->> 'title') from held where e ->> 'display_status' <> 'in_progress'),
+          array['held-12', 'held-13', 'held-14', 'stuck-21', 'stuck-22'],
+          'the oldest five of the parked heading are kept');
+select ok(not exists (select 1 from held where e ->> 'status' <> 'in_progress'),
+          'the payload still carries every task''s real status: in_progress');
+select is((select count(*)::int from tasks
+            where user_id = '55555555-5555-5555-5555-555555555555' and status = 'in_progress'), 9,
+          'no task''s own status was changed');
 
 select * from finish();
 rollback;
