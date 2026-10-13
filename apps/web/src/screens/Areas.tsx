@@ -11,7 +11,7 @@ import { threadsByArea } from '../features/areas/areaSummary'
 import { useAreas, useCreateArea } from '../features/areas/queries'
 import { useAreaStats } from '../features/gamification/queries'
 import { useOpenProjectCounts } from '../features/projects/queries'
-import { useAreaThreads } from '../features/threads/queries'
+import { useAllThreads } from '../features/threads/queries'
 import { useAreaFocus } from '../features/timer/queries'
 
 export function AreasScreen() {
@@ -22,7 +22,7 @@ export function AreasScreen() {
   const areas = useAreas()
   const counts = useOpenProjectCounts()
   const stats = useAreaStats()
-  const threads = useAreaThreads()
+  const threads = useAllThreads()
   const focus = useAreaFocus()
   const createArea = useCreateArea(session?.user.id)
 
