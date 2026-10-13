@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Logo, LogoMark } from '../components/Logo'
+import { Icon, type IconName } from '../components/ui/Icon'
 import { BrainScene } from './landing/BrainScene'
 import { AppPreview } from './landing/AppPreview'
 
@@ -9,76 +10,76 @@ import { AppPreview } from './landing/AppPreview'
  * door in.
  */
 
-const PROBLEMS = [
+const PROBLEMS: { icon: IconName; title: string; body: string }[] = [
   {
-    icon: 'pi-search',
+    icon: 'search',
     title: 'You started it. Where did it go?',
     body: 'Three tabs, two notebooks, one half-written message. The work exists; the thread back to it does not.',
   },
   {
-    icon: 'pi-clock',
+    icon: 'schedule',
     title: 'Restarting costs more than the work',
     body: 'Twenty minutes of "what was I even doing" before the first real minute of doing it.',
   },
   {
-    icon: 'pi-chart-bar',
+    icon: 'bar_chart',
     title: 'Finishing nothing feels like doing nothing',
     body: 'Plenty happened today. None of it looks like progress — not from outside, and not from inside either.',
   },
 ]
 
-const FEATURES = [
+const FEATURES: { icon: IconName; label: string; title: string; body: string }[] = [
   {
-    icon: 'pi-bookmark',
+    icon: 'bookmark',
     label: 'Resume context',
     title: 'Every thread remembers two things',
     body: 'Where you left off, and the next step. Written once when you stop, waiting exactly there when you come back. No re-reading, no re-deciding.',
   },
   {
-    icon: 'pi-flag',
+    icon: 'flag',
     label: 'Today',
     title: 'Three things, not thirty',
     body: 'Pick up to three for today. Everything else stays visible but quiet, sorted by whatever has been waiting longest.',
   },
   {
-    icon: 'pi-stopwatch',
+    icon: 'timer',
     label: 'Timer & pomodoro',
     title: 'Clocks that stay on the thread',
     body: 'Start a timer or a 25-minute pomodoro right on a task. Up to three can run side by side, each on its own task or project, so the time lands on the work it was spent on.',
   },
   {
-    icon: 'pi-star',
+    icon: 'star',
     label: 'XP, streaks, badges',
     title: 'Credit for keeping the thread',
     body: 'Logging where you left off earns as much as finishing. The reward lands on the behaviour that actually keeps you moving.',
   },
   {
-    icon: 'pi-bell',
+    icon: 'notifications',
     label: 'Digest & nudges',
     title: 'A morning email, not a wall of red',
     body: 'What is waiting, with its next step, once a day. An evening nudge only if the day went by without a single check-in.',
   },
   {
-    icon: 'pi-lock',
+    icon: 'lock',
     label: 'Yours',
     title: 'Export everything, any time',
     body: 'One button gives you every row as JSON. Row-level security means nobody sees your log but you — not even by accident.',
   },
 ]
 
-const STEPS = [
+const STEPS: { icon: IconName; title: string; body: string }[] = [
   {
-    icon: 'pi-plus',
+    icon: 'add',
     title: 'Drop it in',
     body: 'One field, ten seconds, from any screen. It lands in an area you already have.',
   },
   {
-    icon: 'pi-pause',
+    icon: 'pause',
     title: 'Stop out loud',
     body: 'When you put something down, say where you left off and what comes next. That is the whole discipline.',
   },
   {
-    icon: 'pi-replay',
+    icon: 'replay',
     title: 'Pick it back up',
     body: 'Today shows the oldest waiting threads with their next step. You start working, not remembering.',
   },
@@ -125,7 +126,7 @@ export function LandingScreen() {
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-sunken/60 px-3 py-1.5 text-micro uppercase text-muted">
-              <i className="pi pi-sparkles icon-sm text-accent" aria-hidden />
+              <Icon name="stars" className="icon-md text-accent" />
               Built for minds that start a lot
             </p>
             {/* Inter at the role's own weight and leading, with no font-/leading- overrides: an
@@ -147,7 +148,7 @@ export function LandingScreen() {
                 className="btn-primary flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold transition"
               >
                 Start your log
-                <i className="pi pi-arrow-right icon-md" aria-hidden />
+                <Icon name="arrow_forward" className="icon-lg" />
               </Link>
               <Link
                 to="/login"
@@ -187,7 +188,7 @@ export function LandingScreen() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {PROBLEMS.map((item) => (
               <div key={item.title} className="border-t border-line pt-5">
-                <i className={`pi ${item.icon} text-accent`} aria-hidden />
+                <Icon name={item.icon} className="icon-xl text-accent" />
                 <h3 className="mt-3 text-title-md">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </div>
@@ -210,7 +211,7 @@ export function LandingScreen() {
                     <span className="tabular flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-semibold text-accent-ink">
                       {i + 1}
                     </span>
-                    <i className={`pi ${step.icon} text-muted`} aria-hidden />
+                    <Icon name={step.icon} className="icon-xl text-muted" />
                   </span>
                   <h3 className="mt-4 text-title-md">{step.title}</h3>
                   <p className="mt-2 leading-relaxed text-muted">{step.body}</p>
@@ -233,7 +234,7 @@ export function LandingScreen() {
                 key={item.label}
                 className="card-hover rounded-card border border-line bg-surface p-6"
               >
-                <i className={`pi ${item.icon} text-accent`} aria-hidden />
+                <Icon name={item.icon} className="icon-xl text-accent" />
                 <p className="mt-3 text-micro uppercase text-muted">{item.label}</p>
                 <h3 className="mt-1 text-title-md">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
@@ -258,7 +259,7 @@ export function LandingScreen() {
               className="btn-primary mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold transition"
             >
               Start your log
-              <i className="pi pi-arrow-right icon-md" aria-hidden />
+              <Icon name="arrow_forward" className="icon-lg" />
             </Link>
           </div>
         </section>
@@ -308,11 +309,8 @@ export function LandingScreen() {
             <p className="text-body font-semibold">Elsewhere</p>
             <ul className="mt-3 space-y-2 text-body text-muted">
               <li>
-                <a
-                  href="https://github.com/Captain-jack0/QuestLog"
-                  className="inline-flex items-center gap-2 hover:text-ink"
-                >
-                  <i className="pi pi-github icon-md" aria-hidden />
+                {/* No mark: Material Symbols carries no brand logos, and the words say it. */}
+                <a href="https://github.com/Captain-jack0/QuestLog" className="hover:text-ink">
                   Source on GitHub
                 </a>
               </li>
@@ -321,7 +319,7 @@ export function LandingScreen() {
                   href="mailto:hello@captainmery.com"
                   className="inline-flex items-center gap-2 hover:text-ink"
                 >
-                  <i className="pi pi-envelope icon-md" aria-hidden />
+                  <Icon name="mail" className="icon-lg" />
                   hello@captainmery.com
                 </a>
               </li>

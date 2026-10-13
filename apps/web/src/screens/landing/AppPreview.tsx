@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NAV_ITEMS } from '../../components/navigation'
+import { Icon } from '../../components/ui/Icon'
 import { ProgressBar } from '../../components/ui/ProgressBar'
 import { StatusChip } from '../../components/ui/StatusChip'
 import { taskProgress } from '../../features/tasks/taskOrder'
@@ -18,8 +19,9 @@ import { AREAS, HANGING, type PreviewTask } from './previewData'
  * landing page's visual language.
  */
 
-/** The app's real tabs, minus Settings — the preview has no settings screen to show. */
-const TABS = NAV_ITEMS.filter((item) => item.to !== '/settings')
+/** The app's real tabs, only those the preview has a screen for (no Threads, no Settings). */
+const PREVIEWED = ['/', '/areas', '/progress']
+const TABS = NAV_ITEMS.filter((item) => PREVIEWED.includes(item.to))
 
 const WEEKS = [40, 65, 30, 80, 55, 95, 70, 100]
 
@@ -104,9 +106,7 @@ export function AppPreview() {
                 tab === item.to ? 'bg-accent/10 font-semibold text-accent-ink' : 'text-muted'
               }`}
             >
-              <span className="text-lead-mobile leading-none" aria-hidden>
-                {item.icon}
-              </span>
+              <Icon name={item.icon} className="icon-lg" />
               {item.label}
             </button>
           ))}
@@ -118,11 +118,11 @@ export function AppPreview() {
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <h3 className="mr-auto text-lead font-semibold">Welcome back, Captain</h3>
                 <span className="rounded-full bg-flame/10 px-3 py-1 text-caption font-semibold text-flame-ink">
-                  <i className="pi pi-bolt mr-1 icon-sm" aria-hidden />
+                  <Icon name="bolt" className="mr-1 icon-md" />
                   12-day streak
                 </span>
                 <span className="rounded-full bg-accent/10 px-3 py-1 text-caption font-semibold text-accent-ink">
-                  <i className="pi pi-star-fill mr-1 icon-sm" aria-hidden />
+                  <Icon name="star" className="mr-1 icon-md" />
                   48 XP today
                 </span>
               </div>
@@ -138,14 +138,11 @@ export function AppPreview() {
                     onClick={() => toggle(thread.title)}
                     className="card-hover flex w-full items-center gap-3 rounded-xl border border-line px-3 py-2 text-left"
                   >
-                    <i
-                      className={`pi ${
-                        done.includes(thread.title)
-                          ? 'pi-check-circle text-success'
-                          : 'pi-circle text-muted'
-                      }`}
-                      aria-hidden
-                    />
+                    {done.includes(thread.title) ? (
+                      <Icon name="check_circle" className="icon-lg text-success" />
+                    ) : (
+                      <Icon name="radio_button_unchecked" className="icon-lg text-muted" />
+                    )}
                     <span
                       className={
                         done.includes(thread.title) ? 'text-muted line-through' : 'font-medium'
@@ -203,7 +200,7 @@ export function AppPreview() {
                       className="absolute inset-y-0 left-0 w-1"
                       style={{ backgroundColor: item.colour }}
                     />
-                    <i className={`pi ${item.icon} text-accent`} aria-hidden />
+                    <Icon name={item.icon} className="icon-lg text-accent" />
                     <p className="mt-2 font-semibold leading-tight">{item.name}</p>
                     <p className="text-caption text-muted">
                       {item.projects.length} project{item.projects.length === 1 ? '' : 's'}
@@ -221,11 +218,11 @@ export function AppPreview() {
                 onClick={() => setAreaId(null)}
                 className="link-quiet -ml-2 mb-3 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-body text-muted"
               >
-                <i className="pi pi-arrow-left icon-sm" aria-hidden />
+                <Icon name="arrow_back" className="icon-md" />
                 Areas
               </button>
               <h3 className="text-lead font-semibold">
-                <i className={`pi ${area.icon} mr-2 text-accent`} aria-hidden />
+                <Icon name={area.icon} className="mr-2 text-accent" />
                 {area.name}
               </h3>
               <p className="mb-4 text-caption text-muted">
@@ -275,7 +272,7 @@ export function AppPreview() {
                 onClick={() => setProjectId(null)}
                 className="link-quiet -ml-2 mb-3 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-body text-muted"
               >
-                <i className="pi pi-arrow-left icon-sm" aria-hidden />
+                <Icon name="arrow_back" className="icon-md" />
                 {area.name}
               </button>
 
@@ -283,7 +280,7 @@ export function AppPreview() {
                 <h3 className="mr-auto text-lead font-semibold leading-tight">{project.title}</h3>
                 <StatusChip status={project.status} />
                 <span className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1 text-caption font-semibold text-muted">
-                  <i className="pi pi-stopwatch icon-sm" aria-hidden />
+                  <Icon name="timer" className="icon-md" />
                   25m
                 </span>
               </div>
@@ -362,7 +359,7 @@ export function AppPreview() {
                     key={badge}
                     className="rounded-full border border-line px-3 py-1 text-caption font-semibold"
                   >
-                    <i className="pi pi-verified mr-1 icon-sm text-success" aria-hidden />
+                    <Icon name="verified" className="mr-1 icon-md text-success" />
                     {badge}
                   </span>
                 ))}
