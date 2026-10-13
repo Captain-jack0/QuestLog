@@ -84,7 +84,7 @@ export function TimerBar() {
       aria-expanded={expanded}
       aria-label={expanded ? 'Stack the timers' : `Show all ${cards.length} timers`}
       onClick={toggle}
-      className="absolute -right-2 -top-2 min-h-[24px] min-w-[24px] rounded-full border border-ink/55 bg-accent px-1.5 text-xs font-semibold text-paper"
+      className="absolute -right-2 -top-2 min-h-[24px] min-w-[24px] rounded-full border border-ink/55 bg-accent px-1.5 text-caption font-semibold text-paper"
     >
       {expanded ? '−' : `+${hidden}`}
     </button>
@@ -151,7 +151,7 @@ function PomodoroQuestion({
 
   return (
     <BottomSheet open onClose={() => {}} title="Did your pomodoro keep going?">
-      <p className="mb-4 text-sm text-muted">
+      <p className="mb-4 text-body text-muted">
         {name ? `🍅 ${name} — ` : '🍅 '}the app lost sight of it at {lastSeen}, likely when the
         screen locked.
       </p>
@@ -198,10 +198,10 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
         style={{ backgroundColor: timer.area_color ?? 'rgb(var(--accent))' }}
       />
       {/* Each line is a name that truncates and a clock that does not: `min-w-0` lets the
-          name give way, `shrink-0` keeps the digits whole. Two lines of `text-sm` + `text-xs`
+          name give way, `shrink-0` keeps the digits whole. Two lines of `text-body` + `text-caption`
           is the height the bar already had, so it sits where it sat above the tab bar. */}
       <div className="min-w-0 flex-1">
-        <p className="flex items-baseline gap-2 text-sm font-semibold">
+        <p className="flex items-baseline gap-2 text-body font-semibold">
           <Link to={`/projects/${timer.project_id}`} className="min-w-0 flex-1 truncate">
             {timer.project_title}
           </Link>
@@ -211,7 +211,7 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
           </span>
         </p>
         {(seconds.task !== null || pomodoro) && (
-          <p className="flex items-baseline gap-2 text-xs text-muted">
+          <p className="flex items-baseline gap-2 text-caption text-muted">
             {seconds.task !== null && (
               <span className="min-w-0 flex-1 truncate">{timer.task_title}</span>
             )}
@@ -234,7 +234,7 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
       </div>
       <Button
         variant="ghost"
-        className="shrink-0 px-3 py-2 text-sm"
+        className="shrink-0 px-3 py-2 text-body"
         disabled={stopping}
         onClick={onStop}
       >

@@ -65,7 +65,7 @@ export function PickerList({
                 {option.label}
                 {option.current && ' · here now'}
               </span>
-              {option.hint && <span className="text-xs text-muted">{option.hint}</span>}
+              {option.hint && <span className="text-caption text-muted">{option.hint}</span>}
             </button>
           </li>
         ))}

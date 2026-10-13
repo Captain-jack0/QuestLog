@@ -32,7 +32,7 @@ function PriorityMark({ priority, className = '' }: { priority: Priority; classN
   const mark = PRIORITY_MARKS[priority]
   if (!mark) return null
   return (
-    <span className={`shrink-0 text-2xs leading-none ${mark.className} ${className}`}>
+    <span className={`shrink-0 text-micro leading-none ${mark.className} ${className}`}>
       <span aria-hidden>{mark.glyph}</span>
       <span className="sr-only">{PRIORITY_LABELS[priority]} priority</span>
     </span>
@@ -42,7 +42,7 @@ function PriorityMark({ priority, className = '' }: { priority: Priority; classN
 /** The bare enum letter fits the width budget; the label it stands for goes to the reader. */
 function DifficultyLetter({ difficulty }: { difficulty: Difficulty }) {
   return (
-    <span className="shrink-0 text-2xs font-semibold text-muted">
+    <span className="shrink-0 text-micro font-semibold text-muted">
       <span aria-hidden>{difficulty}</span>
       <span className="sr-only">Difficulty: {DIFFICULTY_LABELS[difficulty]}</span>
     </span>
@@ -131,7 +131,7 @@ export function TaskItem({
 
         <DifficultyLetter difficulty={task.difficulty} />
 
-        <span className="hidden shrink-0 text-2xs text-muted sm:inline">
+        <span className="hidden shrink-0 text-micro text-muted sm:inline">
           {relativeTime(task.updated_at)}
         </span>
 
@@ -173,7 +173,7 @@ export function TaskItem({
         value={task.description ?? ''}
         disabled={pending}
         onSave={(description) => onUpdate({ description })}
-        className="mt-1 flex-1 text-sm text-muted"
+        className="mt-1 flex-1 text-body text-muted"
       />
 
       <div className="mt-2">
@@ -192,7 +192,7 @@ export function TaskItem({
           aria-label={`Move ${task.title} to another project`}
           disabled={pending}
           onClick={onMove}
-          className="btn-quiet min-h-[44px] rounded-full border border-line px-2 text-xs font-semibold text-muted disabled:opacity-40"
+          className="btn-quiet min-h-[44px] rounded-full border border-line px-2 text-caption font-semibold text-muted disabled:opacity-40"
         >
           ⇄ Move
         </button>
@@ -200,7 +200,7 @@ export function TaskItem({
             banked on this task. Minutes, not mm:ss — this is a summary, and the live count is
             TimerBar's job. */}
         {focusSeconds ? (
-          <span className="ml-auto shrink-0 text-2xs text-muted">
+          <span className="ml-auto shrink-0 text-micro text-muted">
             <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
             <span className="sr-only">{formatMinutes(focusSeconds)} focused so far</span>
           </span>

@@ -44,16 +44,16 @@ export function AreaDetailScreen() {
 
   return (
     <div>
-      <Link to="/areas" className="text-sm font-medium text-muted">
+      <Link to="/areas" className="text-body font-medium text-muted">
         ← Areas
       </Link>
 
       <header className="mb-4 mt-2 flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-title-lg font-bold">
             {area.data?.icon} {area.data?.name ?? 'Area'}
           </h1>
-          <p className="text-sm text-muted">
+          <p className="text-body text-muted">
             {projects.data?.length ?? 0} project{projects.data?.length === 1 ? '' : 's'}
           </p>
         </div>
@@ -122,7 +122,7 @@ export function AreaDetailScreen() {
                 </div>
                 <div className="mt-auto">
                   {view.showNext && stat?.nextStep && (
-                    <p className="mt-2 text-sm line-clamp-1">
+                    <p className="mt-2 text-body line-clamp-1">
                       <span className="text-muted">Next: </span>
                       {stat.nextStep}
                     </p>
@@ -145,14 +145,14 @@ export function AreaDetailScreen() {
                           />
                         </div>
                       )}
-                      {view.label && <p className="mt-1 text-xs text-muted">{view.label}</p>}
+                      {view.label && <p className="mt-1 text-caption text-muted">{view.label}</p>}
                     </div>
                   )}
                   {/* Outside `showStats`: a project with no tasks can still have time clocked on
                       it. Plain `text-muted` with no fade on a Done card, for the reason given
                       for "Completed" above. */}
                   {focusSeconds ? (
-                    <p className="mt-1 text-xs text-muted">
+                    <p className="mt-1 text-caption text-muted">
                       <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
                       <span className="sr-only">{formatMinutes(focusSeconds)} focused</span>
                     </p>

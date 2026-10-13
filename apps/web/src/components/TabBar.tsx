@@ -16,7 +16,7 @@ export function TabBar({ onQuickAdd }: { onQuickAdd: () => void }) {
           type="button"
           aria-label="Quick add"
           onClick={onQuickAdd}
-          className="btn-primary flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full border-2 border-accent text-2xl shadow-lg active:scale-95"
+          className="btn-primary flex h-12 w-12 -translate-y-3 items-center justify-center rounded-full border-2 border-accent text-title-lg shadow-lg active:scale-95"
         >
           +
         </button>
@@ -34,12 +34,12 @@ function Tab({ to, label, icon }: { to: string; label: string; icon: string }) {
       to={to}
       end={to === '/'}
       className={({ isActive }) =>
-        `flex min-h-[44px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 text-2xs ${
-          isActive ? 'font-semibold text-accent' : 'text-muted'
+        `flex min-h-[44px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 text-micro ${
+          isActive ? 'font-semibold text-accent' : 'font-normal text-muted'
         }`
       }
     >
-      <span className="text-lg leading-none">{icon}</span>
+      <span className="text-lead leading-none">{icon}</span>
       <span className="mt-0.5">{label}</span>
     </NavLink>
   )

@@ -52,7 +52,7 @@ export function ResumeCard({
             setEditing(false)
           }}
         >
-          <label htmlFor="resume-left-off" className="text-sm font-semibold text-muted">
+          <label htmlFor="resume-left-off" className="text-body font-semibold text-muted">
             Where you left off
           </label>
           <textarea
@@ -64,7 +64,10 @@ export function ResumeCard({
             className={`mt-1 ${fieldClass}`}
           />
 
-          <label htmlFor="resume-next-step" className="mt-3 block text-sm font-semibold text-muted">
+          <label
+            htmlFor="resume-next-step"
+            className="mt-3 block text-body font-semibold text-muted"
+          >
             Next step
           </label>
           <textarea
@@ -83,7 +86,7 @@ export function ResumeCard({
               Cancel
             </Button>
           </div>
-          <p className="mt-2 text-xs text-muted">Saving keeps the old note in History.</p>
+          <p className="mt-2 text-caption text-muted">Saving keeps the old note in History.</p>
         </form>
       </div>
     )
@@ -92,14 +95,14 @@ export function ResumeCard({
   return (
     <div className={BAND_CLASS}>
       <div className="flex items-start justify-between gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+        <h2 className="text-body font-semibold uppercase tracking-wide text-muted">
           Where you left off
         </h2>
         <button
           type="button"
           aria-label="Edit resume context"
           onClick={() => setEditing(true)}
-          className="-mt-1 min-h-[44px] rounded-lg px-2 text-sm font-semibold text-accent"
+          className="-mt-1 min-h-[44px] rounded-lg px-2 text-body font-semibold text-accent"
         >
           ✎ Edit
         </button>
@@ -107,12 +110,12 @@ export function ResumeCard({
 
       {loggedAt ? (
         <>
-          <p className="mt-1 text-lg leading-snug">{leftOff || '—'}</p>
-          <h2 className="mt-4 text-sm font-semibold uppercase tracking-wide text-muted">
+          <p className="mt-1 text-lead leading-snug">{leftOff || '—'}</p>
+          <h2 className="mt-4 text-body font-semibold uppercase tracking-wide text-muted">
             Next step
           </h2>
-          <p className="mt-1 text-lg font-medium leading-snug">{nextStep || '—'}</p>
-          <p className="mt-3 text-xs text-muted">
+          <p className="mt-1 text-lead font-medium leading-snug">{nextStep || '—'}</p>
+          <p className="mt-3 text-caption text-muted">
             {relativeTime(loggedAt)}
             {fromAi && ' · via AI'}
           </p>

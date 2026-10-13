@@ -81,10 +81,10 @@ export function LoginScreen() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6">
       <div className="mb-8 text-center">
-        <span aria-hidden className="text-5xl">
+        <span aria-hidden className="text-display-lg">
           🧭
         </span>
-        <h1 className="mt-2 text-3xl font-bold">QuestLog</h1>
+        <h1 className="mt-2 text-display-sm font-bold">QuestLog</h1>
         <p className="mt-1 text-muted">
           Never lose the thread again. Log the quest, keep the streak.
         </p>
@@ -96,7 +96,7 @@ export function LoginScreen() {
         className="space-y-3 rounded-card bg-surface p-5 shadow-quest"
       >
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium">
+          <label htmlFor="email" className="mb-1 block text-body font-medium">
             Email
           </label>
           <input
@@ -106,12 +106,12 @@ export function LoginScreen() {
             {...register('email')}
             className={fieldClass}
           />
-          {errors.email && <p className="mt-1 text-sm text-alert-ink">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-body text-alert-ink">{errors.email.message}</p>}
         </div>
 
         {mode !== 'magic' && (
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium">
+            <label htmlFor="password" className="mb-1 block text-body font-medium">
               Password
             </label>
             <input
@@ -122,17 +122,17 @@ export function LoginScreen() {
               className={fieldClass}
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-alert-ink">{errors.password.message}</p>
+              <p className="mt-1 text-body text-alert-ink">{errors.password.message}</p>
             )}
           </div>
         )}
 
         {error && (
-          <p role="alert" className="text-sm text-alert-ink">
+          <p role="alert" className="text-body text-alert-ink">
             {error}
           </p>
         )}
-        {notice && <p className="text-sm text-success-ink">{notice}</p>}
+        {notice && <p className="text-body text-success-ink">{notice}</p>}
 
         <button
           type="submit"
@@ -143,7 +143,7 @@ export function LoginScreen() {
         </button>
       </form>
 
-      <div className="mt-6 flex flex-col items-center gap-2 text-sm text-muted">
+      <div className="mt-6 flex flex-col items-center gap-2 text-body text-muted">
         {(['signin', 'signup', 'magic'] as const)
           .filter((m) => m !== mode)
           .map((m) => (

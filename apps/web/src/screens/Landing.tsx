@@ -93,26 +93,26 @@ export function LandingScreen() {
           <nav className="flex items-center gap-1">
             <a
               href="#how"
-              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
+              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-body text-muted sm:flex"
             >
               How it works
             </a>
             <a
               href="#features"
-              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
+              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-body text-muted sm:flex"
             >
               Features
             </a>
             <Link
               to="/login"
-              className="link-quiet flex min-h-[44px] items-center rounded-xl px-3 text-sm font-semibold text-muted"
+              className="link-quiet flex min-h-[44px] items-center rounded-xl px-3 text-body font-semibold text-muted"
             >
               Sign in
             </Link>
             <Link
               to="/login"
               state={{ mode: 'signup' }}
-              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-sm font-semibold transition"
+              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-body font-semibold transition"
             >
               Start free
             </Link>
@@ -124,16 +124,16 @@ export function LandingScreen() {
         {/* hero */}
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-caption font-semibold uppercase tracking-[0.16em] text-muted">
               <i className="pi pi-sparkles icon-sm text-accent" aria-hidden />
               Built for minds that start a lot
             </p>
-            <h1 className="mt-5 font-display text-5xl leading-[1.05] md:text-7xl">
+            <h1 className="mt-5 font-display text-display-lg font-normal leading-[1.05] md:text-display-xl md:font-normal md:leading-[1.05]">
               Nothing you started
               <br />
               has to disappear
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            <p className="mt-5 max-w-xl text-lead leading-relaxed text-muted">
               QuestLog keeps the thread for every unfinished thing — where you left off, what comes
               next, and how long it has been waiting. So starting five things does not mean losing
               four.
@@ -154,7 +154,9 @@ export function LandingScreen() {
                 Sign in
               </Link>
             </div>
-            <p className="mt-4 text-sm text-muted">Free · works offline · installs to your phone</p>
+            <p className="mt-4 text-body text-muted">
+              Free · works offline · installs to your phone
+            </p>
           </div>
 
           <BrainScene />
@@ -168,7 +170,7 @@ export function LandingScreen() {
         <section className="border-y border-line bg-ink/5">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-20">
             <div className="mb-8 max-w-2xl">
-              <h2 className="font-display text-3xl leading-tight md:text-5xl">
+              <h2 className="font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
                 This is what you sign in to
               </h2>
               <p className="mt-3 text-muted">
@@ -181,14 +183,14 @@ export function LandingScreen() {
 
         {/* the problem */}
         <section className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
-          <h2 className="max-w-2xl font-display text-3xl leading-tight md:text-5xl">
+          <h2 className="max-w-2xl font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
             The problem was never motivation
           </h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {PROBLEMS.map((item) => (
               <div key={item.title} className="border-t border-line pt-5">
                 <i className={`pi ${item.icon} text-accent`} aria-hidden />
-                <h3 className="mt-3 text-lg font-semibold leading-snug">{item.title}</h3>
+                <h3 className="mt-3 text-lead font-semibold leading-snug">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </div>
             ))}
@@ -198,7 +200,9 @@ export function LandingScreen() {
         {/* how it works */}
         <section id="how" className="border-y border-line bg-ink/5 scroll-mt-20">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
-            <h2 className="font-display text-3xl leading-tight md:text-5xl">Three moves</h2>
+            <h2 className="font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
+              Three moves
+            </h2>
             <p className="mt-3 max-w-xl text-muted">
               No system to learn, no weekly review to fall behind on.
             </p>
@@ -211,7 +215,7 @@ export function LandingScreen() {
                     </span>
                     <i className={`pi ${step.icon} text-muted`} aria-hidden />
                   </span>
-                  <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
+                  <h3 className="mt-4 text-lead font-semibold">{step.title}</h3>
                   <p className="mt-2 leading-relaxed text-muted">{step.body}</p>
                 </li>
               ))}
@@ -221,7 +225,7 @@ export function LandingScreen() {
 
         {/* features */}
         <section id="features" className="mx-auto max-w-6xl px-5 py-16 scroll-mt-20 lg:py-24">
-          <h2 className="max-w-2xl font-display text-3xl leading-tight md:text-5xl">
+          <h2 className="max-w-2xl font-display text-display-sm font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
             The thread is the product
           </h2>
           <p className="mt-3 max-w-xl text-muted">
@@ -235,10 +239,10 @@ export function LandingScreen() {
                 className="card-hover rounded-card border border-line bg-surface p-6"
               >
                 <i className={`pi ${item.icon} text-accent`} aria-hidden />
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.15em] text-muted">
+                <p className="mt-3 text-caption font-semibold uppercase tracking-[0.15em] text-muted">
                   {item.label}
                 </p>
-                <h3 className="mt-1 text-lg font-semibold leading-snug">{item.title}</h3>
+                <h3 className="mt-1 text-lead font-semibold leading-snug">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </article>
             ))}
@@ -249,7 +253,7 @@ export function LandingScreen() {
         <section className="border-t border-line bg-ink/5">
           <div className="mx-auto max-w-3xl px-5 py-20 text-center lg:py-28">
             <LogoMark className="mx-auto h-10 w-10" />
-            <h2 className="mt-6 font-display text-4xl leading-tight md:text-6xl">
+            <h2 className="mt-6 font-display text-display-lg-mobile font-normal leading-tight md:text-display-lg md:font-normal md:leading-tight">
               Pick the thread back up
             </h2>
             <p className="mx-auto mt-4 max-w-md text-muted">
@@ -271,15 +275,15 @@ export function LandingScreen() {
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <Logo />
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
+            <p className="mt-3 max-w-xs text-body leading-relaxed text-muted">
               A log for people who start more than they finish. Every thread keeps its own answer to
               “where was I?”
             </p>
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Product</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <p className="text-body font-semibold">Product</p>
+            <ul className="mt-3 space-y-2 text-body text-muted">
               <li>
                 <a href="#how" className="hover:text-ink">
                   How it works
@@ -299,8 +303,8 @@ export function LandingScreen() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Your data</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <p className="text-body font-semibold">Your data</p>
+            <ul className="mt-3 space-y-2 text-body text-muted">
               <li>Export as JSON, any time</li>
               <li>Row-level security per account</li>
               <li>Nightly off-site backups</li>
@@ -308,8 +312,8 @@ export function LandingScreen() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Elsewhere</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <p className="text-body font-semibold">Elsewhere</p>
+            <ul className="mt-3 space-y-2 text-body text-muted">
               <li>
                 <a
                   href="https://github.com/Captain-jack0/QuestLog"
@@ -333,7 +337,7 @@ export function LandingScreen() {
         </div>
 
         <div className="border-t border-line">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-muted">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-body text-muted">
             <span>© {new Date().getFullYear()} QuestLog</span>
             <Link to="/login" className="font-semibold hover:text-ink">
               Sign in

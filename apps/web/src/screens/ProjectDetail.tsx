@@ -53,7 +53,7 @@ import {
 } from '../lib/schemas'
 
 /** Same summary as the History section below, so the two collapsibles read as one pattern. */
-const SUMMARY_CLASS = 'cursor-pointer text-sm font-semibold uppercase tracking-wide text-muted'
+const SUMMARY_CLASS = 'cursor-pointer text-body font-semibold uppercase tracking-wide text-muted'
 
 export function ProjectDetailScreen() {
   const { projectId = '' } = useParams()
@@ -215,7 +215,7 @@ export function ProjectDetailScreen() {
           to keep level. */}
       <Link
         to={`/areas/${project.data.area_id ?? ''}`}
-        className="inline-flex min-h-[44px] items-center text-sm font-medium text-muted"
+        className="inline-flex min-h-[44px] items-center text-body font-medium text-muted"
       >
         ← {area.data?.name ?? 'Area'}
       </Link>
@@ -234,7 +234,7 @@ export function ProjectDetailScreen() {
       <Card className="mb-6 mt-2">
         <header>
           <div className="flex items-start justify-between gap-3">
-            <h1 className="text-2xl font-bold leading-tight">{project.data.title}</h1>
+            <h1 className="text-title-lg font-bold leading-tight">{project.data.title}</h1>
             <span className="flex shrink-0 gap-2">
               <Button variant="ghost" className="px-3 py-2" onClick={() => setMovingProject(true)}>
                 Move
@@ -244,7 +244,7 @@ export function ProjectDetailScreen() {
               </Button>
             </span>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-body">
             {area.data && (
               <span className="flex items-center gap-1 text-muted">
                 <span
@@ -280,7 +280,7 @@ export function ProjectDetailScreen() {
             />
           </div>
           {project.data.description && (
-            <p className="mt-2 text-sm text-muted">{project.data.description}</p>
+            <p className="mt-2 text-body text-muted">{project.data.description}</p>
           )}
         </header>
 
@@ -309,7 +309,7 @@ export function ProjectDetailScreen() {
             against; on the page background they were paper on paper. Same pairing the task
             cards already use. */}
         <div className="mt-4 border-t border-line pt-4">
-          <p className="mb-2 text-sm font-medium">Project status</p>
+          <p className="mb-2 text-body font-medium">Project status</p>
           <StatusPicker
             label="Project status"
             value={project.data.status}
@@ -320,8 +320,8 @@ export function ProjectDetailScreen() {
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Tasks</h2>
-          <span className="text-xs text-muted">
+          <h2 className="text-body font-semibold uppercase tracking-wide text-muted">Tasks</h2>
+          <span className="text-caption text-muted">
             {progress.done}/{progress.total} done
           </span>
         </div>
@@ -455,7 +455,7 @@ export function ProjectDetailScreen() {
         <ol className="mt-3 space-y-3 border-l border-line pl-4">
           {logs.data?.map((log) => (
             <li key={log.id}>
-              <p className="text-xs text-muted">
+              <p className="text-caption text-muted">
                 {relativeTime(log.created_at)}
                 {log.source === 'ai' && (
                   <span className="ml-2 rounded-full bg-accent/10 px-2 py-0.5 font-semibold text-accent">
@@ -463,14 +463,14 @@ export function ProjectDetailScreen() {
                   </span>
                 )}
               </p>
-              {log.left_off && <p className="text-sm">{log.left_off}</p>}
+              {log.left_off && <p className="text-body">{log.left_off}</p>}
               {log.next_step && (
-                <p className="text-sm">
+                <p className="text-body">
                   <span className="text-muted">Next: </span>
                   {log.next_step}
                 </p>
               )}
-              {log.note && <p className="text-sm italic text-muted">{log.note}</p>}
+              {log.note && <p className="text-body italic text-muted">{log.note}</p>}
             </li>
           ))}
         </ol>

@@ -44,7 +44,7 @@ export function ThemePicker() {
               style={{ backgroundImage: option.swatch }}
             />
             <span className="mt-2 block font-semibold">{option.label}</span>
-            <span className="block text-xs text-muted">{option.hint}</span>
+            <span className="block text-caption text-muted">{option.hint}</span>
           </button>
         )
       })}

@@ -43,15 +43,15 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
     <BottomSheet open={open} onClose={onClose} title={area ? 'Edit area' : 'New area'}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
-          <label htmlFor="area-name" className="mb-1 block text-sm font-medium">
+          <label htmlFor="area-name" className="mb-1 block text-body font-medium">
             Name
           </label>
           <input id="area-name" autoFocus {...register('name')} className={fieldClass} />
-          {errors.name && <p className="mt-1 text-sm text-alert-ink">{errors.name.message}</p>}
+          {errors.name && <p className="mt-1 text-body text-alert-ink">{errors.name.message}</p>}
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Icon</legend>
+          <legend className="mb-2 text-body font-medium">Icon</legend>
           <div className="flex flex-wrap gap-2">
             {AREA_ICONS.map((option) => (
               <button
@@ -59,7 +59,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
                 type="button"
                 aria-pressed={icon === option}
                 onClick={() => setValue('icon', option, { shouldDirty: true })}
-                className={`h-11 w-11 rounded-xl text-xl ${
+                className={`h-11 w-11 rounded-xl text-title-md ${
                   icon === option ? 'bg-accent/10 ring-2 ring-accent' : 'bg-paper'
                 }`}
               >
@@ -70,7 +70,7 @@ export function AreaSheet({ open, area, onClose, onSubmit, onArchive, saving }: 
         </fieldset>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Colour</legend>
+          <legend className="mb-2 text-body font-medium">Colour</legend>
           <div className="flex flex-wrap gap-2">
             {AREA_COLORS.map((option) => (
               <button
