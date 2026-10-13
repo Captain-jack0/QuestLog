@@ -125,7 +125,7 @@ export function LandingScreen() {
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
-              <i className="pi pi-sparkles text-3xs text-accent" aria-hidden />
+              <i className="pi pi-sparkles icon-sm text-accent" aria-hidden />
               Built for minds that start a lot
             </p>
             <h1 className="mt-5 font-display text-5xl leading-[1.05] md:text-7xl">
@@ -145,7 +145,7 @@ export function LandingScreen() {
                 className="btn-primary flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold text-accent transition"
               >
                 Start your log
-                <i className="pi pi-arrow-right text-xs" aria-hidden />
+                <i className="pi pi-arrow-right icon-md" aria-hidden />
               </Link>
               <Link
                 to="/login"
@@ -261,7 +261,7 @@ export function LandingScreen() {
               className="btn-primary mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold text-accent transition"
             >
               Start your log
-              <i className="pi pi-arrow-right text-xs" aria-hidden />
+              <i className="pi pi-arrow-right icon-md" aria-hidden />
             </Link>
           </div>
         </section>
@@ -315,7 +315,7 @@ export function LandingScreen() {
                   href="https://github.com/Captain-jack0/QuestLog"
                   className="inline-flex items-center gap-2 hover:text-ink"
                 >
-                  <i className="pi pi-github text-xs" aria-hidden />
+                  <i className="pi pi-github icon-md" aria-hidden />
                   Source on GitHub
                 </a>
               </li>
@@ -324,7 +324,7 @@ export function LandingScreen() {
                   href="mailto:hello@captainmery.com"
                   className="inline-flex items-center gap-2 hover:text-ink"
                 >
-                  <i className="pi pi-envelope text-xs" aria-hidden />
+                  <i className="pi pi-envelope icon-md" aria-hidden />
                   hello@captainmery.com
                 </a>
               </li>
