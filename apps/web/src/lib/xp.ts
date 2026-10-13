@@ -23,3 +23,11 @@ export const XP = {
   pickFocus: 5,
   groomStale: 15,
 } as const
+
+/** Focus XP a day can earn: 10 per finished 25-minute block, capped at 60 (finish_time_entry,
+ *  20261011130000_timer_heartbeat.sql). Keep in sync with that function. */
+export const FOCUS_XP_DAILY_CAP = 60
+
+/** The focus_time share of a day's XP rows — the part FOCUS_XP_DAILY_CAP limits. */
+export const focusXpTotal = (rows: { xp: number; action_type: string }[]) =>
+  rows.filter((row) => row.action_type === 'focus_time').reduce((sum, row) => sum + row.xp, 0)

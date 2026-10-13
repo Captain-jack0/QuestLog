@@ -3,9 +3,12 @@ export function ProgressBar({
   total,
   tone = 'accent',
   full = false,
+  label = `${done} of ${total} tasks done`,
 }: {
   done: number
   total: number
+  /** What the bar measures, for screen readers. Tasks unless told otherwise. */
+  label?: string
   /** Fill colour. 'success' marks a finished project (StatusChip.tsx uses the same token). */
   tone?: 'accent' | 'success'
   /** Draw the fill at 100% regardless of done/total — a done project whose tasks weren't all
@@ -20,7 +23,7 @@ export function ProgressBar({
       aria-valuenow={pct}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label={`${done} of ${total} tasks done`}
+      aria-label={label}
       className="h-1 w-full overflow-hidden rounded-full bg-line/50"
     >
       <div

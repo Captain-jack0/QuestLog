@@ -18,6 +18,20 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible()
   })
 
+  await test.step('the tab bar holds the five places; Quick add is up top', async () => {
+    const tabs = page.getByRole('navigation', { name: 'Main' })
+    await expect(tabs.getByRole('link')).toHaveText([
+      'Today',
+      'Threads',
+      'Areas',
+      'Progress',
+      'Settings',
+    ])
+    // The old raised "+" tab is gone: nothing in the bar but the five links.
+    await expect(tabs.getByRole('button')).toHaveCount(0)
+    await expect(page.getByRole('banner').getByRole('button', { name: 'Quick add' })).toBeVisible()
+  })
+
   await test.step('create an area', async () => {
     await page.getByRole('link', { name: 'Areas' }).click()
     await page.getByRole('button', { name: '+ New' }).click()

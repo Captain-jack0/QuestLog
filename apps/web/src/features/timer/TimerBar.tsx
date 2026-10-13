@@ -1,7 +1,9 @@
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
+import { Icon } from '../../components/ui/Icon'
 import { onPageWake } from '../../lib/pageWake'
 import type { AwaitingPomodoro } from './autoStop'
 import { formatDuration, pomodoroPhase } from './pomodoro'
@@ -10,15 +12,18 @@ import { timerDeck } from './stack'
 import { timerBarSeconds } from './totals'
 
 /**
- * The running clocks, pinned above the tab bar so they are visible from every screen. Elapsed
- * time is derived from started_at on every tick, so a sleeping tab cannot drift.
+ * The running clocks, visible from every screen: pinned above the tab bar on a phone, and
+ * `docked` at the foot of the desktop rail as its Focus deck. Elapsed time is derived from
+ * started_at on every tick, so a sleeping tab cannot drift.
  *
  * Up to three clocks run at once (issue #45). Closed, they sit as a deck: the newest whole on
  * top, the others as edges peeking out above it, and a "+N" badge — one card tall, so the tab
  * bar stays clear. A tap on the deck opens it into a list where every card has its own Stop;
  * another tap closes it.
+ *
+ * Mount it once (App.tsx picks the place): it also runs the timer heartbeat.
  */
-export function TimerBar() {
+export function TimerBar({ docked = false }: { docked?: boolean }) {
   const running = useRunningTimer()
   const stop = useStopTimer()
   const safetyNet = useTimerSafetyNet(running.data ?? [])
@@ -49,18 +54,28 @@ export function TimerBar() {
   }, [hidden])
 
   // The awaiting pomodoro is off v_running_timers, so it may be the only clock: ask either way.
+  // Portalled to the body: docked, this component lives inside the sticky rail, whose stacking
+  // context would otherwise trap the sheet's z-index under the top bar.
   const awaiting = safetyNet.awaiting
-  const question = awaiting && (
-    <PomodoroQuestion
-      key={awaiting.id}
-      pomodoro={awaiting}
-      busy={safetyNet.answering}
-      onAnswer={(continued) => safetyNet.answer(awaiting.id, continued)}
-    />
-  )
+  const question =
+    awaiting &&
+    createPortal(
+      <PomodoroQuestion
+        key={awaiting.id}
+        pomodoro={awaiting}
+        busy={safetyNet.answering}
+        onAnswer={(continued) => safetyNet.answer(awaiting.id, continued)}
+      />,
+      document.body,
+    )
 
   if (!ticking) return question || null
 
+  // Docked: in flow at the rail's foot. Otherwise 64px clears the tab bar (56px) with a gap, and
+  // the inset keeps it off the home indicator the tab bar pads for.
+  const placement = docked
+    ? 'border-t border-line p-3'
+    : 'fixed inset-x-0 bottom-[calc(64px_+_env(safe-area-inset-bottom))] z-20 px-4'
   const expanded = open && hidden > 0
   const toggle = () => setOpen((o) => !o)
   // The card's own link and Stop keep their meaning; a tap anywhere else on it is a tap on the
@@ -93,10 +108,13 @@ export function TimerBar() {
   return (
     <>
       {question}
-      <section
-        aria-label="Running timers"
-        className="fixed inset-x-0 bottom-[72px] z-20 px-4 md:bottom-4 md:left-auto md:right-4 md:w-80 md:px-0"
-      >
+      <section aria-label="Running timers" className={placement}>
+        {/* mb-3, not less: the deck's back edges and the "+N" badge rise ~10px above the card. */}
+        {docked && (
+          <p className="mb-3 flex items-center gap-1.5 text-micro uppercase text-muted">
+            <Icon name="timer" className="icon-md" /> Focus deck
+          </p>
+        )}
         {expanded ? (
           <ul className="mx-auto flex max-w-md flex-col gap-2">
             {cards.map((timer, i) => (
@@ -114,7 +132,7 @@ export function TimerBar() {
                   key={timer.id}
                   aria-hidden
                   onClick={toggle}
-                  className="absolute inset-0 rounded-card border border-line bg-surface shadow-quest"
+                  className="absolute inset-0 rounded-card border border-line bg-surface-raised"
                   style={{
                     transform: `translateY(-${(i + 1) * 5}px) scale(${1 - (i + 1) * 0.04})`,
                   }}
@@ -188,9 +206,11 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
   const seconds = timerBarSeconds(timer, elapsed)
 
   return (
+    // Raised plane, hairline, and the accent glow that says "running" — Calm swaps the glow for
+    // a ring through the token (index.css).
     <div
       onClick={onClick}
-      className="relative flex items-center gap-3 rounded-card bg-surface p-3 shadow-quest"
+      className="relative flex items-center gap-3 rounded-card border border-line bg-surface-raised p-3 shadow-glow-accent"
     >
       <span
         aria-hidden
