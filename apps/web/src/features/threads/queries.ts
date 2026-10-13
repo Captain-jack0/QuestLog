@@ -50,6 +50,37 @@ export function useHangingThreads() {
   })
 }
 
+export interface AreaThread {
+  area_id: string | null
+  project_id: string
+  project_title: string
+  title: string
+  left_off: string | null
+  next_step: string | null
+  last_activity_at: string
+}
+
+/**
+ * The same view, slimmer and without Today's 20-row cut: the Areas cards count every waiting
+ * thread per area, and a cut taken oldest-first would leave a busy user's newer areas at zero.
+ * Under the `threads` prefix, so everything that refreshes Today's list refreshes this too.
+ * ponytail: 1000 is config.toml's max_rows; a count-per-area RPC is the upgrade past that.
+ */
+export function useAreaThreads() {
+  return useQuery({
+    queryKey: [...threadKeys.all, 'by-area'],
+    queryFn: async (): Promise<AreaThread[]> => {
+      const { data, error } = await supabase
+        .from('v_hanging_threads')
+        .select('area_id, project_id, project_title, title, left_off, next_step, last_activity_at')
+        .order('last_activity_at', { ascending: true })
+        .limit(1000)
+      if (error) throw error
+      return data as unknown as AreaThread[]
+    },
+  })
+}
+
 export const SNOOZE_OPTIONS = [
   { label: '3 days', days: 3 },
   { label: '1 week', days: 7 },

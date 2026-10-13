@@ -10,7 +10,9 @@ import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
+import { LevelRing } from '../features/areas/LevelRing'
 import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/queries'
+import { useAreaStats } from '../features/gamification/queries'
 import { projectCardView } from '../features/projects/cardView'
 import { orderProjects } from '../features/projects/projectOrder'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
@@ -25,6 +27,7 @@ export function AreaDetailScreen() {
   const toast = useToast()
 
   const area = useArea(areaId)
+  const areaXp = useAreaStats().data?.find((s) => s.area_id === areaId)?.total_xp
   const projects = useProjects(areaId)
   // Server order is "least recently touched first" for every row; the grid keeps that for open
   // projects and sends done / dropped ones to the end (projectOrder.ts).
@@ -51,13 +54,16 @@ export function AreaDetailScreen() {
       </Link>
 
       <header className="mb-4 mt-2 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-title-lg font-bold">
-            {area.data?.icon} {area.data?.name ?? 'Area'}
-          </h1>
-          <p className="text-body text-muted">
-            {projects.data?.length ?? 0} project{projects.data?.length === 1 ? '' : 's'}
-          </p>
+        <div className="flex items-center gap-3">
+          {areaXp !== undefined && <LevelRing totalXp={areaXp} />}
+          <div>
+            <h1 className="text-title-lg font-bold">
+              {area.data?.icon} {area.data?.name ?? 'Area'}
+            </h1>
+            <p className="text-body text-muted">
+              {projects.data?.length ?? 0} project{projects.data?.length === 1 ? '' : 's'}
+            </p>
+          </div>
         </div>
         <Button variant="ghost" className="px-3 py-2" onClick={() => setAreaSheet(true)}>
           Edit
@@ -94,7 +100,7 @@ export function AreaDetailScreen() {
             <Card
               key={project.id}
               edgeColor={isDone ? 'rgb(var(--success))' : area.data?.color}
-              className="aspect-square pl-5"
+              className="h-full pl-5"
             >
               {/* Done cards fade via a local opacity on the title and the progress bar only —
                   never on the Card itself. A card-wide opacity composites every pixel in it
@@ -112,7 +118,7 @@ export function AreaDetailScreen() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <span
-                    className={`font-semibold leading-tight line-clamp-2 ${
+                    className={`text-body font-semibold line-clamp-2 ${
                       isDone
                         ? 'text-ink opacity-75 line-through transition group-hover:opacity-100 group-focus-within:opacity-100'
                         : ''
@@ -123,11 +129,12 @@ export function AreaDetailScreen() {
                   <StatusChip status={project.status} />
                 </div>
                 <div className="mt-auto">
+                  {/* Resume-first: the next step outweighs the title (lead vs body). */}
                   {view.showNext && stat?.nextStep && (
-                    <p className="mt-2 text-body line-clamp-1">
-                      <span className="text-muted">Next: </span>
-                      {stat.nextStep}
-                    </p>
+                    <div className="mt-3">
+                      <p className="text-micro uppercase text-muted">Next step</p>
+                      <p className="text-lead line-clamp-2">{stat.nextStep}</p>
+                    </div>
                   )}
                   {view.showStats && (
                     <div className="mt-3">

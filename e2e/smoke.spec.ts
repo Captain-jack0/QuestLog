@@ -170,6 +170,15 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('status').filter({ hasText: '+5 ✨' })).toBeVisible()
   })
 
+  // After the focus pick, before the sheet step (which navigates from Areas by name itself): the
+  // paused project's hanging task is what the Work card offers to resume.
+  await test.step('the area card resumes its waiting thread', async () => {
+    await page.getByRole('link', { name: 'Areas' }).click()
+    await expect(page.getByRole('link', { name: /Work/ })).toHaveCount(1)
+    await page.getByRole('button', { name: 'Resume Test project' }).click()
+    await expect(page.getByRole('heading', { name: 'Test project' })).toBeVisible()
+  })
+
   // Last, not beside 'add a task': a second task here would turn the '1/1 done' the completion
   // step asserts into '1/2'. The quick row is exercised above; this is the other door, and the
   // only check that the description the sheet collects actually reaches the row.
