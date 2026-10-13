@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { bodyLockStyle, nextTrapIndex } from './BottomSheet'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { bodyLockStyle, lockBody, nextTrapIndex, unlockBody } from './BottomSheet'
 
 /**
  * There is no jsdom here, so the DOM half of the trap (querying focusable elements, focusing
@@ -61,5 +61,64 @@ describe('bodyLockStyle', () => {
 
   it('adds no padding where there is no scrollbar to lose', () => {
     expect(bodyLockStyle(0, 0).paddingRight).toBe('')
+  })
+})
+
+/** No jsdom: a bare `document.body.style` and `window` stand in for the browser. */
+describe('lockBody / unlockBody', () => {
+  let style: Record<string, string>
+  let scrollTo: ReturnType<typeof vi.fn>
+  let win: { scrollY: number; innerWidth: number; scrollTo: typeof scrollTo }
+
+  beforeEach(() => {
+    style = { position: '', top: '', width: '', overflow: 'auto', paddingRight: '' }
+    scrollTo = vi.fn()
+    win = { scrollY: 640, innerWidth: 390, scrollTo }
+    vi.stubGlobal('document', { body: { style }, documentElement: { clientWidth: 390 } })
+    vi.stubGlobal('window', win)
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('pins the body at the current scroll offset on open', () => {
+    lockBody()
+    expect(style.position).toBe('fixed')
+    expect(style.top).toBe('-640px')
+    expect(style.width).toBe('100%')
+    expect(style.overflow).toBe('hidden')
+    unlockBody()
+  })
+
+  it('restores the previous styles and scroll offset on close', () => {
+    lockBody()
+    unlockBody()
+    expect(style).toEqual({
+      position: '',
+      top: '',
+      width: '',
+      overflow: 'auto',
+      paddingRight: '',
+    })
+    expect(scrollTo).toHaveBeenCalledOnce()
+    expect(scrollTo).toHaveBeenCalledWith(0, 640)
+  })
+
+  it('pins once and hands back once when two sheets nest', () => {
+    lockBody()
+    win.scrollY = 0 // what a pinned page reports to the second sheet
+    lockBody()
+    expect(style.top).toBe('-640px')
+
+    unlockBody() // outer-first or inner-first, the first close must not unpin
+    expect(style.position).toBe('fixed')
+    expect(scrollTo).not.toHaveBeenCalled()
+
+    unlockBody()
+    expect(style.position).toBe('')
+    expect(style.overflow).toBe('auto')
+    expect(scrollTo).toHaveBeenCalledOnce()
+    expect(scrollTo).toHaveBeenCalledWith(0, 640)
   })
 })
