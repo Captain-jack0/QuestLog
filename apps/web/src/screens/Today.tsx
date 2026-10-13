@@ -204,6 +204,7 @@ export function TodayScreen() {
 
                       <div className="mt-3 flex gap-2">
                         <Button
+                          variant="ghost"
                           className="flex-1 px-2 py-2 text-sm"
                           onClick={() =>
                             setPending({

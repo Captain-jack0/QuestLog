@@ -14,6 +14,8 @@ import '@fontsource/inter/400.css'
 import '@fontsource/inter/500.css'
 import '@fontsource/inter/600.css'
 import '@fontsource/inter/700.css'
+// The display-lg type role is set at 800; without this face it would fake-bold from 700.
+import '@fontsource/inter/800.css'
 import '@fontsource/instrument-serif/400.css'
 import 'primeicons/primeicons.css'
 import './index.css'
@@ -38,7 +40,7 @@ function Crashed() {
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold text-accent"
+        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold"
       >
         Reload
       </button>
