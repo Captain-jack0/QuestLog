@@ -24,8 +24,9 @@ insert into tasks (id, user_id, project_id, title) values
 
 set local role service_role;
 
--- Parents first on purpose: if a child's write still carried a touch up, the parent restored
--- before it would read now() afterwards instead of its planted value.
+-- Parents first on purpose: if the project write still carried a touch up to the area, the area
+-- restored before it would read now() afterwards. (task -> project cannot show here: since #74
+-- touch_parent_project asks project_role(), which is null without a JWT, as in a real restore.)
 select is(rpc_restore_updated_at('life_areas',
             '[{"id":"eeee0000-0000-0000-0000-0000000000a1","updated_at":"2026-09-01T10:00:00Z"}]'),
           1, 'one area restored');
