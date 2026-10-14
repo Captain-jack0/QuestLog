@@ -5,7 +5,7 @@
  */
 
 import type { IconName } from '../../components/ui/Icon'
-import type { ItemStatus } from '../../lib/schemas'
+import type { AREA_COLORS, ItemStatus } from '../../lib/schemas'
 
 export interface PreviewTask {
   title: string
@@ -27,7 +27,7 @@ export interface PreviewArea {
   id: string
   name: string
   icon: IconName
-  colour: string
+  colour: (typeof AREA_COLORS)[number]
   projects: PreviewProject[]
 }
 
@@ -36,7 +36,7 @@ export const AREAS: PreviewArea[] = [
     id: 'work',
     name: 'Work',
     icon: 'work',
-    colour: 'rgb(76 141 255)',
+    colour: '#79C0FF',
     projects: [
       {
         id: 'onboarding',
@@ -80,7 +80,7 @@ export const AREAS: PreviewArea[] = [
     id: 'home',
     name: 'Home',
     icon: 'home',
-    colour: 'rgb(62 213 152)',
+    colour: '#7EE787',
     projects: [
       {
         id: 'tax',
@@ -118,7 +118,7 @@ export const AREAS: PreviewArea[] = [
     id: 'writing',
     name: 'Writing',
     icon: 'edit',
-    colour: 'rgb(255 168 76)',
+    colour: '#FFA657',
     projects: [
       {
         id: 'chapter-3',
@@ -139,7 +139,7 @@ export const AREAS: PreviewArea[] = [
     id: 'learning',
     name: 'Learning',
     icon: 'menu_book',
-    colour: 'rgb(168 132 255)',
+    colour: '#D2A8FF',
     projects: [
       {
         id: 'postgres',
