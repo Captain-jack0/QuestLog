@@ -156,7 +156,7 @@ export function AppPreview() {
 
               <p className="mb-2 text-micro uppercase text-muted">Hanging threads</p>
               {/* Resume-first, as the real cards are headed: the area as a micro label over a
-                  4px area strip, the next step as the loudest line, the title beneath it. */}
+                  6px area strip, the next step as the loudest line, the title beneath it. */}
               <div className="space-y-2">
                 {HANGING.slice(0, 3).map((thread) => (
                   <div
@@ -165,7 +165,7 @@ export function AppPreview() {
                   >
                     <span
                       aria-hidden
-                      className="absolute inset-y-0 left-0 w-1"
+                      className="absolute inset-y-0 left-0 w-1.5 border border-ink/55"
                       style={{ backgroundColor: thread.areaColour }}
                     />
                     <div className="flex items-start justify-between gap-2">
@@ -197,7 +197,7 @@ export function AppPreview() {
                   >
                     <span
                       aria-hidden
-                      className="absolute inset-y-0 left-0 w-1"
+                      className="absolute inset-y-0 left-0 w-1.5 border border-ink/55"
                       style={{ backgroundColor: item.colour }}
                     />
                     <Icon name={item.icon} className="icon-lg text-accent" />
@@ -241,7 +241,7 @@ export function AppPreview() {
                     >
                       <span
                         aria-hidden
-                        className="absolute inset-y-0 left-0 w-1"
+                        className="absolute inset-y-0 left-0 w-1.5 border border-ink/55"
                         style={{ backgroundColor: area.colour }}
                       />
                       <div className="flex items-start justify-between gap-2">
