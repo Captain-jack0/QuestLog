@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { contrast, over, themes, type Rgb } from '../../contrast-test-utils'
 import { INTENSITY_SHADES } from './aggregate'
-import { TONE } from './WeeklyBarChart'
+import { TONE } from './BarChart'
 
 /** `bg-accent/70` composited over the card surface. */
 function fill(cls: string, tokens: Record<string, Rgb>): Rgb {
@@ -30,6 +30,13 @@ for (const [theme, tokens] of Object.entries(themes)) {
       for (const tone of Object.values(TONE)) {
         expect(contrast(fill(tone, tokens), tokens.surface), tone).toBeGreaterThanOrEqual(3)
       }
+    })
+
+    // The Weekly / Daily switch on Progress: a bg-surface pill, the chosen one tinted bg-accent/10.
+    it('keeps the chart range labels at 4.5:1 or more', () => {
+      const active = over(tokens.accent, 0.1, tokens.surface)
+      expect(contrast(tokens['accent-ink'], active), 'active').toBeGreaterThanOrEqual(4.5)
+      expect(contrast(tokens.muted, tokens.surface), 'idle').toBeGreaterThanOrEqual(4.5)
     })
   })
 }

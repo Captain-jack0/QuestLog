@@ -1,4 +1,4 @@
-import { localDateKey, startOfLocalDay } from '../../lib/time'
+import { LOCALE, localDateKey, startOfLocalDay } from '../../lib/time'
 
 export interface XpEvent {
   created_at: string
@@ -197,4 +197,77 @@ export function weeklyFocus(
     if (at !== undefined) buckets[at].seconds += entry.seconds
   }
   return buckets
+}
+
+export interface DayBucket {
+  /** YYYY-MM-DD in the chart's timezone. */
+  key: string
+  /** "Mon" */
+  label: string
+  /** "Mon, Oct 12" */
+  date: string
+}
+
+/**
+ * The last `days` calendar days in `timeZone` (browser's if unset), oldest first, ending today.
+ * Stepped on a UTC-midnight date built from the key, so a DST change can't skip or repeat a day.
+ */
+export function lastDays(
+  timeZone: string | undefined,
+  days = 7,
+  now: Date = new Date(),
+): DayBucket[] {
+  const today = new Date(`${dateKeyIn(timeZone, now)}T00:00:00Z`)
+  return Array.from({ length: days }, (_, i) => {
+    const day = new Date(today)
+    day.setUTCDate(day.getUTCDate() - (days - 1 - i))
+    return {
+      key: day.toISOString().slice(0, 10),
+      label: day.toLocaleDateString(LOCALE, { timeZone: 'UTC', weekday: 'short' }),
+      date: day.toLocaleDateString(LOCALE, {
+        timeZone: 'UTC',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      }),
+    }
+  })
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** XP per day for the last `days` days in `timeZone`, the server's day (streak, focus cap). */
+export function dailyXp(
+  events: XpEvent[],
+  timeZone: string | undefined,
+  days = 7,
+  now: Date = new Date(),
+): (DayBucket & { xp: number })[] {
+  const buckets = lastDays(timeZone, days, now).map((day) => ({ ...day, xp: 0 }))
+  const index = new Map(buckets.map((bucket, i) => [bucket.key, i]))
+  for (const event of events) {
+    const instant = new Date(event.created_at)
+    // dateKeyIn builds a formatter per call; skip the weeks of history the chart can't show.
+    if (now.getTime() - instant.getTime() > (days + 1) * DAY_MS) continue
+    const at = index.get(dateKeyIn(timeZone, instant))
+    if (at !== undefined) buckets[at].xp += event.xp
+  }
+  return buckets
+}
+
+/**
+ * Focus seconds per day for the same window. daily_focus_seconds already keys its rows by the
+ * profile's day (time_tracking.sql:170), so a row lands by its key alone.
+ */
+export function dailyFocus(
+  rows: { day: string; seconds: number }[],
+  timeZone: string | undefined,
+  days = 7,
+  now: Date = new Date(),
+): (DayBucket & { seconds: number })[] {
+  const seconds = new Map(rows.map((row) => [row.day, row.seconds]))
+  return lastDays(timeZone, days, now).map((day) => ({
+    ...day,
+    seconds: seconds.get(day.key) ?? 0,
+  }))
 }
