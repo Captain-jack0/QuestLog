@@ -3,3 +3,5 @@ dist/
 package-lock.json
 # Stitch export, kept exactly as delivered so it can be diffed against the next export.
 docs/design/stitch/
+# crew orchestration records (directives, lessons), not code.
+.context/

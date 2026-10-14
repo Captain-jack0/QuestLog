@@ -8,7 +8,6 @@ export interface NewTask {
   description?: string
   difficulty: Difficulty
   priority?: Priority
-  sortOrder: number
 }
 
 /**
@@ -31,6 +30,5 @@ export function newTaskRow(input: NewTask) {
     // Defaulted here rather than left to the column default: the optimistic row has to show the
     // value the insert will store, and the column's is invisible from this side.
     priority: input.priority ?? 'med',
-    sort_order: input.sortOrder,
   }
 }

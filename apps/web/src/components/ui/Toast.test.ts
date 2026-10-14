@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { tones } from './Toast'
+import { describe, expect, it, vi } from 'vitest'
+import { focusHolder, holdableTimer, tones } from './Toast'
 
 // Vite reads the tree for us, so this needs neither `fs` nor @types/node — the web
 // tsconfig pins `types: ["vite/client"]` and node globals are deliberately absent.
@@ -53,5 +53,86 @@ describe('theme tokens', () => {
 
     const offenders = scanned.filter((file) => FIXED_WHITE.test(SOURCES[file]))
     expect(offenders).toEqual([])
+  })
+})
+
+describe('holdableTimer', () => {
+  it('dismisses after its time when nobody holds it', () => {
+    vi.useFakeTimers()
+    const done = vi.fn()
+    holdableTimer(8000, done)
+    vi.advanceTimersByTime(7999)
+    expect(done).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1)
+    expect(done).toHaveBeenCalledOnce()
+    vi.useRealTimers()
+  })
+
+  it('waits as long as it is held, then restarts the full time', () => {
+    vi.useFakeTimers()
+    const done = vi.fn()
+    const timer = holdableTimer(8000, done)
+    vi.advanceTimersByTime(7000)
+    timer.hold() // focus moves onto Undo
+    vi.advanceTimersByTime(60_000)
+    expect(done).not.toHaveBeenCalled()
+    timer.release()
+    vi.advanceTimersByTime(7999)
+    expect(done).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1)
+    expect(done).toHaveBeenCalledOnce()
+    vi.useRealTimers()
+  })
+
+  it('stays held until hover and focus have both let go', () => {
+    vi.useFakeTimers()
+    const done = vi.fn()
+    const timer = holdableTimer(8000, done)
+    timer.hold() // focus
+    timer.hold() // pointer
+    timer.release() // pointer leaves, focus still inside
+    vi.advanceTimersByTime(60_000)
+    expect(done).not.toHaveBeenCalled()
+    timer.release()
+    vi.advanceTimersByTime(8000)
+    expect(done).toHaveBeenCalledOnce()
+    vi.useRealTimers()
+  })
+
+  it('never fires once cancelled', () => {
+    vi.useFakeTimers()
+    const done = vi.fn()
+    holdableTimer(8000, done).cancel()
+    vi.advanceTimersByTime(60_000)
+    expect(done).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+})
+
+describe('focusHolder', () => {
+  it('does not hold the timer for focus the code hands over', () => {
+    vi.useFakeTimers()
+    const done = vi.fn()
+    const holder = focusHolder(holdableTimer(8000, done))
+    // The browser dispatches focus synchronously inside focus(); the handler runs in there.
+    holder.focusFromCode(() => holder.onFocus())
+    vi.advanceTimersByTime(8000)
+    expect(done).toHaveBeenCalledOnce()
+    vi.useRealTimers()
+  })
+
+  it('holds for focus the user brings, and lets go on blur', () => {
+    vi.useFakeTimers()
+    const done = vi.fn()
+    const holder = focusHolder(holdableTimer(8000, done))
+    holder.focusFromCode(() => holder.onFocus())
+    holder.onBlur() // Tab away from the code's focus: nothing was held, nothing to release
+    holder.onFocus() // Tab back
+    vi.advanceTimersByTime(60_000)
+    expect(done).not.toHaveBeenCalled()
+    holder.onBlur()
+    vi.advanceTimersByTime(8000)
+    expect(done).toHaveBeenCalledOnce()
+    vi.useRealTimers()
   })
 })
