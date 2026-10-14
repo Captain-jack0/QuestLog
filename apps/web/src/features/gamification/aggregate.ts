@@ -3,6 +3,7 @@ import { localDateKey, startOfLocalDay } from '../../lib/time'
 export interface XpEvent {
   created_at: string
   xp: number
+  area_id?: string | null
 }
 
 export interface WeekBucket {
@@ -49,9 +50,100 @@ export function weeklyXp(events: XpEvent[], weeks = 8, now: Date = new Date()): 
   return buckets
 }
 
-/** Local days that earned at least one XP event. */
-export function activeDayKeys(events: XpEvent[]): Set<string> {
-  return new Set(events.map((event) => localDateKey(new Date(event.created_at))))
+/** XP earned per local day, keyed by date key; days without XP are absent. */
+export function dailyXpTotals(events: XpEvent[]): Map<string, number> {
+  const totals = new Map<string, number>()
+  for (const event of events) {
+    const key = localDateKey(new Date(event.created_at))
+    totals.set(key, (totals.get(key) ?? 0) + event.xp)
+  }
+  return totals
+}
+
+/**
+ * Activity grid shades: the lowest daily XP for shades 1, 2 and 3; below the first is shade 0,
+ * a quiet day, drawn neutral (never red). Picked against the award table in lib/xp.ts:
+ * 1 = showed up at all (a check-in alone is 10), 25 = a medium task or a few updates on top,
+ * 60 = a full focus-time day (its daily cap) or a large task and more.
+ */
+export const INTENSITY_FLOORS = [1, 25, 60] as const
+
+export function intensity(xp: number): 0 | 1 | 2 | 3 {
+  return INTENSITY_FLOORS.filter((floor) => xp >= floor).length as 0 | 1 | 2 | 3
+}
+
+/**
+ * Grid fill per intensity(). Quiet days stay neutral, never red; every active shade is at least
+ * 3:1 against the card and a step apart from its neighbour in both themes (contrast.test.ts).
+ */
+export const INTENSITY_SHADES = ['bg-line/50', 'bg-accent/70', 'bg-accent/85', 'bg-accent'] as const
+
+/** `now` as YYYY-MM-DD in `timeZone` (browser's if unset), built from parts so no locale can reshape it. */
+export function dateKeyIn(timeZone: string | undefined, now: Date): string {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .formatToParts(now)
+      .map((p) => [p.type, p.value]),
+  )
+  return `${parts.year}-${parts.month}-${parts.day}`
+}
+
+/**
+ * The streak as it stands today. streaks.current only moves when rpc_update_status runs, so a
+ * row can still say 12 after a week away. The server's rule on the next update: last active
+ * today or yesterday keeps the run; an older date spends a shield (freeze_tokens) to keep it,
+ * whatever the gap; no shield resets it. So the run is alive unless it is older than yesterday
+ * with no shield left. Days are the profile's timezone, as on the server (browser's if unset).
+ */
+export function effectiveStreak(
+  streak: { current: number; last_active_date: string | null; freeze_tokens: number } | null,
+  timeZone?: string,
+  now: Date = new Date(),
+): number {
+  if (!streak?.last_active_date) return 0
+  const today = dateKeyIn(timeZone, now)
+  const yesterday = new Date(`${today}T00:00:00Z`)
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+  const alive =
+    streak.last_active_date >= yesterday.toISOString().slice(0, 10) || streak.freeze_tokens > 0
+  return alive ? streak.current : 0
+}
+
+/** XP earned today and the `days - 1` local days before it. */
+export function xpInLastDays(events: XpEvent[], days = 7, now: Date = new Date()): number {
+  const since = startOfLocalDay(now)
+  since.setDate(since.getDate() - (days - 1))
+  return events
+    .filter((event) => new Date(event.created_at) >= since)
+    .reduce((sum, event) => sum + event.xp, 0)
+}
+
+/**
+ * Distinct life areas with XP in the last 7 x 24 hours — the same rolling window the
+ * renaissance badge checks (`created_at > now() - interval '7 days'` in rpc_update_status).
+ */
+export function activeAreasLastWeek(events: XpEvent[], now: Date = new Date()): number {
+  const since = now.getTime() - 7 * 24 * 60 * 60 * 1000
+  const areas = new Set<string>()
+  for (const event of events) {
+    if (event.area_id && new Date(event.created_at).getTime() > since) areas.add(event.area_id)
+  }
+  return areas.size
+}
+
+/**
+ * Bar heights in percent of the chart: the biggest value fills it, any non-zero value shows at
+ * least 4% so it stays visible next to a big week, and zero draws a 2% stub so the week still
+ * has a slot. All-zero input gives stubs, never NaN.
+ */
+export function barHeights(values: number[]): number[] {
+  const peak = Math.max(0, ...values)
+  return values.map((value) => (value > 0 && peak > 0 ? Math.max((value / peak) * 100, 4) : 2))
 }
 
 /**
