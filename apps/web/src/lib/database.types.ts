@@ -235,11 +235,13 @@ export type Database = {
           area_id: string | null
           completed_at: string | null
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           priority: Database['public']['Enums']['priority']
           snoozed_until: string | null
           status: Database['public']['Enums']['item_status']
+          status_changed_at: string
           target_date: string | null
           title: string
           updated_at: string
@@ -249,11 +251,13 @@ export type Database = {
           area_id?: string | null
           completed_at?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           priority?: Database['public']['Enums']['priority']
           snoozed_until?: string | null
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           target_date?: string | null
           title: string
           updated_at?: string
@@ -263,11 +267,13 @@ export type Database = {
           area_id?: string | null
           completed_at?: string | null
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           priority?: Database['public']['Enums']['priority']
           snoozed_until?: string | null
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           target_date?: string | null
           title?: string
           updated_at?: string
@@ -350,6 +356,7 @@ export type Database = {
           snoozed_until: string | null
           sort_order: number
           status: Database['public']['Enums']['item_status']
+          status_changed_at: string
           title: string
           updated_at: string
           user_id: string
@@ -365,6 +372,7 @@ export type Database = {
           snoozed_until?: string | null
           sort_order?: number
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           title: string
           updated_at?: string
           user_id: string
@@ -380,6 +388,7 @@ export type Database = {
           snoozed_until?: string | null
           sort_order?: number
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           title?: string
           updated_at?: string
           user_id?: string
@@ -683,6 +692,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      rpc_delete_project: { Args: { p_project_id: string }; Returns: undefined }
       rpc_groom_stale: {
         Args: { p_item_id: string; p_item_type: string }
         Returns: Json
@@ -701,6 +711,11 @@ export type Database = {
         }
         Returns: Json
       }
+      rpc_remove_member: {
+        Args: { p_target_id: string; p_target_type: string; p_user: string }
+        Returns: undefined
+      }
+      rpc_restore_project: { Args: { p_project_id: string }; Returns: undefined }
       rpc_resolve_pomodoro: {
         Args: { p_continued: boolean; p_entry_id: string }
         Returns: Json

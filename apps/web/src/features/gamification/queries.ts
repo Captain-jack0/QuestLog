@@ -58,23 +58,44 @@ export function useTotalXp() {
   })
 }
 
+export interface ProjectXpEvent {
+  id: string
+  created_at: string
+  xp: number
+  action_type: string
+  user_id: string
+  task_id: string | null
+}
+
 /**
- * XP this user earned on one project. xp_events is RLS-scoped to its owner, so on a shared project
- * this is the viewer's own share, not the project's total.
+ * This user's XP events on one project, newest first — the header sums them, History lists them
+ * (same key, one request). xp_events is RLS-scoped to its owner, so on a shared project this is
+ * the viewer's own share, not the project's total. Under ['gamification'], which every status
+ * update and timer stop invalidates.
+ *
+ * ponytail: no limit, the sum needs every row; past PostgREST's max_rows (1000) on one project
+ * both undercount. A server-side sum RPC is the upgrade.
  */
+const projectXpQuery = (projectId: string | undefined) => ({
+  queryKey: ['gamification', 'project-xp', projectId] as const,
+  enabled: Boolean(projectId),
+  queryFn: async (): Promise<ProjectXpEvent[]> => {
+    const { data, error } = await supabase
+      .from('xp_events')
+      .select('id, created_at, xp, action_type, user_id, task_id')
+      .eq('project_id', projectId!)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return data
+  },
+})
+
 export function useProjectXp(projectId: string | undefined) {
-  return useQuery({
-    queryKey: ['gamification', 'project-xp', projectId] as const,
-    enabled: Boolean(projectId),
-    queryFn: async (): Promise<number> => {
-      const { data, error } = await supabase
-        .from('xp_events')
-        .select('xp')
-        .eq('project_id', projectId!)
-      if (error) throw error
-      return data.reduce((sum, row) => sum + row.xp, 0)
-    },
-  })
+  return useQuery({ ...projectXpQuery(projectId), select: sumXp })
+}
+
+export function useProjectXpEvents(projectId: string | undefined) {
+  return useQuery(projectXpQuery(projectId))
 }
 
 export interface AreaStat {

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '../../components/ui/Card'
-import { CardSkeleton } from '../../components/ui/Skeleton'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
@@ -14,17 +13,35 @@ import { dropChange } from '../status/drop'
 import { useUpdateStatus } from '../status/useUpdateStatus'
 import { untouchedLabel } from '../../lib/time'
 import { groupThreads } from './groupThreads'
-import { SNOOZE_OPTIONS, useHangingThreads, useSnooze, type HangingThread } from './queries'
+import { SNOOZE_OPTIONS, useSnooze, type HangingThread } from './queries'
 
 type Snoozing = { itemType: 'task' | 'project'; itemId: string }
 
+/** Nothing waiting at all — Today and Threads say it the same way. */
+export function NoThreadsYet() {
+  return (
+    <EmptyState
+      title="No threads yet 🎉"
+      description="When you pause something, its next step will wait for you right here."
+    />
+  )
+}
+
 /**
  * The hanging threads, as Today and the Threads screen both show them: one list, the cards and
- * the sheets their buttons open. Lifted out of Today whole so the two screens cannot drift.
+ * the sheets their buttons open. Lifted out of Today whole so the two screens cannot drift. The
+ * rows come from the caller — Today's oldest 20, or the Threads screen's filtered full list —
+ * and so do the loading and empty states, which differ between the two.
  */
-export function ThreadList() {
+export function ThreadList({
+  threads,
+  showLeftOff = false,
+}: {
+  threads: HangingThread[]
+  /** The card's "Where you left off" line: Threads has the room, Today keeps the card short. */
+  showLeftOff?: boolean
+}) {
   const toast = useToast()
-  const threads = useHangingThreads()
   const snooze = useSnooze()
   const updateStatus = useUpdateStatus()
 
@@ -34,7 +51,7 @@ export function ThreadList() {
   // Two lists, not one: work in motion on top, deliberately parked work below with its status
   // spelled out — a paused project should not queue alongside what actually needs picking up.
   // An empty list drops its heading with it.
-  const { active, parked } = groupThreads(threads.data ?? [])
+  const { active, parked } = groupThreads(threads)
   const threadSections = [
     { key: 'active', heading: 'Active', threads: active },
     { key: 'parked', heading: 'Paused & blocked', threads: parked },
@@ -66,15 +83,6 @@ export function ThreadList() {
 
   return (
     <>
-      {threads.isPending && <CardSkeleton rows={2} />}
-
-      {threads.data?.length === 0 && (
-        <EmptyState
-          title="No threads yet 🎉"
-          description="When you pause something, its next step will wait for you right here."
-        />
-      )}
-
       {threadSections.map((section) => (
         <section
           key={section.key}
@@ -92,6 +100,7 @@ export function ThreadList() {
               <ThreadCard
                 key={`${thread.item_type}-${thread.item_id}`}
                 thread={thread}
+                showLeftOff={showLeftOff}
                 dropping={updateStatus.isPending}
                 onDone={() => change(thread, 'done')}
                 onUpdate={() => change(thread, 'in_progress')}
@@ -159,6 +168,7 @@ export function ThreadList() {
 
 interface ThreadCardProps {
   thread: HangingThread
+  showLeftOff: boolean
   dropping: boolean
   onDone: () => void
   onUpdate: () => void
@@ -171,7 +181,15 @@ interface ThreadCardProps {
  * next step as the loudest line, then the task's own title as the way in. The age is plain muted
  * text — a quiet fact, never a warning colour.
  */
-function ThreadCard({ thread, dropping, onDone, onUpdate, onSnooze, onDrop }: ThreadCardProps) {
+function ThreadCard({
+  thread,
+  showLeftOff,
+  dropping,
+  onDone,
+  onUpdate,
+  onSnooze,
+  onDrop,
+}: ThreadCardProps) {
   // Every thread is a task (#44); this says which area and project it belongs to.
   const context = [thread.area_name, thread.project_title].filter(Boolean).join(' · ')
   // Not when the prose is only the picked task's title: the RPC snapshots the title into
@@ -228,6 +246,15 @@ function ThreadCard({ thread, dropping, onDone, onUpdate, onSnooze, onDrop }: Th
       >
         {thread.title}
       </Link>
+
+      {showLeftOff && thread.left_off && (
+        <div className="mt-2 rounded-xl bg-surface-sunken px-3 py-2">
+          <p className="flex items-center gap-1.5 text-micro uppercase text-muted">
+            <Icon name="bookmark" className="icon-md" /> Where you left off
+          </p>
+          <p className="mt-1 text-body">{thread.left_off}</p>
+        </div>
+      )}
 
       <div className="mt-2 flex gap-2">
         <Button variant="ghost" className="flex-1 px-2 py-2 text-body" onClick={onDone}>

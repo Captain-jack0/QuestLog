@@ -5,6 +5,7 @@ import { optimisticId, replaceOptimistic } from '../../lib/optimistic'
 import { OPEN_STATUSES, type ProgressLog, type Project, type ProjectInput } from '../../lib/schemas'
 import { areaKeys } from '../areas/queries'
 import { aggregateProjectStats, type ProjectStats } from './stats'
+import { HISTORY_LIMIT } from './timeline'
 
 export type { ProjectStats }
 
@@ -46,7 +47,7 @@ export function useProgressLogs(projectId: string | undefined) {
         .select('*, next_step_task:tasks!progress_logs_next_step_task_id_fkey(title)')
         .eq('project_id', projectId!)
         .order('created_at', { ascending: false })
-        .limit(50)
+        .limit(HISTORY_LIMIT)
       if (error) throw error
       return data as unknown as ProgressLogWithNextTask[]
     },
@@ -240,4 +241,28 @@ export function useProjectOptions() {
       }[]
     },
   })
+}
+
+/**
+ * Soft delete (#60): owner only. Hides the project and everything under it from every reader;
+ * removes nothing, so restoreProject undoes it.
+ */
+export async function deleteProject(id: string) {
+  const { error } = await supabase.rpc('rpc_delete_project', { p_project_id: id })
+  if (error) throw error
+}
+
+export async function restoreProject(id: string) {
+  const { error } = await supabase.rpc('rpc_restore_project', { p_project_id: id })
+  if (error) throw error
+}
+
+/** A member leaves a shared project (#75's rpc_remove_member). The owner cannot leave. */
+export async function leaveProject(id: string, userId: string) {
+  const { error } = await supabase.rpc('rpc_remove_member', {
+    p_target_type: 'project',
+    p_target_id: id,
+    p_user: userId,
+  })
+  if (error) throw error
 }

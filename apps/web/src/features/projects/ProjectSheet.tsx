@@ -19,9 +19,20 @@ interface ProjectSheetProps {
   onClose: () => void
   onSubmit: (values: ProjectInput) => void
   saving?: boolean
+  /** "Delete project" for the owner, "Leave project" for a member (#60); edit mode only. */
+  removeLabel?: string
+  onRemove?: () => void
 }
 
-export function ProjectSheet({ open, project, onClose, onSubmit, saving }: ProjectSheetProps) {
+export function ProjectSheet({
+  open,
+  project,
+  onClose,
+  onSubmit,
+  saving,
+  removeLabel,
+  onRemove,
+}: ProjectSheetProps) {
   const {
     register,
     handleSubmit,
@@ -102,6 +113,13 @@ export function ProjectSheet({ open, project, onClose, onSubmit, saving }: Proje
         <Button type="submit" block disabled={saving}>
           {saving ? 'Saving…' : project ? 'Save changes' : 'Create project'}
         </Button>
+
+        {/* At the foot, the way Archive sits in the area sheet (AreaSheet.tsx). */}
+        {project && onRemove && (
+          <Button type="button" variant="danger" block onClick={onRemove}>
+            {removeLabel}
+          </Button>
+        )}
       </form>
     </BottomSheet>
   )

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
@@ -14,9 +14,11 @@ import { useToast } from '../components/ui/Toast'
 import { compactFieldClass, rowFieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useArea, useAreas } from '../features/areas/queries'
-import { useProfile, useProjectXp } from '../features/gamification/queries'
+import { useProfile, useProjectXp, useProjectXpEvents } from '../features/gamification/queries'
 import { HistoryTimeline } from '../features/projects/HistoryTimeline'
+import { removedRedirect, useProjectRemoval } from '../features/projects/ProjectRemoval'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
+import { HISTORY_LIMIT, projectTimeline } from '../features/projects/timeline'
 import {
   useMoveProject,
   useProgressLogs,
@@ -43,7 +45,7 @@ import { isOptimistic } from '../lib/optimistic'
 import { formatDateKey } from '../lib/time'
 import { formatMinutes } from '../features/timer/pomodoro'
 import { TimerButton } from '../features/timer/TimerButton'
-import { useProjectTotals, useTaskTotals } from '../features/timer/queries'
+import { useProjectSessions, useProjectTotals, useTaskTotals } from '../features/timer/queries'
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
@@ -70,6 +72,7 @@ export function ProjectDetailScreen() {
   const { projectId = '' } = useParams()
   const { session } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
 
   const project = useProject(projectId)
   const area = useArea(project.data?.area_id ?? undefined)
@@ -97,6 +100,11 @@ export function ProjectDetailScreen() {
   const moveTask = useMoveTask()
   const projectOptions = useProjectOptions()
   const profile = useProfile()
+  // In the edit sheet, not the header: that row has no room for a third button at 320px
+  // (project-detail-overflow.spec.ts).
+  const removal = useProjectRemoval(project.data, (kind) =>
+    navigate(removedRedirect(kind, project.data?.area_id), { replace: true }),
+  )
 
   const [editing, setEditing] = useState(false)
   const [pending, setPending] = useState<PendingStatusChange | null>(null)
@@ -120,6 +128,8 @@ export function ProjectDetailScreen() {
   // so hiding a done task behind a filter must not move it. taskOrder.test.ts guards the count.
   const progress = taskProgress(tasks.data ?? [])
   const earnedXp = useProjectXp(projectId).data ?? 0
+  const xpEvents = useProjectXpEvents(projectId)
+  const sessions = useProjectSessions(projectId, HISTORY_LIMIT)
   const staleDays = profile.data?.stale_days ?? 14
 
   const {
@@ -543,8 +553,17 @@ export function ProjectDetailScreen() {
         <h2 id="history-heading" className="mb-3 text-title-md">
           History
         </h2>
-        {logs.data && <HistoryTimeline logs={logs.data} />}
+        {logs.data && (
+          <HistoryTimeline
+            entries={projectTimeline(logs.data, xpEvents.data ?? [], sessions.data ?? [])}
+          />
+        )}
+        {(xpEvents.isError || sessions.isError) && (
+          <p className="mt-3 text-caption text-muted">Some history could not load.</p>
+        )}
       </section>
+
+      {removal.sheet}
 
       <PickerSheet
         open={movingProject}
@@ -604,6 +623,13 @@ export function ProjectDetailScreen() {
         project={project.data}
         onClose={() => setEditing(false)}
         saving={updateProject.isPending}
+        removeLabel={removal.label}
+        // Closes this sheet and opens the confirm in one commit, as TaskSheet hands over to the
+        // resume sheet; BottomSheet's ref-counted lock keeps the body pinned across it.
+        onRemove={() => {
+          setEditing(false)
+          removal.start()
+        }}
         onSubmit={(values) =>
           updateProject.mutate(
             { ...values, id: projectId },

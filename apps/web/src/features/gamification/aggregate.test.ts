@@ -3,10 +3,13 @@ import {
   activeAreasLastWeek,
   barHeights,
   calendarWeeks,
+  dailyFocus,
+  dailyXp,
   dailyXpTotals,
   dateKeyIn,
   effectiveStreak,
   intensity,
+  lastDays,
   startOfWeek,
   weeklyXp,
   xpInLastDays,
@@ -171,5 +174,86 @@ describe('dateKeyIn', () => {
     expect(dateKeyIn('UTC', instant)).toBe('2026-01-05')
     expect(dateKeyIn('America/New_York', instant)).toBe('2026-01-04')
     expect(dateKeyIn('Asia/Tokyo', instant)).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('lastDays', () => {
+  it('is seven days oldest first, ending today, with en-US weekday labels', () => {
+    // Thursday 15 October 2026, 12:00 UTC
+    const days = lastDays('UTC', 7, new Date(Date.UTC(2026, 9, 15, 12)))
+    expect(days.map((d) => d.key)).toEqual([
+      '2026-10-09',
+      '2026-10-10',
+      '2026-10-11',
+      '2026-10-12',
+      '2026-10-13',
+      '2026-10-14',
+      '2026-10-15',
+    ])
+    expect(days.map((d) => d.label)).toEqual(['Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'])
+    expect(days[6].date).toBe('Thu, Oct 15')
+  })
+
+  it("ends on the timezone's today, not the browser's", () => {
+    // 02:00 UTC on the 15th is still the 14th in New York
+    const instant = new Date(Date.UTC(2026, 9, 15, 2))
+    expect(lastDays('America/New_York', 7, instant)[6].key).toBe('2026-10-14')
+    expect(lastDays('UTC', 7, instant)[6].key).toBe('2026-10-15')
+  })
+
+  it('steps over a DST change without skipping or repeating a day', () => {
+    // Europe/Berlin falls back on 25 October 2026
+    const keys = lastDays('Europe/Berlin', 7, new Date(Date.UTC(2026, 9, 27, 12))).map((d) => d.key)
+    expect(new Set(keys).size).toBe(7)
+    expect(keys[0]).toBe('2026-10-21')
+    expect(keys[6]).toBe('2026-10-27')
+  })
+})
+
+describe('dailyXp', () => {
+  const nowUtc = new Date(Date.UTC(2026, 9, 15, 12))
+  const ev = (iso: string, xp: number) => ({ created_at: iso, xp })
+
+  it('sums XP per day in the timezone, quiet days are 0, always 7 buckets', () => {
+    const buckets = dailyXp(
+      [
+        ev('2026-10-15T08:00:00Z', 10),
+        ev('2026-10-15T09:00:00Z', 25),
+        ev('2026-10-13T23:30:00Z', 8),
+        ev('2026-10-01T10:00:00Z', 100), // outside the window
+      ],
+      'UTC',
+      7,
+      nowUtc,
+    )
+    expect(buckets).toHaveLength(7)
+    expect(buckets.map((b) => b.xp)).toEqual([0, 0, 0, 0, 8, 0, 35])
+  })
+
+  it('moves an event across the day boundary by timezone', () => {
+    // 23:30 UTC on the 13th is 08:30 on the 14th in Tokyo
+    const tokyo = dailyXp([ev('2026-10-13T23:30:00Z', 8)], 'Asia/Tokyo', 7, nowUtc)
+    expect(tokyo.find((b) => b.key === '2026-10-14')?.xp).toBe(8)
+    expect(tokyo.find((b) => b.key === '2026-10-13')?.xp).toBe(0)
+  })
+
+  it('gives seven zero buckets for no events', () => {
+    expect(dailyXp([], 'UTC', 7, nowUtc).map((b) => b.xp)).toEqual([0, 0, 0, 0, 0, 0, 0])
+  })
+})
+
+describe('dailyFocus', () => {
+  it('places RPC days by key and fills the rest with 0', () => {
+    const buckets = dailyFocus(
+      [
+        { day: '2026-10-15', seconds: 1500 },
+        { day: '2026-10-10', seconds: 600 },
+        { day: '2026-09-30', seconds: 9000 }, // outside the window
+      ],
+      'UTC',
+      7,
+      new Date(Date.UTC(2026, 9, 15, 12)),
+    )
+    expect(buckets.map((b) => b.seconds)).toEqual([0, 600, 0, 0, 0, 0, 1500])
   })
 })
