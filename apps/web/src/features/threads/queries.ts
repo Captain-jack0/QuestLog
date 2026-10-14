@@ -13,6 +13,7 @@ export interface HangingThread {
   display_status: ItemStatus
   project_id: string
   project_title: string
+  area_id: string | null
   area_name: string | null
   area_color: string | null
   left_off: string | null
@@ -34,52 +35,62 @@ export const threadKeys = {
 /** Rows useHangingThreads reads; a list this long may have more behind it. */
 export const HANGING_THREADS_LIMIT = 20
 
+const THREAD_COLUMNS =
+  'item_type, item_id, title, status, display_status, project_id, project_title, area_id, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at'
+
 /** v_hanging_threads holds tasks only (#44), already excludes snoozed items and sorts by oldest
  *  activity. */
+async function fetchThreads(limit: number): Promise<HangingThread[]> {
+  const { data, error } = await supabase
+    .from('v_hanging_threads')
+    .select(THREAD_COLUMNS)
+    .order('last_activity_at', { ascending: true })
+    .limit(limit)
+  if (error) throw error
+  return data as unknown as HangingThread[]
+}
+
+/** Today's list and the rail: the oldest few. */
 export function useHangingThreads() {
   return useQuery({
     queryKey: threadKeys.all,
-    queryFn: async (): Promise<HangingThread[]> => {
-      const { data, error } = await supabase
-        .from('v_hanging_threads')
-        .select(
-          'item_type, item_id, title, status, display_status, project_id, project_title, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at',
-        )
-        .order('last_activity_at', { ascending: true })
-        .limit(HANGING_THREADS_LIMIT)
-      if (error) throw error
-      return data as unknown as HangingThread[]
-    },
+    queryFn: () => fetchThreads(HANGING_THREADS_LIMIT),
   })
 }
 
-export interface AreaThread {
-  area_id: string | null
-  project_id: string
-  project_title: string
-  title: string
-  left_off: string | null
-  next_step: string | null
-  last_activity_at: string
+/** Rows useAllThreads reads at most. */
+export const ALL_THREADS_LIMIT = 1000
+
+/**
+ * The same view without Today's 20-row cut, for the Threads screen and the Areas cards: a cut
+ * taken oldest-first would hide newer threads and leave a busy user's newer areas at zero.
+ * Under the `threads` prefix, so everything that refreshes Today's list refreshes this too.
+ * ponytail: 1000 is config.toml's max_rows; a count-per-area RPC and paging are the upgrade.
+ */
+export function useAllThreads() {
+  return useQuery({
+    queryKey: [...threadKeys.all, 'every'],
+    queryFn: () => fetchThreads(ALL_THREADS_LIMIT),
+  })
 }
 
 /**
- * The same view, slimmer and without Today's 20-row cut: the Areas cards count every waiting
- * thread per area, and a cut taken oldest-first would leave a busy user's newer areas at zero.
- * Under the `threads` prefix, so everything that refreshes Today's list refreshes this too.
- * ponytail: 1000 is config.toml's max_rows; a count-per-area RPC is the upgrade past that.
+ * How many of your own tasks are done or dropped — the threads that settled. Filtered by
+ * user_id: on a shared project RLS also lets other members' tasks through. Under the `threads`
+ * prefix, which every status change and realtime task event invalidates.
  */
-export function useAreaThreads() {
+export function useSettledCount(userId: string | undefined) {
   return useQuery({
-    queryKey: [...threadKeys.all, 'by-area'],
-    queryFn: async (): Promise<AreaThread[]> => {
-      const { data, error } = await supabase
-        .from('v_hanging_threads')
-        .select('area_id, project_id, project_title, title, left_off, next_step, last_activity_at')
-        .order('last_activity_at', { ascending: true })
-        .limit(1000)
+    queryKey: [...threadKeys.all, 'settled', userId],
+    enabled: userId !== undefined,
+    queryFn: async (): Promise<number> => {
+      const { count, error } = await supabase
+        .from('tasks')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId!)
+        .in('status', ['done', 'dropped'])
       if (error) throw error
-      return data as unknown as AreaThread[]
+      return count ?? 0
     },
   })
 }
@@ -89,6 +100,9 @@ export const SNOOZE_OPTIONS = [
   { label: '1 week', days: 7 },
   { label: '1 month', days: 30 },
 ] as const
+
+/** The two row lists a snooze takes a thread out of: Today's and the Threads screen's. */
+const SNOOZABLE_KEYS = [threadKeys.all, [...threadKeys.all, 'every']] as const
 
 export function useSnooze() {
   const queryClient = useQueryClient()
@@ -113,17 +127,25 @@ export function useSnooze() {
     },
     onMutate: async ({ itemId }) => {
       await queryClient.cancelQueries({ queryKey: threadKeys.all })
-      const previous = queryClient.getQueryData<HangingThread[]>(threadKeys.all)
-      if (previous) {
-        queryClient.setQueryData(
-          threadKeys.all,
-          previous.filter((t) => t.item_id !== itemId),
-        )
+      // Both lists, by exact key: a prefix match would also catch ['threads', 'settled', uid],
+      // which holds a number, not rows.
+      const previous = SNOOZABLE_KEYS.map(
+        (key) => [key, queryClient.getQueryData<HangingThread[]>(key)] as const,
+      )
+      for (const [key, rows] of previous) {
+        if (rows) {
+          queryClient.setQueryData(
+            key,
+            rows.filter((t) => t.item_id !== itemId),
+          )
+        }
       }
       return { previous }
     },
     onError: (_error, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(threadKeys.all, context.previous)
+      for (const [key, rows] of context?.previous ?? []) {
+        if (rows) queryClient.setQueryData(key, rows)
+      }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: threadKeys.all }),
   })

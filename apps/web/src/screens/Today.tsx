@@ -18,7 +18,7 @@ import {
 } from '../features/focus/queries'
 import { useProfile, useStreak, useTodayXp } from '../features/gamification/queries'
 import { effectiveStreak } from '../features/gamification/aggregate'
-import { ThreadList } from '../features/threads/ThreadList'
+import { NoThreadsYet, ThreadList } from '../features/threads/ThreadList'
 import { HANGING_THREADS_LIMIT, useHangingThreads } from '../features/threads/queries'
 import { formatMinutes } from '../features/timer/pomodoro'
 import { useProjectTotals, useRunningTimer, useTaskTotals } from '../features/timer/queries'
@@ -129,7 +129,9 @@ export function TodayScreen() {
           <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
             Hanging threads
           </h2>
-          <ThreadList />
+          {threads.isPending && <CardSkeleton rows={2} />}
+          {threads.data?.length === 0 && <NoThreadsYet />}
+          <ThreadList threads={threads.data ?? []} />
         </section>
       </div>
 

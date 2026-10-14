@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
-import type { AreaThread } from '../threads/queries'
+import type { HangingThread } from '../threads/queries'
 import { formatMinutes } from '../timer/pomodoro'
 import type { LifeArea } from '../../lib/schemas'
 import { relativeTime } from '../../lib/time'
@@ -28,7 +28,7 @@ export function AreaCard({
   openProjects: number
   totalXp: number | undefined
   threadsKnown: boolean
-  waiting: { count: number; oldest: AreaThread } | undefined
+  waiting: { count: number; oldest: HangingThread } | undefined
   focusSeconds: number | undefined
   onResume: (projectId: string) => void
 }) {
