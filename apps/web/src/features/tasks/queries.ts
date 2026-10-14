@@ -44,10 +44,9 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
       priority?: Priority
     }) => {
       if (!userId) throw new Error('Not signed in')
-      const sortOrder = queryClient.getQueryData<Task[]>(key)?.length ?? 0
       const { data, error } = await supabase
         .from('tasks')
-        .insert(newTaskRow({ ...input, projectId, userId, sortOrder }))
+        .insert(newTaskRow({ ...input, projectId, userId }))
         .select()
         .single()
       if (error) throw error
@@ -57,15 +56,13 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
       await queryClient.cancelQueries({ queryKey: key })
       const previous = queryClient.getQueryData<Task[]>(key)
       if (previous) {
-        // No `as Task`: the cast was the only thing that would have hidden a new column from
-        // this row, and a placeholder missing a field the list reads is exactly the bug worth
-        // catching at compile time. Every field the row does not carry is spelled out below.
-        const optimistic: Task = {
+        // `as Task` only because the generated type still carries the unwritten ordering
+        // column; drop the cast when Step 2 (#69) regenerates the types without it.
+        const optimistic = {
           ...newTaskRow({
             ...input,
             projectId,
             userId: userId ?? '',
-            sortOrder: previous.length,
           }),
           id: optimisticId(previous.length),
           status: 'idea',
@@ -74,7 +71,7 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
           status_changed_at: new Date().toISOString(),
           completed_at: null,
           snoozed_until: null,
-        }
+        } as Task
         queryClient.setQueryData(key, [...previous, optimistic])
       }
       return { previous }
