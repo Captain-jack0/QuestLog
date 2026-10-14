@@ -38,7 +38,9 @@ export function useFocusItems(date: string) {
         .eq('date', date)
         .order('created_at')
       if (error) throw error
-      return data as unknown as FocusRow[]
+      // A row whose item RLS no longer shows (its project was deleted, #60) has nothing to
+      // render but "Untitled": drop it, as digest_payload does.
+      return (data as unknown as FocusRow[]).filter((row) => row.tasks || row.projects)
     },
   })
 }
