@@ -1,27 +1,42 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Card } from '../components/ui/Card'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
+import { AreaCard, WeeklySplit } from '../features/areas/AreaCard'
+import { threadsByArea } from '../features/areas/areaSummary'
 import { useAreas, useCreateArea } from '../features/areas/queries'
+import { useAreaStats } from '../features/gamification/queries'
 import { useOpenProjectCounts } from '../features/projects/queries'
+import { useAllThreads } from '../features/threads/queries'
+import { useAreaFocus } from '../features/timer/queries'
 
 export function AreasScreen() {
   const { session } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
   const [sheetOpen, setSheetOpen] = useState(false)
   const areas = useAreas()
   const counts = useOpenProjectCounts()
+  const stats = useAreaStats()
+  const threads = useAllThreads()
+  const focus = useAreaFocus()
   const createArea = useCreateArea(session?.user.id)
+
+  const xpByArea = useMemo(
+    () => new Map((stats.data ?? []).map((s) => [s.area_id, s.total_xp])),
+    [stats.data],
+  )
+  const waiting = useMemo(() => threadsByArea(threads.data ?? []), [threads.data])
+  const userId = session?.user.id
 
   return (
     <div>
       <header className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Areas</h1>
+        <h1 className="text-title-lg font-bold">Areas</h1>
         <Button onClick={() => setSheetOpen(true)} className="px-3 py-2">
           + New
         </Button>
@@ -37,20 +52,29 @@ export function AreasScreen() {
         />
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+      {/* One column until the side rail has arrived and left room for two (SideNav.tsx) — the
+          same container trap AreaDetail.tsx spells out for its grid. The order is the server's
+          least-recently-touched-first, untouched. */}
+      <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
         {areas.data?.map((area) => (
-          <Link key={area.id} to={`/areas/${area.id}`} className="block">
-            <Card edgeColor={area.color} className="h-full pl-5">
-              <div className="text-2xl">{area.icon}</div>
-              <div className="mt-1 font-semibold leading-tight">{area.name}</div>
-              <div className="mt-1 text-sm text-muted">
-                {counts.data?.[area.id] ?? 0} open project
-                {(counts.data?.[area.id] ?? 0) === 1 ? '' : 's'}
-              </div>
-            </Card>
-          </Link>
+          <AreaCard
+            key={area.id}
+            area={area}
+            openProjects={counts.data?.[area.id] ?? 0}
+            totalXp={xpByArea.get(area.id)}
+            // v_hanging_threads only returns the owner's projects: for a shared area an empty
+            // answer says nothing, so no thread row at all. Nor while loading or after an error.
+            threadsKnown={threads.isSuccess && area.user_id === userId}
+            waiting={waiting.get(area.id)}
+            focusSeconds={focus.data?.total[area.id]}
+            onResume={(projectId) => navigate(`/projects/${projectId}`)}
+          />
         ))}
       </div>
+
+      {Boolean(areas.data?.length) && (
+        <WeeklySplit areas={areas.data ?? []} week={focus.data?.week} />
+      )}
 
       <AreaSheet
         open={sheetOpen}

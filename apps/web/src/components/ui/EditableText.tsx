@@ -76,7 +76,7 @@ export function EditableText({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={commit}
-            className="btn-primary min-h-[44px] rounded-lg border border-accent px-3 text-xs font-semibold text-accent"
+            className="btn-primary min-h-[44px] rounded-lg border border-accent px-3 text-caption font-semibold"
           >
             Save
           </button>
@@ -84,7 +84,7 @@ export function EditableText({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setEditing(false)}
-            className="min-h-[44px] rounded-lg px-3 text-xs font-semibold text-muted"
+            className="min-h-[44px] rounded-lg px-3 text-caption font-semibold text-muted"
           >
             Cancel
           </button>

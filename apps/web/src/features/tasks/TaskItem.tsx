@@ -1,48 +1,34 @@
 import { Card } from '../../components/ui/Card'
 import { EditableText } from '../../components/ui/EditableText'
+import { Icon } from '../../components/ui/Icon'
 import { StatusChip } from '../../components/ui/StatusChip'
 import { StatusPicker } from '../../components/ui/StatusPicker'
 import { compactFieldClass } from '../../components/ui/field'
 import { isOptimistic } from '../../lib/optimistic'
 import { relativeTime } from '../../lib/time'
+import { PriorityBadge } from '../../components/ui/PriorityBadge'
+import { XP } from '../../lib/xp'
 import {
   DIFFICULTIES,
   DIFFICULTY_LABELS,
-  PRIORITY_LABELS,
   type Difficulty,
   type ItemStatus,
-  type Priority,
   type Task,
 } from '../../lib/schemas'
 import { TimerButton } from '../timer/TimerButton'
 import { formatMinutes } from '../timer/pomodoro'
 import type { TaskView } from './listPrefs'
 
-/**
- * Priority is a shape, not a colour, and `med` draws nothing at all: most tasks in a healthy
- * list are `med`, so the list stays silent and only the exceptions speak. `alert`/`alert-ink`
- * is the error and `blocked` token — borrowing it here would read high priority as failure.
- */
-const PRIORITY_MARKS: Partial<Record<Priority, { glyph: string; className: string }>> = {
-  high: { glyph: '▲', className: 'text-accent' },
-  low: { glyph: '▽', className: 'text-muted' },
-}
-
-function PriorityMark({ priority, className = '' }: { priority: Priority; className?: string }) {
-  const mark = PRIORITY_MARKS[priority]
-  if (!mark) return null
-  return (
-    <span className={`shrink-0 text-2xs leading-none ${mark.className} ${className}`}>
-      <span aria-hidden>{mark.glyph}</span>
-      <span className="sr-only">{PRIORITY_LABELS[priority]} priority</span>
-    </span>
-  )
+/** "Touched 4d ago" — nothing at all for a row whose timestamp is not a date yet. */
+function touched(updatedAt: string): string | null {
+  const ago = relativeTime(updatedAt)
+  return ago ? `Touched ${ago}` : null
 }
 
 /** The bare enum letter fits the width budget; the label it stands for goes to the reader. */
 function DifficultyLetter({ difficulty }: { difficulty: Difficulty }) {
   return (
-    <span className="shrink-0 text-2xs font-semibold text-muted">
+    <span className="shrink-0 text-micro font-semibold text-muted">
       <span aria-hidden>{difficulty}</span>
       <span className="sr-only">Difficulty: {DIFFICULTY_LABELS[difficulty]}</span>
     </span>
@@ -117,7 +103,7 @@ export function TaskItem({
   if (view === 'row') {
     return (
       <div className="flex min-h-[56px] items-center gap-2 px-3 py-2">
-        <PriorityMark priority={task.priority} />
+        <PriorityBadge priority={task.priority} />
 
         <div className="min-w-0 flex-1">{title}</div>
 
@@ -131,8 +117,8 @@ export function TaskItem({
 
         <DifficultyLetter difficulty={task.difficulty} />
 
-        <span className="hidden shrink-0 text-2xs text-muted sm:inline">
-          {relativeTime(task.updated_at)}
+        <span className="hidden shrink-0 text-micro text-muted sm:inline">
+          {touched(task.updated_at)}
         </span>
 
         <OpenButton title={task.title} onOpen={onOpen} />
@@ -143,9 +129,6 @@ export function TaskItem({
   return (
     <Card className="flex min-h-[190px] flex-col">
       <div className="flex items-start justify-between gap-1">
-        {/* pt-3 lines the glyph up with the first line of the 44px title button rather than
-            centring it against a title that may wrap to two lines. */}
-        <PriorityMark priority={task.priority} className="pt-3" />
         {/* min-w-0, as in the row view: a flex item will not shrink below its longest word, so an
             unbroken title used to push the difficulty select and ⋯ out of the card (#54). */}
         <div className="min-w-0 flex-1">{title}</div>
@@ -165,6 +148,17 @@ export function TaskItem({
         <OpenButton title={task.title} onOpen={onOpen} />
       </div>
 
+      {/* The badges under the title, not beside it: the title row is already the width budget
+          #54 was about. XP is what Done pays for this size (XP.taskDone, as rpc_update_status);
+          the size letter itself is the select above, so it is not said twice. */}
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-micro text-muted">
+        <PriorityBadge priority={task.priority} />
+        <span>
+          {XP.taskDone[task.difficulty]} XP<span className="sr-only"> when done</span>
+        </span>
+        <span>{touched(task.updated_at)}</span>
+      </div>
+
       <EditableText
         multiline
         allowEmpty
@@ -173,7 +167,7 @@ export function TaskItem({
         value={task.description ?? ''}
         disabled={pending}
         onSave={(description) => onUpdate({ description })}
-        className="mt-1 flex-1 text-sm text-muted"
+        className="mt-1 flex-1 text-body text-muted"
       />
 
       <div className="mt-2">
@@ -192,16 +186,18 @@ export function TaskItem({
           aria-label={`Move ${task.title} to another project`}
           disabled={pending}
           onClick={onMove}
-          className="btn-quiet min-h-[44px] rounded-full border border-line px-2 text-xs font-semibold text-muted disabled:opacity-40"
+          className="btn-quiet min-h-[44px] rounded-full border border-line px-2 text-caption font-semibold text-muted disabled:opacity-40"
         >
-          ⇄ Move
+          <Icon name="swap_horiz" /> Move
         </button>
         {/* Beside the timer because it is the timer's own history: what the button has already
             banked on this task. Minutes, not mm:ss — this is a summary, and the live count is
             TimerBar's job. */}
         {focusSeconds ? (
-          <span className="ml-auto shrink-0 text-2xs text-muted">
-            <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+          <span className="ml-auto shrink-0 text-micro text-muted">
+            <span aria-hidden>
+              <Icon name="timer" /> {formatMinutes(focusSeconds)}
+            </span>
             <span className="sr-only">{formatMinutes(focusSeconds)} focused so far</span>
           </span>
         ) : null}

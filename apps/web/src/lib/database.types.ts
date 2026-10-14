@@ -241,6 +241,7 @@ export type Database = {
           priority: Database['public']['Enums']['priority']
           snoozed_until: string | null
           status: Database['public']['Enums']['item_status']
+          status_changed_at: string
           target_date: string | null
           title: string
           updated_at: string
@@ -256,6 +257,7 @@ export type Database = {
           priority?: Database['public']['Enums']['priority']
           snoozed_until?: string | null
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           target_date?: string | null
           title: string
           updated_at?: string
@@ -271,6 +273,7 @@ export type Database = {
           priority?: Database['public']['Enums']['priority']
           snoozed_until?: string | null
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           target_date?: string | null
           title?: string
           updated_at?: string
@@ -353,6 +356,7 @@ export type Database = {
           snoozed_until: string | null
           sort_order: number
           status: Database['public']['Enums']['item_status']
+          status_changed_at: string
           title: string
           updated_at: string
           user_id: string
@@ -368,6 +372,7 @@ export type Database = {
           snoozed_until?: string | null
           sort_order?: number
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           title: string
           updated_at?: string
           user_id: string
@@ -383,6 +388,7 @@ export type Database = {
           snoozed_until?: string | null
           sort_order?: number
           status?: Database['public']['Enums']['item_status']
+          status_changed_at?: string
           title?: string
           updated_at?: string
           user_id?: string

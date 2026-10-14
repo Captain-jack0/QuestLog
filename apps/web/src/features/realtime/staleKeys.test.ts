@@ -7,7 +7,7 @@ describe('staleKeys', () => {
   it.each([
     ['tasks', ['areas', 'focus', 'projects', 'tasks', 'threads']],
     ['projects', ['areas', 'focus', 'project', 'projects', 'quick-add', 'threads']],
-    ['progress_logs', ['project', 'projects', 'threads']],
+    ['progress_logs', ['focus', 'project', 'projects', 'threads']],
     ['project_members', ['areas', 'project', 'projects', 'tasks']],
     ['area_members', ['areas', 'projects']],
   ])('%s refreshes exactly its screens', (table, expected) => {

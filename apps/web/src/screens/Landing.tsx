@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Logo, LogoMark } from '../components/Logo'
+import { Icon, type IconName } from '../components/ui/Icon'
 import { BrainScene } from './landing/BrainScene'
 import { AppPreview } from './landing/AppPreview'
 
@@ -9,76 +10,76 @@ import { AppPreview } from './landing/AppPreview'
  * door in.
  */
 
-const PROBLEMS = [
+const PROBLEMS: { icon: IconName; title: string; body: string }[] = [
   {
-    icon: 'pi-search',
+    icon: 'search',
     title: 'You started it. Where did it go?',
     body: 'Three tabs, two notebooks, one half-written message. The work exists; the thread back to it does not.',
   },
   {
-    icon: 'pi-clock',
+    icon: 'schedule',
     title: 'Restarting costs more than the work',
     body: 'Twenty minutes of "what was I even doing" before the first real minute of doing it.',
   },
   {
-    icon: 'pi-chart-bar',
+    icon: 'bar_chart',
     title: 'Finishing nothing feels like doing nothing',
     body: 'Plenty happened today. None of it looks like progress — not from outside, and not from inside either.',
   },
 ]
 
-const FEATURES = [
+const FEATURES: { icon: IconName; label: string; title: string; body: string }[] = [
   {
-    icon: 'pi-bookmark',
+    icon: 'bookmark',
     label: 'Resume context',
     title: 'Every thread remembers two things',
     body: 'Where you left off, and the next step. Written once when you stop, waiting exactly there when you come back. No re-reading, no re-deciding.',
   },
   {
-    icon: 'pi-flag',
+    icon: 'flag',
     label: 'Today',
     title: 'Three things, not thirty',
     body: 'Pick up to three for today. Everything else stays visible but quiet, sorted by whatever has been waiting longest.',
   },
   {
-    icon: 'pi-stopwatch',
+    icon: 'timer',
     label: 'Timer & pomodoro',
-    title: 'A clock that runs on one thing',
-    body: 'Start a timer or a 25-minute pomodoro on a single task. The database itself refuses a second clock, so there is never a question of what you are on.',
+    title: 'Clocks that stay on the thread',
+    body: 'Start a timer or a 25-minute pomodoro right on a task. Up to three can run side by side, each on its own task or project, so the time lands on the work it was spent on.',
   },
   {
-    icon: 'pi-star',
+    icon: 'star',
     label: 'XP, streaks, badges',
     title: 'Credit for keeping the thread',
     body: 'Logging where you left off earns as much as finishing. The reward lands on the behaviour that actually keeps you moving.',
   },
   {
-    icon: 'pi-bell',
+    icon: 'notifications',
     label: 'Digest & nudges',
     title: 'A morning email, not a wall of red',
     body: 'What is waiting, with its next step, once a day. An evening nudge only if the day went by without a single check-in.',
   },
   {
-    icon: 'pi-lock',
+    icon: 'lock',
     label: 'Yours',
     title: 'Export everything, any time',
     body: 'One button gives you every row as JSON. Row-level security means nobody sees your log but you — not even by accident.',
   },
 ]
 
-const STEPS = [
+const STEPS: { icon: IconName; title: string; body: string }[] = [
   {
-    icon: 'pi-plus',
+    icon: 'add',
     title: 'Drop it in',
     body: 'One field, ten seconds, from any screen. It lands in an area you already have.',
   },
   {
-    icon: 'pi-pause',
+    icon: 'pause',
     title: 'Stop out loud',
     body: 'When you put something down, say where you left off and what comes next. That is the whole discipline.',
   },
   {
-    icon: 'pi-replay',
+    icon: 'replay',
     title: 'Pick it back up',
     body: 'Today shows the oldest waiting threads with their next step. You start working, not remembering.',
   },
@@ -93,26 +94,26 @@ export function LandingScreen() {
           <nav className="flex items-center gap-1">
             <a
               href="#how"
-              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
+              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-body text-muted sm:flex"
             >
               How it works
             </a>
             <a
               href="#features"
-              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-sm text-muted sm:flex"
+              className="link-quiet hidden min-h-[44px] items-center rounded-xl px-3 text-body text-muted sm:flex"
             >
               Features
             </a>
             <Link
               to="/login"
-              className="link-quiet flex min-h-[44px] items-center rounded-xl px-3 text-sm font-semibold text-muted"
+              className="link-quiet flex min-h-[44px] items-center rounded-xl px-3 text-body font-semibold text-muted"
             >
               Sign in
             </Link>
             <Link
               to="/login"
               state={{ mode: 'signup' }}
-              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-sm font-semibold text-accent transition"
+              className="btn-primary flex min-h-[44px] items-center rounded-xl border border-accent px-4 text-body font-semibold transition"
             >
               Start free
             </Link>
@@ -124,16 +125,18 @@ export function LandingScreen() {
         {/* hero */}
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
-              <i className="pi pi-sparkles icon-sm text-accent" aria-hidden />
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-sunken/60 px-3 py-1.5 text-micro uppercase text-muted">
+              <Icon name="stars" className="icon-md text-accent" />
               Built for minds that start a lot
             </p>
-            <h1 className="mt-5 font-display text-5xl leading-[1.05] md:text-7xl">
-              Nothing you started
-              <br />
-              has to disappear
+            {/* Inter at the role's own weight and leading, with no font-/leading- overrides: an
+                unprefixed override would lose to the md: role anyway (see tailwind.config.js).
+                No hard <br>: Inter at 800 is wider than the old serif, so a forced break left a
+                one-word line on phones and in the lg hero column. text-balance evens the wrap. */}
+            <h1 className="mt-5 text-balance text-display-lg-mobile md:text-display-lg">
+              Nothing you started has to disappear
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            <p className="mt-5 max-w-xl text-lead text-muted">
               QuestLog keeps the thread for every unfinished thing — where you left off, what comes
               next, and how long it has been waiting. So starting five things does not mean losing
               four.
@@ -142,10 +145,10 @@ export function LandingScreen() {
               <Link
                 to="/login"
                 state={{ mode: 'signup' }}
-                className="btn-primary flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold text-accent transition"
+                className="btn-primary flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold transition"
               >
                 Start your log
-                <i className="pi pi-arrow-right icon-md" aria-hidden />
+                <Icon name="arrow_forward" className="icon-lg" />
               </Link>
               <Link
                 to="/login"
@@ -154,7 +157,9 @@ export function LandingScreen() {
                 Sign in
               </Link>
             </div>
-            <p className="mt-4 text-sm text-muted">Free · works offline · installs to your phone</p>
+            <p className="mt-4 text-body text-muted">
+              Free · works offline · installs to your phone
+            </p>
           </div>
 
           <BrainScene />
@@ -168,9 +173,7 @@ export function LandingScreen() {
         <section className="border-y border-line bg-ink/5">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-20">
             <div className="mb-8 max-w-2xl">
-              <h2 className="font-display text-3xl leading-tight md:text-5xl">
-                This is what you sign in to
-              </h2>
+              <h2 className="text-display-sm">This is what you sign in to</h2>
               <p className="mt-3 text-muted">
                 Have a poke around — the tabs work and the focus items tick off.
               </p>
@@ -181,14 +184,12 @@ export function LandingScreen() {
 
         {/* the problem */}
         <section className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
-          <h2 className="max-w-2xl font-display text-3xl leading-tight md:text-5xl">
-            The problem was never motivation
-          </h2>
+          <h2 className="max-w-2xl text-display-sm">The problem was never motivation</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {PROBLEMS.map((item) => (
               <div key={item.title} className="border-t border-line pt-5">
-                <i className={`pi ${item.icon} text-accent`} aria-hidden />
-                <h3 className="mt-3 text-lg font-semibold leading-snug">{item.title}</h3>
+                <Icon name={item.icon} className="icon-xl text-accent" />
+                <h3 className="mt-3 text-title-md">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </div>
             ))}
@@ -198,7 +199,7 @@ export function LandingScreen() {
         {/* how it works */}
         <section id="how" className="border-y border-line bg-ink/5 scroll-mt-20">
           <div className="mx-auto max-w-6xl px-5 py-16 lg:py-24">
-            <h2 className="font-display text-3xl leading-tight md:text-5xl">Three moves</h2>
+            <h2 className="text-display-sm">Three moves</h2>
             <p className="mt-3 max-w-xl text-muted">
               No system to learn, no weekly review to fall behind on.
             </p>
@@ -206,12 +207,13 @@ export function LandingScreen() {
               {STEPS.map((step, i) => (
                 <li key={step.title} className="rounded-card border border-line bg-surface p-6">
                   <span className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-semibold text-accent">
+                    {/* accent-ink, not accent: bright accent on its own 15% tint misses 4.5:1. */}
+                    <span className="tabular flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-semibold text-accent-ink">
                       {i + 1}
                     </span>
-                    <i className={`pi ${step.icon} text-muted`} aria-hidden />
+                    <Icon name={step.icon} className="icon-xl text-muted" />
                   </span>
-                  <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
+                  <h3 className="mt-4 text-title-md">{step.title}</h3>
                   <p className="mt-2 leading-relaxed text-muted">{step.body}</p>
                 </li>
               ))}
@@ -221,9 +223,7 @@ export function LandingScreen() {
 
         {/* features */}
         <section id="features" className="mx-auto max-w-6xl px-5 py-16 scroll-mt-20 lg:py-24">
-          <h2 className="max-w-2xl font-display text-3xl leading-tight md:text-5xl">
-            The thread is the product
-          </h2>
+          <h2 className="max-w-2xl text-display-sm">The thread is the product</h2>
           <p className="mt-3 max-w-xl text-muted">
             Not another list of things you are failing to do. A place where stopping is part of the
             workflow.
@@ -234,11 +234,9 @@ export function LandingScreen() {
                 key={item.label}
                 className="card-hover rounded-card border border-line bg-surface p-6"
               >
-                <i className={`pi ${item.icon} text-accent`} aria-hidden />
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.15em] text-muted">
-                  {item.label}
-                </p>
-                <h3 className="mt-1 text-lg font-semibold leading-snug">{item.title}</h3>
+                <Icon name={item.icon} className="icon-xl text-accent" />
+                <p className="mt-3 text-micro uppercase text-muted">{item.label}</p>
+                <h3 className="mt-1 text-title-md">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
               </article>
             ))}
@@ -249,7 +247,7 @@ export function LandingScreen() {
         <section className="border-t border-line bg-ink/5">
           <div className="mx-auto max-w-3xl px-5 py-20 text-center lg:py-28">
             <LogoMark className="mx-auto h-10 w-10" />
-            <h2 className="mt-6 font-display text-4xl leading-tight md:text-6xl">
+            <h2 className="mt-6 text-display-lg-mobile md:text-display-lg">
               Pick the thread back up
             </h2>
             <p className="mx-auto mt-4 max-w-md text-muted">
@@ -258,10 +256,10 @@ export function LandingScreen() {
             <Link
               to="/login"
               state={{ mode: 'signup' }}
-              className="btn-primary mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold text-accent transition"
+              className="btn-primary mt-8 inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-accent px-6 font-semibold transition"
             >
               Start your log
-              <i className="pi pi-arrow-right icon-md" aria-hidden />
+              <Icon name="arrow_forward" className="icon-lg" />
             </Link>
           </div>
         </section>
@@ -271,15 +269,15 @@ export function LandingScreen() {
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <Logo />
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
+            <p className="mt-3 max-w-xs text-body leading-relaxed text-muted">
               A log for people who start more than they finish. Every thread keeps its own answer to
               “where was I?”
             </p>
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Product</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <p className="text-body font-semibold">Product</p>
+            <ul className="mt-3 space-y-2 text-body text-muted">
               <li>
                 <a href="#how" className="hover:text-ink">
                   How it works
@@ -299,8 +297,8 @@ export function LandingScreen() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Your data</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <p className="text-body font-semibold">Your data</p>
+            <ul className="mt-3 space-y-2 text-body text-muted">
               <li>Export as JSON, any time</li>
               <li>Row-level security per account</li>
               <li>Nightly off-site backups</li>
@@ -308,14 +306,11 @@ export function LandingScreen() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Elsewhere</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <p className="text-body font-semibold">Elsewhere</p>
+            <ul className="mt-3 space-y-2 text-body text-muted">
               <li>
-                <a
-                  href="https://github.com/Captain-jack0/QuestLog"
-                  className="inline-flex items-center gap-2 hover:text-ink"
-                >
-                  <i className="pi pi-github icon-md" aria-hidden />
+                {/* No mark: Material Symbols carries no brand logos, and the words say it. */}
+                <a href="https://github.com/Captain-jack0/QuestLog" className="hover:text-ink">
                   Source on GitHub
                 </a>
               </li>
@@ -324,7 +319,7 @@ export function LandingScreen() {
                   href="mailto:hello@captainmery.com"
                   className="inline-flex items-center gap-2 hover:text-ink"
                 >
-                  <i className="pi pi-envelope icon-md" aria-hidden />
+                  <Icon name="mail" className="icon-lg" />
                   hello@captainmery.com
                 </a>
               </li>
@@ -333,7 +328,7 @@ export function LandingScreen() {
         </div>
 
         <div className="border-t border-line">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-muted">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-body text-muted">
             <span>© {new Date().getFullYear()} QuestLog</span>
             <Link to="/login" className="font-semibold hover:text-ink">
               Sign in

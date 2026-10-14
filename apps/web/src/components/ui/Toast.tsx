@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { Icon } from './Icon'
 
 type Tone = 'info' | 'xp' | 'error'
 
@@ -164,7 +165,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             // Errors are assertive; a polite `status` region can sit unread while a save
             // silently failed. The tone decides, so the rest stay polite.
             role={t.tone === 'error' ? 'alert' : 'status'}
-            className={`animate-[slide-up_180ms_ease-out] rounded-full px-4 py-2 text-sm font-semibold shadow-lg ${tones[t.tone]} ${t.action ? 'pointer-events-auto flex items-center gap-2 py-0 pr-1' : ''}`}
+            className={`animate-[slide-up_180ms_ease-out] rounded-full px-4 py-2 text-body font-semibold shadow-lg ${tones[t.tone]} ${t.action ? 'pointer-events-auto flex items-center gap-2 py-0 pr-1' : ''}`}
             // Only a toast with a button can be hovered (the rest are pointer-events-none), so
             // this only ever holds that kind. Focus is held by the button itself (focusHolder).
             onMouseEnter={() => timers.current.get(t.id)?.hold()}
@@ -175,7 +176,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 already carries the meaning, so the glyph is decorative to a screen reader. */}
             {t.tone === 'error' && (
               <span aria-hidden="true" className="mr-1.5">
-                ⚠
+                <Icon name="warning" />
               </span>
             )}
             {t.message}

@@ -14,8 +14,8 @@ import '@fontsource/inter/400.css'
 import '@fontsource/inter/500.css'
 import '@fontsource/inter/600.css'
 import '@fontsource/inter/700.css'
-import '@fontsource/instrument-serif/400.css'
-import 'primeicons/primeicons.css'
+// The display-lg type role is set at 800; without this face it would fake-bold from 700.
+import '@fontsource/inter/800.css'
 import './index.css'
 
 initSentry()
@@ -31,14 +31,14 @@ const queryClient = new QueryClient({
 function Crashed() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 text-center">
-      <h1 className="text-2xl font-bold">Something broke 🧭</h1>
+      <h1 className="text-title-lg font-bold">Something broke 🧭</h1>
       <p className="mt-2 text-muted">
         The error was reported. Reloading usually gets you back on track.
       </p>
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold text-accent"
+        className="btn-primary mt-6 min-h-[44px] rounded-xl border border-accent py-3 font-semibold"
       >
         Reload
       </button>

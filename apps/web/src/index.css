@@ -22,9 +22,20 @@
   --flame-ink: 255 191 128;
   --alert: 255 107 129;
   --alert-ink: 255 158 172;
+  /* One tonal step either side of --surface: raised for floating decks and modals, sunken
+     for inset wells. On the night sky, lift is a lighter plane, not a bigger shadow. */
+  --surface-raised: 26 44 99;
+  --surface-sunken: 3 12 42;
   /* Drop shadows are always darker than the backdrop, never the backdrop colour itself.
      Holds "R G B / A" so one var() fills a whole rgb(). Dark sky carries a heavy shadow. */
   --shadow-brain: 0 0 0 / 0.55;
+  /* Whole box-shadow values, so the two themes can differ in shape, not just colour.
+     The float aura breaks the rule above on purpose: it is sky-tinted, so over the canvas it
+     only dims the stars around a deck instead of casting a black hole — the raised plane
+     does the lifting, the aura just softens its edge. */
+  --shadow-float: 0 8px 32px -4px rgb(var(--paper) / 0.65);
+  --shadow-glow-accent: 0 0 16px rgb(var(--accent) / 0.35);
+  --shadow-glow-flame: 0 0 14px rgb(var(--flame) / 0.4);
 }
 
 [data-theme='calm'] {
@@ -41,8 +52,18 @@
   --flame-ink: 166 76 9;
   --alert: 225 29 72;
   --alert-ink: 159 18 57;
+  /* Daylight lifts with a shadow instead, so raised stays white. Sunken is paper, not a
+     grey: muted text on anything darker than this falls under 4.5:1. */
+  --surface-raised: 255 255 255;
+  --surface-sunken: 250 250 247;
   /* Same black, far lighter — a 0.55 shadow would look like soot on paper. */
   --shadow-brain: 0 0 0 / 0.15;
+  --shadow-float: 0 12px 32px -6px rgb(var(--ink) / 0.08);
+  /* A halo on white reads as a smudge; daylight marks "running" with a crisp ring instead,
+     and the streak flame needs no glow at all. 0 0 #0000 rather than none: Tailwind puts
+     this var inside a comma list, where none is invalid. */
+  --shadow-glow-accent: 0 0 0 2px rgb(var(--accent) / 0.25);
+  --shadow-glow-flame: 0 0 #0000;
 }
 
 html {
@@ -90,7 +111,59 @@ body::before {
     100% 100%;
 }
 
-[data-theme='calm'] body::before {
+/* The galaxy: a second, fainter layer on top of the first. Faint 1px stars on prime-sized tiles
+   (no two share a factor, so the pattern never visibly repeats), a milky-way band across the
+   sky, and a dim flame nebula in the bottom corner. Static on purpose: no animation, no filter,
+   no backdrop-filter, no background-attachment — just painted once. Fixed like the layer above,
+   so it never takes up room in the page (e2e/sheet-keyboard.spec.ts relies on that). */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  background-image:
+    radial-gradient(1px 1px at 17% 23%, rgb(255 255 255 / 0.45), transparent 100%),
+    radial-gradient(1px 1px at 63% 41%, rgb(255 255 255 / 0.3), transparent 100%),
+    radial-gradient(1px 1px at 81% 77%, rgb(var(--accent-ink) / 0.4), transparent 100%),
+    radial-gradient(1px 1px at 29% 69%, rgb(255 255 255 / 0.25), transparent 100%),
+    radial-gradient(1px 1px at 47% 13%, rgb(255 255 255 / 0.35), transparent 100%),
+    radial-gradient(1px 1px at 91% 31%, rgb(255 255 255 / 0.2), transparent 100%),
+    radial-gradient(1px 1px at 7% 53%, rgb(var(--success-ink) / 0.3), transparent 100%),
+    radial-gradient(1px 1px at 71% 89%, rgb(255 255 255 / 0.4), transparent 100%),
+    radial-gradient(1px 1px at 37% 97%, rgb(255 255 255 / 0.3), transparent 100%),
+    radial-gradient(1px 1px at 53% 59%, rgb(255 255 255 / 0.2), transparent 100%),
+    radial-gradient(1px 1px at 13% 7%, rgb(var(--flame-ink) / 0.35), transparent 100%),
+    radial-gradient(1px 1px at 87% 61%, rgb(255 255 255 / 0.25), transparent 100%),
+    linear-gradient(
+      115deg,
+      transparent 30%,
+      rgb(var(--accent) / 0.05) 45%,
+      rgb(var(--success) / 0.035) 52%,
+      transparent 65%
+    ),
+    radial-gradient(ellipse 55% 45% at 95% 100%, rgb(var(--flame) / 0.05), transparent 70%);
+  background-repeat: repeat;
+  background-size:
+    233px 233px,
+    317px 317px,
+    389px 389px,
+    271px 271px,
+    353px 353px,
+    293px 293px,
+    409px 409px,
+    251px 251px,
+    337px 337px,
+    379px 379px,
+    263px 263px,
+    311px 311px,
+    100% 100%,
+    100% 100%;
+}
+
+[data-theme='calm'] body::before,
+[data-theme='calm'] body::after {
   opacity: 0;
 }
 
@@ -208,8 +281,16 @@ body::before {
 }
 
 /* ---- shared interaction colours ----------------------------------------------------
-   Ghost-by-default: buttons are transparent at rest, gaining colour only on hover.
-   Primary fills solid on hover; quiet variants tint subtly.
+   The primary action is filled at rest: Button's primary variant is solid accent with paper
+   text, so the one thing to press on a screen is findable without hovering (accent behind
+   paper holds AA in both themes). Its hover is a brightness step in Button.tsx, not a rule
+   here. Everything else stays ghost — transparent at rest, gaining colour only on hover.
+
+   `.btn-primary` is the same filled look for hand-rolled controls that are not a <Button> (Login,
+   Landing, the crash screen, the top bar's Quick add, inline Save, timer Stop): accent ground, paper
+   text, the same brightness hover, and no hover on a disabled control. Paper on accent is
+   5.8:1 (quest) and 6.9:1 (calm) at rest, and the accent edge clears 5:1 against the page and
+   card surfaces, so it reads on the Landing sections as well. Focus is the global ring above.
 
    Accent tints run on three steps, and they mean different things:
      0.06  a wash over a whole card      (.card-hover — large area, so the faintest step)
@@ -223,9 +304,14 @@ body::before {
    carry over — and it would not survive the arithmetic anyway. Over `--surface` the two values
    this used to hold resolve to rgb(44 81 154) at 0.45 and rgb(47 86 163) at 0.5: under 10/255
    apart on one channel, on a 1px line. That is drift, not intent, so it is one value. */
-.btn-primary:hover {
+.btn-primary {
   background-color: rgb(var(--accent));
   color: rgb(var(--paper));
+}
+
+/* :not(:disabled), not :enabled — Landing's CTAs are links, which are never :enabled. */
+.btn-primary:not(:disabled):hover {
+  filter: brightness(1.1);
 }
 
 .btn-quiet:hover {

@@ -141,7 +141,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
         }}
       >
         <div>
-          <label htmlFor="left-off" className="mb-1 block text-sm font-medium">
+          <label htmlFor="left-off" className="mb-1 block text-body font-medium">
             Where did you leave off?{required && <span className="text-alert-ink"> *</span>}
           </label>
           <textarea
@@ -155,7 +155,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
         </div>
 
         <div>
-          <label htmlFor="next-step" className="mb-1 block text-sm font-medium">
+          <label htmlFor="next-step" className="mb-1 block text-body font-medium">
             What&apos;s the next step?{required && <span className="text-alert-ink"> *</span>}
           </label>
           <textarea
@@ -168,21 +168,21 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
 
           {taskId ? (
             <div className="mt-2 flex items-center gap-1 rounded-xl border border-line bg-paper px-3">
-              <span className="min-w-0 flex-1 truncate py-2 text-sm">
+              <span className="min-w-0 flex-1 truncate py-2 text-body">
                 <span className="text-muted">Task: </span>
                 {taskTitle}
               </span>
               <button
                 type="button"
                 onClick={() => setMode('pick')}
-                className="min-h-[44px] shrink-0 px-2 text-sm font-semibold text-accent"
+                className="min-h-[44px] shrink-0 px-2 text-body font-semibold text-accent"
               >
                 Change
               </button>
               <button
                 type="button"
                 onClick={clearTask}
-                className="min-h-[44px] shrink-0 px-2 text-sm font-semibold text-muted"
+                className="min-h-[44px] shrink-0 px-2 text-body font-semibold text-muted"
               >
                 Clear
               </button>
@@ -191,7 +191,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
             <button
               type="button"
               onClick={() => setMode('pick')}
-              className="mt-1 min-h-[44px] text-sm font-semibold text-accent"
+              className="mt-1 min-h-[44px] text-body font-semibold text-accent"
             >
               …or point at a task →
             </button>
@@ -199,7 +199,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
         </div>
 
         <div>
-          <label htmlFor="status-note" className="mb-1 block text-sm font-medium">
+          <label htmlFor="status-note" className="mb-1 block text-body font-medium">
             Note <span className="text-muted">(optional)</span>
           </label>
           <input
@@ -211,7 +211,7 @@ export function UpdateStatusSheet({ pending, saving, onClose, onSubmit }: Update
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-alert-ink">
+          <p role="alert" className="text-body text-alert-ink">
             {error}
           </p>
         )}

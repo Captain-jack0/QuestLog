@@ -4,6 +4,7 @@
  * same numbers everywhere, the way they would in the real app.
  */
 
+import type { IconName } from '../../components/ui/Icon'
 import type { ItemStatus } from '../../lib/schemas'
 
 export interface PreviewTask {
@@ -25,7 +26,7 @@ export interface PreviewProject {
 export interface PreviewArea {
   id: string
   name: string
-  icon: string
+  icon: IconName
   colour: string
   projects: PreviewProject[]
 }
@@ -34,7 +35,7 @@ export const AREAS: PreviewArea[] = [
   {
     id: 'work',
     name: 'Work',
-    icon: 'pi-briefcase',
+    icon: 'work',
     colour: 'rgb(76 141 255)',
     projects: [
       {
@@ -78,7 +79,7 @@ export const AREAS: PreviewArea[] = [
   {
     id: 'home',
     name: 'Home',
-    icon: 'pi-home',
+    icon: 'home',
     colour: 'rgb(62 213 152)',
     projects: [
       {
@@ -116,7 +117,7 @@ export const AREAS: PreviewArea[] = [
   {
     id: 'writing',
     name: 'Writing',
-    icon: 'pi-pencil',
+    icon: 'edit',
     colour: 'rgb(255 168 76)',
     projects: [
       {
@@ -137,7 +138,7 @@ export const AREAS: PreviewArea[] = [
   {
     id: 'learning',
     name: 'Learning',
-    icon: 'pi-book',
+    icon: 'menu_book',
     colour: 'rgb(168 132 255)',
     projects: [
       {

@@ -1,0 +1,883 @@
+<!DOCTYPE html><html class="dark" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "secondary-fixed": "#ffdcbf",
+        "surface": "#07112f",
+        "inverse-surface": "#dce1ff",
+        "on-primary-fixed": "#001a42",
+        "surface-container-high": "#1f2847",
+        "secondary": "#ffb872",
+        "secondary-container": "#ab6302",
+        "tertiary": "#4bdfa1",
+        "surface-container-lowest": "#030c2a",
+        "surface-container-low": "#101a38",
+        "background": "#07112f",
+        "on-secondary": "#4a2800",
+        "primary": "#aec6ff",
+        "primary-fixed-dim": "#aec6ff",
+        "on-error": "#690005",
+        "secondary-fixed-dim": "#ffb872",
+        "on-surface": "#dce1ff",
+        "surface-variant": "#2a3353",
+        "surface-tint": "#aec6ff",
+        "on-error-container": "#ffdad6",
+        "error-container": "#93000a",
+        "on-tertiary-fixed": "#002113",
+        "outline": "#8c909f",
+        "on-secondary-container": "#fffbff",
+        "on-secondary-fixed-variant": "#6a3b00",
+        "primary-container": "#4e8eff",
+        "surface-container-highest": "#2a3353",
+        "on-secondary-fixed": "#2d1600",
+        "surface-container": "#151e3c",
+        "tertiary-fixed": "#6cfcbb",
+        "outline-variant": "#424753",
+        "on-tertiary-fixed-variant": "#005236",
+        "on-surface-variant": "#c2c6d6",
+        "error": "#ffb4ab",
+        "surface-bright": "#2f3857",
+        "on-background": "#dce1ff",
+        "inverse-on-surface": "#262f4e",
+        "on-tertiary-container": "#00311e",
+        "inverse-primary": "#005ac3",
+        "on-primary-container": "#00275d",
+        "on-primary": "#002e6a",
+        "on-primary-fixed-variant": "#004395",
+        "tertiary-fixed-dim": "#4bdfa1",
+        "surface-dim": "#07112f",
+        "primary-fixed": "#d8e2ff",
+        "tertiary-container": "#00a571",
+        "on-tertiary": "#003824"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      "spacing": {
+        "space-lg": "1.5rem",
+        "gutter-desktop": "1.5rem",
+        "space-md": "1rem",
+        "space-sm": "0.5rem",
+        "space-2xl": "3rem",
+        "timer-stack-height": "3.5rem",
+        "gutter": "1rem",
+        "space-xs": "0.25rem",
+        "space-2xs": "0.125rem",
+        "margin-desktop": "2.5rem",
+        "nav-bar-height": "4.25rem",
+        "space-xl": "2rem",
+        "margin": "1rem"
+      },
+      "fontFamily": {
+        "tabular-timer": ["Inter"],
+        "body-default": ["Inter"],
+        "title-md": ["Inter"],
+        "title-lg": ["Inter"],
+        "tabular-xp": ["Inter"],
+        "lead": ["Inter"],
+        "caption": ["Inter"],
+        "micro": ["Inter"],
+        "lead-mobile": ["Inter"],
+        "display-lg": ["Inter"],
+        "display-lg-mobile": ["Inter"],
+        "body-medium": ["Inter"],
+        "display-sm": ["Inter"]
+      },
+      "fontSize": {
+        "tabular-timer": ["14px", {"lineHeight": "18px", "fontWeight": "600"}],
+        "body-default": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+        "title-md": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+        "title-lg": ["24px", {"lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+        "tabular-xp": ["12px", {"lineHeight": "16px", "fontWeight": "700"}],
+        "lead": ["18px", {"lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "500"}],
+        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+        "micro": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+        "lead-mobile": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+        "display-lg": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+        "display-lg-mobile": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "800"}],
+        "body-medium": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+        "display-sm": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+      }
+    }
+  }
+}</script></head><body class="bg-background font-body-default text-body-default text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_4px_24px_rgba(3,12,42,0.8)]"><div class="flex flex-col"><div class="h-16 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="QuestLog Celestial Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V7Kv-wxdbJH0uglHPktVTb4RVDz0OTQEp9vtQzhidAyzGLWQrYuyCfpFMLvUfBHsEcXBoXobi2tsMFUi2LByTV_yVBL2a3AEnVEOarKMCJ0M1tLtr5qhHKGfZUgHF78X9Q277T-v9z8DllRJr4AHz3BkX0DVxvitF8o8gxJRE7tZK1MTwpc16Wwbco7K3mxg-V1yy6fKymppVYNOKRUPAHgtQpPFMoOsXstxpGGC2ZrR63hdah_S-M4Q"><div class="flex flex-col"><span class="font-title-md text-title-md text-on-surface leading-none tracking-tight">QuestLog</span><span class="font-micro text-micro uppercase tracking-wider text-primary mt-space-2xs">Logbook OS</span></div></div><span class="material-symbols-outlined text-outline-variant hover:text-on-surface cursor-pointer text-[20px] transition-colors">dock_to_left</span></div><div class="px-space-md py-space-sm"><div class="bg-surface-container-low rounded-xl p-space-sm flex flex-col gap-space-sm"><div class="flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-secondary text-[18px]">local_fire_department</span><span class="font-tabular-xp text-tabular-xp text-secondary">12d Streak</span></div><div class="flex items-center gap-space-2xs"><span class="material-symbols-outlined text-primary text-[16px]" title="2 Shields Active">shield</span><span class="font-micro text-micro text-primary font-bold">2</span></div></div><div class="flex items-center justify-between pt-space-xs"><span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider">Daily Orbit</span><span class="font-tabular-xp text-tabular-xp text-tertiary-fixed">+48 XP ✨</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-tertiary h-full w-3/4 rounded-full"></div></div></div></div><nav class="flex flex-col gap-space-2xs px-space-md mt-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-lg"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="today" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span class="font-body-medium text-body-medium">Today</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="threads" href="#"><span class="material-symbols-outlined text-[20px]">alt_route</span><span class="font-body-medium text-body-medium">Threads</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="areas" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="font-body-medium text-body-medium">Areas</span></a><a class="flex items-center justify-between px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary-container font-semibold shadow-[0_0_16px_rgba(76,141,255,0.35)] transition-all" data-path="progress" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">trending_up</span><span class="font-body-medium text-body-medium">Progress</span></div><span class="w-1.5 h-1.5 rounded-full bg-on-primary-container animate-pulse"></span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="quests" href="#"><span class="material-symbols-outlined text-[20px]">military_tech</span><span class="font-body-medium text-body-medium">Quests</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-body-medium text-body-medium">Settings</span></a></nav></div><div class="flex flex-col gap-space-sm p-space-md"><div class="bg-surface-container rounded-xl p-space-sm shadow-[0_8px_32px_-4px_rgba(8,18,48,0.65)]"><div class="flex items-center justify-between pb-space-xs"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary animate-pulse text-[18px]">timer</span><span class="font-caption text-caption text-primary uppercase font-bold tracking-wider">Focus Deck</span></div><span class="material-symbols-outlined text-outline-variant hover:text-on-surface cursor-pointer text-[16px]">more_horiz</span></div><div class="flex items-center justify-between pt-space-2xs"><div class="flex flex-col"><span class="font-caption text-caption text-on-surface font-medium truncate max-w-[130px]">Deep Cartography</span><span class="font-tabular-timer text-tabular-timer text-tertiary-fixed">18:42</span></div><div class="flex items-center gap-space-2xs"><button class="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container hover:bg-primary transition-colors"><span class="material-symbols-outlined text-[16px]">pause</span></button><button class="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[16px]">skip_next</span></button></div></div><div class="flex items-center justify-between mt-space-sm pt-space-xs bg-surface-container-low px-space-sm py-space-2xs rounded"><span class="font-micro text-micro text-secondary-fixed">🍅 Sprint 2/4</span><span class="font-tabular-xp text-tabular-xp text-on-surface-variant">25m cycle</span></div></div><div class="flex items-center justify-between pt-space-xs px-space-xs"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col"><span class="font-body-medium text-body-medium text-on-surface font-semibold leading-tight">Captain Mery</span><span class="font-micro text-micro text-outline">Rank VII Pioneer</span></div></div><span class="material-symbols-outlined text-outline-variant hover:text-on-surface cursor-pointer text-[18px]">unfold_more</span></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter-desktop"><div class="flex items-center gap-space-sm"><img alt="QuestLog Celestial Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V7Kv-wxdbJH0uglHPktVTb4RVDz0OTQEp9vtQzhidAyzGLWQrYuyCfpFMLvUfBHsEcXBoXobi2tsMFUi2LByTV_yVBL2a3AEnVEOarKMCJ0M1tLtr5qhHKGfZUgHF78X9Q277T-v9z8DllRJr4AHz3BkX0DVxvitF8o8gxJRE7tZK1MTwpc16Wwbco7K3mxg-V1yy6fKymppVYNOKRUPAHgtQpPFMoOsXstxpGGC2ZrR63hdah_S-M4Q"><nav class="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption" data-active-classes="text-on-surface font-semibold"><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="today" href="#">Cosmos</a><span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span><a class="text-on-surface-variant hover:text-on-surface transition-colors" data-path="threads" href="#">Captain's Log</a><span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span><span class="text-on-surface font-semibold flex items-center gap-space-2xs"><span class="material-symbols-outlined text-[14px] text-primary">trending_up</span>Progress &amp; Momentum</span></nav></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container"><span class="material-symbols-outlined text-secondary text-[16px]">local_fire_department</span><span class="font-tabular-xp text-tabular-xp text-secondary font-bold">12</span><span class="font-micro text-micro text-outline-variant">|</span><span class="font-tabular-xp text-tabular-xp text-tertiary font-bold">+48 XP</span></div><button class="flex items-center gap-space-xs px-space-md py-space-2xs bg-primary-container text-on-primary-container hover:bg-primary font-body-medium text-body-medium font-semibold rounded-lg shadow-[0_0_16px_rgba(76,141,255,0.35)] transition-all"><span class="material-symbols-outlined text-[18px]">add</span><span class="">New Quest</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="relative pt-16 bg-background flex-1 w-full px-gutter-desktop pb-space-2xl"><div class="flex flex-col w-full">
+<!-- Toast Notification Bar: Gentle Momentum Aura -->
+<div class="w-full mb-space-lg flex items-center justify-between bg-surface-container-low px-space-lg py-space-sm rounded-xl shadow-md">
+<div class="flex items-center gap-space-md">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary shadow-sm">
+<span class="material-symbols-outlined text-[18px]">flare</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Celestial Orbit Synchronized</span>
+<span class="font-caption text-caption text-on-surface-variant">Your momentum is running on high resonance. +140 XP earned over the last 7 solar rotations. Zero shame, purely fluid agency.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-micro text-micro uppercase tracking-widest text-primary px-space-sm py-space-2xs bg-surface-container-high rounded-full">Orbit Stability: 98.4%</span>
+<button class="text-on-surface-variant hover:text-on-surface flex items-center p-space-2xs">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Section 1: Hero Navigator Level Indicator & Trajectory Panel -->
+<div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-space-lg mb-space-xl">
+<!-- Left Column: Master Level Dossier (8 Cols) -->
+<div class="lg:col-span-8 bg-surface-container rounded-xl p-space-xl relative overflow-hidden shadow-xl flex flex-col justify-between">
+<div class="absolute -right-16 -top-16 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute right-32 bottom-0 w-64 h-64 bg-tertiary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-space-md">
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="px-space-sm py-space-2xs rounded-full bg-primary-container text-on-primary-container font-micro text-micro uppercase tracking-wider font-bold">Rank VII Pioneer</span>
+<span class="font-micro text-micro text-on-surface-variant flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[14px] text-tertiary">tune</span>
+              Formula: 100 × N^1.5 XP Curve
+            </span>
+</div>
+<div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high text-secondary">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+<span class="font-tabular-xp text-tabular-xp">Cosmic Cadence: Serene Flow</span>
+</div>
+</div>
+<div>
+<span class="font-micro text-micro uppercase tracking-widest text-primary block mb-space-2xs">Active Trajectory</span>
+<h1 class="font-display-sm text-display-sm text-on-surface tracking-tight">Level 7 Navigator — Wayfarer of Deep Projects</h1>
+<p class="font-body-default text-body-default text-on-surface-variant mt-space-xs max-w-2xl">
+            You are charting complex realms across work, creation, and hearth. Every recorded cycle adds starlight to your personal atlas.
+          </p>
+</div>
+<!-- Master XP Progress Bar Component -->
+<div class="mt-space-md bg-surface-container-low p-space-md rounded-xl">
+<div class="flex items-baseline justify-between mb-space-xs">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-title-lg text-title-lg text-primary font-bold">1,852</span>
+<span class="font-body-default text-body-default text-on-surface-variant">/ 2,140 XP</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-micro text-micro text-tertiary uppercase font-bold tracking-wider">86.5% Trajectory</span>
+<span class="font-micro text-micro text-outline-variant">•</span>
+<span class="font-caption text-caption text-on-surface-variant">288 XP to Rank VIII</span>
+</div>
+</div>
+<!-- Progress bar -->
+<div class="w-full bg-surface-container-highest h-3 rounded-full overflow-hidden p-0.5">
+<div class="bg-gradient-to-r from-primary via-primary-container to-tertiary h-full rounded-full w-[86.5%] shadow-[0_0_12px_rgba(78,142,255,0.4)]"></div>
+</div>
+<div class="flex items-center justify-between mt-space-xs">
+<span class="font-micro text-micro text-outline">Ascension: Rank VII (Initiated)</span>
+<span class="font-micro text-micro text-outline">Ascension: Rank VIII Horizon</span>
+</div>
+</div>
+</div>
+<div class="relative z-10 pt-space-lg flex items-center justify-between flex-wrap gap-space-md">
+<div class="flex items-center gap-space-lg">
+<div class="flex flex-col">
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider">Velocity Delta</span>
+<span class="font-title-md text-title-md text-tertiary-fixed font-bold">+140 XP / 7d</span>
+</div>
+<div class="flex flex-col">
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider">Pace Equilibrium</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">Self-Directed</span>
+</div>
+<div class="flex flex-col">
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider">Shame Metric</span>
+<span class="font-title-md text-title-md text-secondary font-semibold">0.0 (Sanctuary Mode)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-space-xs rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-medium text-body-medium flex items-center gap-space-xs shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[16px]">history_edu</span>
+<span class="">View Log Details</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Streak Sanctuary & Shields (4 Cols) -->
+<div class="lg:col-span-4 bg-surface-container rounded-xl p-space-xl flex flex-col justify-between shadow-xl relative overflow-hidden">
+<div class="absolute -left-10 -bottom-10 w-48 h-48 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col gap-space-md relative z-10">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">local_fire_department</span>
+<span class="font-micro text-micro uppercase tracking-wider text-secondary font-bold">Streak Vault</span>
+</div>
+<span class="font-micro text-micro text-outline px-space-xs py-space-2xs rounded bg-surface-container-low">Gentle Persistence</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-secondary font-bold tracking-tight">12</span>
+<span class="font-title-lg text-title-lg text-on-surface font-medium">Days</span>
+<span class="font-caption text-caption text-on-surface-variant ml-space-xs">(All-Time Orbit Peak: 18d)</span>
+</div>
+<div class="bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface font-semibold flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">shield</span>
+              Freeze Shields Armed
+            </span>
+<span class="px-space-xs py-space-2xs rounded bg-primary-container text-on-primary-container font-micro text-micro font-bold">2 Available</span>
+</div>
+<p class="font-micro text-micro text-on-surface-variant">
+            Life happens. Freeze shields auto-absorb calendar rest days without resetting your rhythm or momentum score.
+          </p>
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs">
+<div class="bg-surface-container p-space-xs rounded flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">verified_user</span>
+<div class="flex flex-col">
+<span class="font-micro text-micro text-on-surface font-semibold">Shield #1</span>
+<span class="font-micro text-micro text-tertiary">Ready</span>
+</div>
+</div>
+<div class="bg-surface-container p-space-xs rounded flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">verified_user</span>
+<div class="flex flex-col">
+<span class="font-micro text-micro text-on-surface font-semibold">Shield #2</span>
+<span class="font-micro text-micro text-tertiary">Ready</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-space-md relative z-10 flex items-center justify-between bg-surface-container-low/60 p-space-sm rounded-lg mt-space-md">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+<span class="font-caption text-caption">Protected today via 2 pomodoro sprints</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px]">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Section 2: Cosmic Heatmap / 90-Day Contribution Matrix (Zero Shaming) -->
+<div class="w-full bg-surface-container rounded-xl p-space-xl mb-space-xl shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">explore</span>
+<span class="font-title-md text-title-md text-on-surface">Cosmic Constellation Matrix</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Past 90 Days (12 Solar Weeks) of presence, deliberate rest, and creative expeditions.</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-micro text-micro text-tertiary px-space-sm py-space-2xs bg-tertiary-container/30 rounded-full flex items-center gap-space-2xs">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+          Rest Day Safe Protocol Active
+        </span>
+</div>
+</div>
+<!-- Heatmap Grid Container -->
+<div class="w-full overflow-x-auto py-space-sm">
+<div class="min-w-[720px] flex flex-col gap-space-xs">
+<!-- Month labels -->
+<div class="grid grid-cols-12 text-center text-outline font-micro text-micro tracking-wider uppercase mb-space-2xs">
+<span class="col-span-4 text-left pl-space-sm">November Orbit</span>
+<span class="col-span-4 text-left">December Orbit</span>
+<span class="col-span-4 text-left">January Starlight</span>
+</div>
+<!-- 7 Rows (Mon to Sun) x 13 Columns (Weeks) Matrix -->
+<!-- Row: Mon -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Mon</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest / Orbit Pause"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (18 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (45 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (95 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (50 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-secondary-container/80 flex items-center justify-center text-on-secondary-container text-[11px]" title="Shield Absorbed — Streak Protected">🛡️</div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (82 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (60 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (20 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (110 XP)"></div>
+<div class="w-5 h-5 rounded bg-tertiary shadow-[0_0_8px_rgba(75,223,161,0.5)]" title="Supernova Today (92 XP)"></div>
+</div>
+</div>
+<!-- Row: Tue -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Tue</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (15 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (35 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (85 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (22 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (50 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (90 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (40 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (88 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (65 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (70 XP)"></div>
+<div class="w-5 h-5 rounded bg-tertiary-container shadow-[0_0_8px_rgba(0,165,113,0.4)]" title="Supernova Current (84 XP)"></div>
+</div>
+</div>
+<!-- Row: Wed -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Wed</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (40 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (25 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (120 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (55 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (80 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest / Orbit Pause"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (15 XP)"></div>
+<div class="w-5 h-5 rounded bg-secondary-container/80 flex items-center justify-center text-on-secondary-container text-[11px]" title="Shield Absorbed — Streak Protected">🛡️</div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (105 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (95 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (115 XP)"></div>
+</div>
+</div>
+<!-- Row: Thu -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Thu</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (20 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (45 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (55 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (90 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (24 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (130 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (60 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (95 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (120 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (100 XP)"></div>
+</div>
+</div>
+<!-- Row: Fri -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Fri</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (45 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (90 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (50 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (20 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (85 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (60 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (90 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (25 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (45 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary" title="Supernova (110 XP)"></div>
+<div class="w-5 h-5 rounded bg-tertiary shadow-[0_0_8px_rgba(75,223,161,0.4)]" title="Supernova Peak (105 XP)"></div>
+</div>
+</div>
+<!-- Row: Sat -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Sat</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest / Orbit Pause"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (10 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (40 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (15 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (35 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (20 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (40 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (30 XP)"></div>
+</div>
+</div>
+<!-- Row: Sun -->
+<div class="flex items-center gap-space-xs">
+<span class="w-8 font-micro text-micro text-outline-variant text-right pr-space-xs">Sun</span>
+<div class="flex items-center gap-1.5 flex-1 justify-between">
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (15 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (45 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (30 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-low" title="Orbit Rest"></div>
+<div class="w-5 h-5 rounded bg-primary/30" title="Gentle Focus (20 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (50 XP)"></div>
+<div class="w-5 h-5 rounded bg-primary/60" title="Deep Flow (60 XP)"></div>
+<div class="w-5 h-5 rounded bg-surface-container-highest animate-pulse" title="Active Orbit Day Ahead"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Heatmap Compass Legend -->
+<div class="flex items-center justify-between flex-wrap gap-space-sm pt-space-sm border-t border-surface-container-high/40">
+<div class="flex items-center gap-space-md flex-wrap text-on-surface-variant font-caption text-caption">
+<div class="flex items-center gap-space-xs">
+<div class="w-3.5 h-3.5 rounded bg-surface-container-low"></div>
+<span class="">Rest / Orbit Pause</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="w-3.5 h-3.5 rounded bg-primary/30"></div>
+<span class="">Gentle Focus (1-25 XP)</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="w-3.5 h-3.5 rounded bg-primary/60"></div>
+<span class="">Deep Flow (25-80 XP)</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<div class="w-3.5 h-3.5 rounded bg-primary"></div>
+<span class="">Supernova (80+ XP)</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="text-[14px]">🛡️</span>
+<span class="">Shield Preserved</span>
+</div>
+</div>
+<span class="font-micro text-micro text-outline">Philosophy: Guilt-Free Rest is essential navigation.</span>
+</div>
+</div>
+<!-- Section 3: Dual Weekly Charts Grid (Side-by-Side) -->
+<div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-space-lg mb-space-xl">
+<!-- Chart A: Weekly XP Bar Dynamics -->
+<div class="bg-surface-container rounded-xl p-space-xl shadow-xl flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">bar_chart</span>
+<span class="font-title-md text-title-md text-on-surface">Weekly XP Trajectory</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Daily rewards breakdown across recent solar orbit</span>
+</div>
+<div class="text-right">
+<span class="font-micro text-micro uppercase tracking-wider text-outline block">Orbit Average</span>
+<span class="font-tabular-xp text-tabular-xp text-tertiary font-bold text-[16px]">77 XP / Day</span>
+</div>
+</div>
+<!-- Custom Inline SVG Chart for Weekly XP -->
+<div class="w-full h-52 flex flex-col justify-end pt-space-sm pb-space-xs">
+<svg class="w-full h-40 overflow-visible" fill="none" viewBox="0 0 420 140" xmlns="http://www.w3.org/2000/svg">
+<!-- Background Grid Lines -->
+<line class="text-surface-container-high" stroke="currentColor" stroke-width="1" x1="0" x2="420" y1="120" y2="120"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="420" y1="70" y2="70"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="420" y1="20" y2="20"></line>
+<!-- Bars with Gradient fills -->
+<!-- Mon: 45 XP -->
+<rect class="fill-primary/60 hover:fill-primary transition-colors cursor-pointer" height="45" rx="4" width="26" x="25" y="75"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="38" y="65">45</text>
+<!-- Tue: 70 XP -->
+<rect class="fill-primary/75 hover:fill-primary transition-colors cursor-pointer" height="70" rx="4" width="26" x="80" y="50"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="93" y="40">70</text>
+<!-- Wed: 95 XP -->
+<rect class="fill-primary hover:fill-primary-fixed transition-colors cursor-pointer" height="95" rx="4" width="26" x="135" y="25"></rect>
+<text class="fill-on-surface text-[11px] font-bold font-sans" text-anchor="middle" x="148" y="15">95</text>
+<!-- Thu: 120 XP (Peak) -->
+<rect class="fill-tertiary hover:fill-tertiary-fixed transition-colors cursor-pointer" height="115" rx="4" width="26" x="190" y="5"></rect>
+<text class="fill-tertiary-fixed text-[11px] font-bold font-sans" text-anchor="middle" x="203" y="-3">120 XP</text>
+<!-- Fri: 110 XP -->
+<rect class="fill-primary hover:fill-primary-fixed transition-colors cursor-pointer" height="105" rx="4" width="26" x="245" y="15"></rect>
+<text class="fill-on-surface text-[11px] font-bold font-sans" text-anchor="middle" x="258" y="6">110</text>
+<!-- Sat: 40 XP -->
+<rect class="fill-primary/50 hover:fill-primary transition-colors cursor-pointer" height="40" rx="4" width="26" x="300" y="80"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="313" y="72">40</text>
+<!-- Sun: 60 XP -->
+<rect class="fill-primary/70 hover:fill-primary transition-colors cursor-pointer" height="60" rx="4" width="26" x="355" y="60"></rect>
+<text class="fill-on-surface-variant text-[11px] font-sans" text-anchor="middle" x="368" y="50">60</text>
+</svg>
+<!-- Weekday Axis -->
+<div class="grid grid-cols-7 text-center font-micro text-micro text-on-surface-variant pt-space-xs">
+<span class="">Mon</span>
+<span class="">Tue</span>
+<span class="">Wed</span>
+<span class="text-tertiary font-bold">Thu</span>
+<span class="">Fri</span>
+<span class="">Sat</span>
+<span class="">Sun</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-low px-space-md py-space-xs rounded-lg flex items-center justify-between">
+<span class="font-micro text-micro text-outline">Total Orbit Sum: 540 XP</span>
+<span class="font-micro text-micro text-tertiary font-semibold flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +22% vs. Prior Cycle
+        </span>
+</div>
+</div>
+<!-- Chart B: Focus-Time Area Graph -->
+<div class="bg-surface-container rounded-xl p-space-xl shadow-xl flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">timer</span>
+<span class="font-title-md text-title-md text-on-surface">Deep Focus Minutes</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Chamber time across 23 tracked Pomodoro bursts</span>
+</div>
+<div class="text-right">
+<span class="font-micro text-micro uppercase tracking-wider text-outline block">Weekly Immersion</span>
+<span class="font-title-md text-title-md text-secondary font-bold">9h 35m</span>
+</div>
+</div>
+<!-- Custom SVG Area/Line Chart for Focus Time -->
+<div class="w-full h-52 flex flex-col justify-end pt-space-sm pb-space-xs">
+<svg class="w-full h-40 overflow-visible" fill="none" viewBox="0 0 420 140" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient gradientUnits="userSpaceOnUse" id="focusGlow" x1="0" x2="0" y1="0" y2="120">
+<stop offset="0%" stop-color="#ffb872" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#ffb872" stop-opacity="0.0"></stop>
+</linearGradient>
+</defs>
+<!-- Horizontal reference lines -->
+<line class="text-surface-container-high" stroke="currentColor" stroke-width="1" x1="0" x2="420" y1="120" y2="120"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="420" y1="65" y2="65"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="420" y1="15" y2="15"></line>
+<!-- Filled Area Under Curve -->
+<!-- Mon: 50m (y=80), Tue: 75m (y=60), Wed: 125m (y=20), Thu: 150m (y=5), Fri: 100m (y=40), Sat: 45m (y=84), Sun: 30m (y=96) -->
+<path d="M 30 120 L 30 80 Q 60 70 95 60 T 160 20 T 225 5 T 290 40 T 355 84 T 390 96 L 390 120 Z" fill="url(#focusGlow)"></path>
+<!-- Smooth Line -->
+<path d="M 30 80 Q 60 70 95 60 T 160 20 T 225 5 T 290 40 T 355 84 T 390 96" fill="none" stroke="#ffb872" stroke-linecap="round" stroke-width="3"></path>
+<!-- Data Points with Tooltip style tags -->
+<circle class="fill-surface stroke-secondary" cx="30" cy="80" r="4" stroke-width="2"></circle>
+<circle class="fill-surface stroke-secondary" cx="95" cy="60" r="4" stroke-width="2"></circle>
+<circle class="fill-surface stroke-secondary" cx="160" cy="20" r="4" stroke-width="2"></circle>
+<circle class="fill-secondary shadow-lg" cx="225" cy="5" r="5"></circle>
+<circle class="fill-surface stroke-secondary" cx="290" cy="40" r="4" stroke-width="2"></circle>
+<circle class="fill-surface stroke-secondary" cx="355" cy="84" r="4" stroke-width="2"></circle>
+<circle class="fill-surface stroke-secondary" cx="390" cy="96" r="4" stroke-width="2"></circle>
+<text class="fill-secondary text-[11px] font-bold font-sans" text-anchor="middle" x="225" y="-6">150m Peak</text>
+</svg>
+<!-- Weekday Axis with duration values -->
+<div class="grid grid-cols-7 text-center font-micro text-micro text-on-surface-variant pt-space-xs">
+<span class="">50m</span>
+<span class="">75m</span>
+<span class="">125m</span>
+<span class="text-secondary font-bold">150m</span>
+<span class="">100m</span>
+<span class="">45m</span>
+<span class="">30m</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-low px-space-md py-space-xs rounded-lg flex items-center justify-between">
+<span class="font-micro text-micro text-outline">Active Cadence: 25m focus / 5m recharge</span>
+<span class="font-micro text-micro text-secondary font-semibold flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[14px]">psychology</span> 23 Pomodoro Cycles
+        </span>
+</div>
+</div>
+</div>
+<!-- Section 4: Per-Area Mastery & Life Facet Levels -->
+<div class="w-full bg-surface-container rounded-xl p-space-xl mb-space-xl shadow-xl flex flex-col gap-space-lg">
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">hub</span>
+<span class="font-title-lg text-title-lg text-on-surface">Area Levels &amp; Mastery Matrix</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Cosmic progression partitioned across your five foundational life facets.</span>
+</div>
+<button class="px-space-md py-space-xs rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-medium text-body-medium flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span class="">Rebalance Realms</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-space-md">
+<!-- Realm 1: #CRAFT -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 left-0 right-0 h-1 bg-[#38bdf8]"></div>
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-micro text-micro font-bold uppercase tracking-wider text-[#38bdf8]">#CRAFT</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container font-micro text-micro text-on-surface font-bold">Lvl 8</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">High Architect</h2>
+<span class="font-caption text-caption text-on-surface-variant">Work &amp; Systems Core</span>
+</div>
+<!-- Progress bar -->
+<div class="flex flex-col gap-space-2xs mt-space-xs">
+<div class="flex items-center justify-between font-micro text-micro text-outline">
+<span class="">82% to Level 9</span>
+<span class="font-tabular-timer text-on-surface">14.5h Logged</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#38bdf8] h-full rounded-full w-[82%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container-high/40 flex items-center justify-between">
+<span class="font-micro text-micro text-outline">XP Weight: 42%</span>
+<span class="material-symbols-outlined text-[#38bdf8] text-[18px]">verified</span>
+</div>
+</div>
+<!-- Realm 2: #SANCTUARY -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 left-0 right-0 h-1 bg-[#fbbf24]"></div>
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-micro text-micro font-bold uppercase tracking-wider text-[#fbbf24]">#SANCTUARY</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container font-micro text-micro text-on-surface font-bold">Lvl 4</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">Hearth Keeper</h2>
+<span class="font-caption text-caption text-on-surface-variant">Home &amp; Environment</span>
+</div>
+<!-- Progress bar -->
+<div class="flex flex-col gap-space-2xs mt-space-xs">
+<div class="flex items-center justify-between font-micro text-micro text-outline">
+<span class="">48% to Level 5</span>
+<span class="font-tabular-timer text-on-surface">4.2h Logged</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#fbbf24] h-full rounded-full w-[48%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container-high/40 flex items-center justify-between">
+<span class="font-micro text-micro text-outline">XP Weight: 15%</span>
+<span class="material-symbols-outlined text-[#fbbf24] text-[18px]">cottage</span>
+</div>
+</div>
+<!-- Realm 3: #FORGE -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 left-0 right-0 h-1 bg-[#a855f7]"></div>
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-micro text-micro font-bold uppercase tracking-wider text-[#a855f7]">#FORGE</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container font-micro text-micro text-on-surface font-bold">Lvl 6</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">Word Weaver</h2>
+<span class="font-caption text-caption text-on-surface-variant">Writing &amp; Creative Acts</span>
+</div>
+<!-- Progress bar -->
+<div class="flex flex-col gap-space-2xs mt-space-xs">
+<div class="flex items-center justify-between font-micro text-micro text-outline">
+<span class="">65% to Level 7</span>
+<span class="font-tabular-timer text-on-surface">6.0h Logged</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#a855f7] h-full rounded-full w-[65%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container-high/40 flex items-center justify-between">
+<span class="font-micro text-micro text-outline">XP Weight: 20%</span>
+<span class="material-symbols-outlined text-[#a855f7] text-[18px]">draw</span>
+</div>
+</div>
+<!-- Realm 4: #GROWTH -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 left-0 right-0 h-1 bg-[#34d399]"></div>
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-micro text-micro font-bold uppercase tracking-wider text-[#34d399]">#GROWTH</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container font-micro text-micro text-on-surface font-bold">Lvl 5</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">Polymath</h2>
+<span class="font-caption text-caption text-on-surface-variant">Learning &amp; Deep Reading</span>
+</div>
+<!-- Progress bar -->
+<div class="flex flex-col gap-space-2xs mt-space-xs">
+<div class="flex items-center justify-between font-micro text-micro text-outline">
+<span class="">35% to Level 6</span>
+<span class="font-tabular-timer text-on-surface">3.5h Logged</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#34d399] h-full rounded-full w-[35%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container-high/40 flex items-center justify-between">
+<span class="font-micro text-micro text-outline">XP Weight: 12%</span>
+<span class="material-symbols-outlined text-[#34d399] text-[18px]">auto_stories</span>
+</div>
+</div>
+<!-- Realm 5: #VITALITY -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container-high transition-colors">
+<div class="absolute top-0 left-0 right-0 h-1 bg-[#fb7185]"></div>
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-micro text-micro font-bold uppercase tracking-wider text-[#fb7185]">#VITALITY</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container font-micro text-micro text-on-surface font-bold">Lvl 3</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">Vanguard</h2>
+<span class="font-caption text-caption text-on-surface-variant">Health &amp; Movement</span>
+</div>
+<!-- Progress bar -->
+<div class="flex flex-col gap-space-2xs mt-space-xs">
+<div class="flex items-center justify-between font-micro text-micro text-outline">
+<span class="">70% to Level 4</span>
+<span class="font-tabular-timer text-on-surface">5.0h Logged</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#fb7185] h-full rounded-full w-[70%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container-high/40 flex items-center justify-between">
+<span class="font-micro text-micro text-outline">XP Weight: 11%</span>
+<span class="material-symbols-outlined text-[#fb7185] text-[18px]">favorite</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 5: Badge Shelf & Cosmic Relics (Earned & Locked Previews) -->
+<div class="w-full bg-surface-container rounded-xl p-space-xl shadow-xl flex flex-col gap-space-lg">
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">military_tech</span>
+<span class="font-title-lg text-title-lg text-on-surface">Celestial Reliquary &amp; Badges</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Permanent markers of presence, intentional letting go, and craft resilience.</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-caption text-caption text-on-surface-variant">5 Earned</span>
+<span class="text-outline-variant">•</span>
+<span class="font-caption text-caption text-outline">3 Next Constellations</span>
+</div>
+</div>
+<!-- Shelf Grid: Earned First, Then Soft Locked Previews -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Earned Badge 1 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-md shadow-md hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-[24px]">flag</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">First Quest</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-primary font-bold">Class I Initiation</span>
+<p class="font-caption text-caption text-on-surface-variant mt-space-2xs">Logged first expedition thread and calibrated launch coordinates.</p>
+</div>
+</div>
+<!-- Earned Badge 2 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-md shadow-md hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container text-on-tertiary flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-[24px]">all_inclusive</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Threadkeeper</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-tertiary font-bold">Tri-Orbit Resonance</span>
+<p class="font-caption text-caption text-on-surface-variant mt-space-2xs">Maintained 3 active multi-week threads concurrently without dropping context.</p>
+</div>
+</div>
+<!-- Earned Badge 3 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-md shadow-md hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-[24px]">stars</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Week One</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-secondary font-bold">Septet Constellation</span>
+<p class="font-caption text-caption text-on-surface-variant mt-space-2xs">Completed first full 7-day celestial trajectory cycle.</p>
+</div>
+</div>
+<!-- Earned Badge 4 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-md shadow-md hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-[24px]">electric_bolt</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Necromancer</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-primary font-bold">Resurrection Flare</span>
+<p class="font-caption text-caption text-on-surface-variant mt-space-2xs">Revived a dormant side project sleeping for &gt;30 solar days.</p>
+</div>
+</div>
+<!-- Earned Badge 5: Honest Quitter (Philosophy Badge) -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-md shadow-md hover:bg-surface-container-high transition-colors">
+<div class="w-12 h-12 rounded-xl bg-tertiary/20 text-tertiary-fixed flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-[24px]">spa</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Honest Quitter</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-tertiary font-bold">Guilt-Free Grace</span>
+<p class="font-caption text-caption text-on-surface-variant mt-space-2xs">Gracefully archived an outlived quest to honor true energy constraints.</p>
+</div>
+</div>
+<!-- Locked Preview 1: Monthly Legend -->
+<div class="bg-surface-container-low/50 rounded-xl p-space-md flex items-start gap-space-md shadow-sm border border-dashed border-outline-variant/40">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high text-outline flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">calendar_month</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface-variant">Monthly Legend</span>
+<span class="material-symbols-outlined text-outline text-[16px]">lock</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-outline font-semibold">18 / 30 Days Logged</span>
+<p class="font-caption text-caption text-outline mt-space-2xs">Unlocks Tier VIII Navigator Cap &amp; Star Map Theme.</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden mt-space-xs">
+<div class="bg-primary/40 h-full rounded-full w-[60%]"></div>
+</div>
+</div>
+</div>
+<!-- Locked Preview 2: Master Finisher -->
+<div class="bg-surface-container-low/50 rounded-xl p-space-md flex items-start gap-space-md shadow-sm border border-dashed border-outline-variant/40">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high text-outline flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">task_alt</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface-variant">Master Finisher</span>
+<span class="material-symbols-outlined text-outline text-[16px]">lock</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-outline font-semibold">8 / 10 Quests Archived</span>
+<p class="font-caption text-caption text-outline mt-space-2xs">Unlocks Starlight Vault Theme &amp; Custom Shaders.</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden mt-space-xs">
+<div class="bg-tertiary/40 h-full rounded-full w-[80%]"></div>
+</div>
+</div>
+</div>
+<!-- Locked Preview 3: Zenith Orbit -->
+<div class="bg-surface-container-low/50 rounded-xl p-space-md flex items-start gap-space-md shadow-sm border border-dashed border-outline-variant/40">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high text-outline flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">hourglass_top</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface-variant">Zenith Orbit</span>
+<span class="material-symbols-outlined text-outline text-[16px]">lock</span>
+</div>
+<span class="font-micro text-micro uppercase tracking-wider text-outline font-semibold">38 / 50 Hours Deep Focus</span>
+<p class="font-caption text-caption text-outline mt-space-2xs">Cumulative Pomodoro mastery badge for disciplined builders.</p>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden mt-space-xs">
+<div class="bg-secondary/40 h-full rounded-full w-[76%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Agency & Philosophy Card -->
+<div class="w-full mt-space-xl p-space-md rounded-xl bg-surface-container-low/70 flex items-center justify-between flex-wrap gap-space-md">
+<div class="flex items-center gap-space-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px]">lightbulb</span>
+<span class="font-body-default text-body-default">
+        "Progress is not an unbroken line—it is the deliberate constellation you build across time."
+      </span>
+</div>
+<div class="flex items-center gap-space-md">
+<button class="font-caption text-caption text-primary hover:underline flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[14px]">download</span>
+<span class="">Export Logbook Archive (JSON / Markdown)</span>
+</button>
+</div>
+</div>
+</div></main></div>
+
+
+
+</body></html>

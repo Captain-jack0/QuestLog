@@ -2,13 +2,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { OPEN_STATUSES, type ItemStatus } from '../../lib/schemas'
 
+/** The area embed. Null when the row is out of reach under RLS (a project shared with you that
+ *  lives in someone else's area) as well as when there is no area. */
+type AreaEmbed = { name: string; color: string } | null
+
 export interface FocusRow {
   id: string
   completed: boolean
   task_id: string | null
   project_id: string | null
-  tasks: { title: string; status: ItemStatus } | null
-  projects: { title: string; status: ItemStatus } | null
+  tasks: {
+    title: string
+    status: ItemStatus
+    projects: { title: string; life_areas: AreaEmbed } | null
+  } | null
+  projects: { title: string; status: ItemStatus; life_areas: AreaEmbed } | null
 }
 
 /** A task or project that can be picked as today's focus, or as a next step. */
@@ -26,6 +34,7 @@ export interface PickableItem {
 export const focusKeys = {
   forDate: (date: string) => ['focus', date] as const,
   pickable: ['focus', 'pickable'] as const,
+  nextSteps: ['focus', 'next-steps'] as const,
 }
 
 export function useFocusItems(date: string) {
@@ -34,13 +43,52 @@ export function useFocusItems(date: string) {
     queryFn: async (): Promise<FocusRow[]> => {
       const { data, error } = await supabase
         .from('focus_items')
-        .select('id, completed, task_id, project_id, tasks(title, status), projects(title, status)')
+        .select(
+          'id, completed, task_id, project_id, tasks(title, status, projects(title, life_areas(name, color))), projects(title, status, life_areas(name, color))',
+        )
         .eq('date', date)
         .order('created_at')
       if (error) throw error
       // A row whose item RLS no longer shows (its project was deleted, #60) has nothing to
       // render but "Untitled": drop it, as digest_payload does.
       return (data as unknown as FocusRow[]).filter((row) => row.tasks || row.projects)
+    },
+  })
+}
+
+/**
+ * The next step each focus card leads with, keyed by focus row id: the newest progress log of a
+ * task, or the newest log filed under a project (any of its tasks' too — the Areas cards' rule,
+ * projects/stats.ts). One `limit(1)` read per picked item, so at most three, each through the
+ * same RLS as the project timeline. Under the `focus` key: rpc_update_status and the realtime
+ * progress_logs stream both refresh it.
+ */
+export function useFocusNextSteps(items: FocusRow[]) {
+  return useQuery({
+    queryKey: [...focusKeys.nextSteps, items.map((item) => item.id).join(',')],
+    enabled: items.length > 0,
+    queryFn: async (): Promise<Record<string, string | null>> => {
+      const latest = await Promise.all(
+        items.map((item) => {
+          // Newest log that actually has a next step: a micro-note files a log without one.
+          const logs = supabase
+            .from('progress_logs')
+            .select('next_step')
+            .not('next_step', 'is', null)
+            .neq('next_step', '')
+          // A focus row holds exactly one of the two ids (rpc_pick_focus).
+          const own = item.task_id
+            ? logs.eq('task_id', item.task_id)
+            : logs.eq('project_id', item.project_id ?? '')
+          return own.order('created_at', { ascending: false }).limit(1).maybeSingle()
+        }),
+      )
+      const steps: Record<string, string | null> = {}
+      latest.forEach(({ data, error }, i) => {
+        if (error) throw error
+        steps[items[i].id] = data?.next_step ?? null
+      })
+      return steps
     },
   })
 }

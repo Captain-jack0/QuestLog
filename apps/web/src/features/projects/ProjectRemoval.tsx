@@ -103,12 +103,12 @@ export function useProjectRemoval(
           if (deleteConfirmed(typed, title)) remove.mutate()
         }}
       >
-        <p className="text-sm text-muted">
+        <p className="text-body text-muted">
           It disappears from every list, for everyone it is shared with. Its history, your XP and
           your badges stay, and you can undo right after.
         </p>
         <div>
-          <label htmlFor={`delete-confirm-${id}`} className="mb-1 block text-sm font-medium">
+          <label htmlFor={`delete-confirm-${id}`} className="mb-1 block text-body-medium">
             Type <strong>{title}</strong> to confirm
           </label>
           <input
