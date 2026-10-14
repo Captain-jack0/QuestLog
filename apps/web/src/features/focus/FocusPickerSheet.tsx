@@ -12,7 +12,7 @@ interface FocusPickerSheetProps {
   saving?: boolean
 }
 
-const MAX_FOCUS = 3
+export const MAX_FOCUS = 3
 
 export function FocusPickerSheet({ open, onClose, onSubmit, saving }: FocusPickerSheetProps) {
   const items = usePickableItems(open)
@@ -57,7 +57,7 @@ export function FocusPickerSheet({ open, onClose, onSubmit, saving }: FocusPicke
   const renderGroup = (id: string, heading: string, group: PickableItem[]) =>
     group.length > 0 && (
       <section aria-labelledby={id}>
-        <h3 id={id} className="mb-2 text-2xs font-semibold uppercase tracking-wide text-muted">
+        <h3 id={id} className="mb-2 text-micro font-semibold uppercase tracking-wide text-muted">
           {heading} · {group.length}
         </h3>
         <ul className="space-y-2">
@@ -88,7 +88,7 @@ export function FocusPickerSheet({ open, onClose, onSubmit, saving }: FocusPicke
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Pick today's focus">
-      <p className="mb-3 text-sm text-muted">
+      <p className="mb-3 text-body text-muted">
         Up to three things. {selected.length}/{MAX_FOCUS} chosen.
       </p>
 

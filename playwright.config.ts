@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 5173
+const DESKTOP_ONLY = /shell-desktop\.spec\.ts/
 
 export default defineConfig({
   testDir: './e2e',
@@ -17,11 +18,18 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'] }, testIgnore: DESKTOP_ONLY },
     // WebKit is the engine this app is actually used on and the only one that reproduces the
     // iOS bugs Chromium papers over — the body scroll lock in `sheet-keyboard.spec.ts` exists
     // because `overflow: hidden` alone is ignored here and nowhere else.
-    { name: 'mobile-safari', use: { ...devices['iPhone 14'] } },
+    { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, testIgnore: DESKTOP_ONLY },
+    // The rail, top bar breadcrumb and ⌘K only exist from md up. Only the shell spec runs here:
+    // the flows above are the same code at any width, and doubling them doubles the run.
+    {
+      name: 'desktop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+      testMatch: DESKTOP_ONLY,
+    },
   ],
   webServer: {
     command: 'npm run dev',

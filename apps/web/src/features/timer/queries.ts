@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tansta
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
 import { areaKeys } from '../areas/queries'
+import { sumSecondsByArea, sumWeekSecondsByArea } from '../areas/areaSummary'
 import {
   autoStoppedMessage,
   resolvePomodoro,
@@ -45,6 +46,7 @@ export const timerKeys = {
   daily: ['timer', 'daily'] as const,
   taskTotals: ['timer', 'task-totals'] as const,
   projectTotals: ['timer', 'project-totals'] as const,
+  areaTotals: ['timer', 'area-totals'] as const,
 }
 
 /** Every clock running now — up to three since issue #45. Order is timerDeck's job. */
@@ -216,7 +218,7 @@ export async function stopAllTimers() {
  * Keyed on the task ids, not on the project: `time_entries.project_id` is snapshotted when the
  * timer starts (time_tracking.sql:52-53,67-68) and no trigger re-points it, so a task moved to
  * another project keeps entries filed under the old one. Asking by project would drop that
- * task's whole history the moment ⇄ Move is pressed.
+ * task's whole history the moment Move is pressed.
  *
  * ponytail: no aggregate and no limit — with config.toml's max_rows = 1000 a screen whose
  * tasks hold more than 1000 sessions between them would silently undercount. Roughly three
@@ -261,6 +263,36 @@ export function useProjectTotals(projectIds: string[]) {
         .in('project_id', projectIds)
       if (error) throw error
       return sumSecondsByProject((data ?? []) as ProjectTimeEntryRow[])
+    },
+  })
+}
+
+/**
+ * Banked focus seconds per area — all time for the Areas cards, since Monday for the weekly
+ * split. time_entries has no area, so the project embed brings it (RLS on projects applies: an
+ * entry on a project you can no longer see comes back without one and is skipped). Under the
+ * `timer` key, so stopping a clock refreshes it.
+ *
+ * ponytail: the newest 1000 finished sessions (config.toml's max_rows) — the week is always
+ * whole, the all-time totals undercount past that; a `sum() group by area_id` RPC is the upgrade.
+ */
+export function useAreaFocus() {
+  return useQuery({
+    queryKey: timerKeys.areaTotals,
+    queryFn: async (): Promise<{ total: Record<string, number>; week: Record<string, number> }> => {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('seconds, started_at, projects(area_id)')
+        .not('seconds', 'is', null)
+        .order('started_at', { ascending: false })
+        .limit(1000)
+      if (error) throw error
+      const rows = data.map((row) => ({
+        area_id: row.projects?.area_id ?? null,
+        seconds: row.seconds,
+        started_at: row.started_at,
+      }))
+      return { total: sumSecondsByArea(rows), week: sumWeekSecondsByArea(rows, new Date()) }
     },
   })
 }

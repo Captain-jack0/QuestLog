@@ -38,7 +38,7 @@ export function EmptyState({ title, description, onAction }: EmptyStateProps) {
   const card = (
     <Card className={`text-center ${onAction ? 'border border-dashed border-line' : ''}`}>
       <span className="block font-medium">{title}</span>
-      {description && <span className="mt-1 block text-sm text-muted">{description}</span>}
+      {description && <span className="mt-1 block text-body text-muted">{description}</span>}
     </Card>
   )
 

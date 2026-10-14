@@ -31,6 +31,19 @@ describe('aggregateProjectStats', () => {
     expect(stats.p1.nextStep).toBe('newest')
   })
 
+  it('skips newer logs with a null or empty next_step', () => {
+    const stats = aggregateProjectStats(
+      ids,
+      [],
+      [
+        { project_id: 'p1', next_step: null },
+        { project_id: 'p1', next_step: '' },
+        { project_id: 'p1', next_step: 'real one' },
+      ],
+    )
+    expect(stats.p1.nextStep).toBe('real one')
+  })
+
   it('ignores rows for projects outside the requested list', () => {
     const stats = aggregateProjectStats(
       ids,

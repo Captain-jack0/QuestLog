@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "surface-bright": "#2f3857",
+        "primary-container": "#4e8eff",
+        "inverse-on-surface": "#262f4e",
+        "on-error": "#690005",
+        "on-primary-container": "#00275d",
+        "surface-variant": "#2a3353",
+        "on-surface-variant": "#c2c6d6",
+        "surface-container-highest": "#2a3353",
+        "on-primary-fixed": "#001a42",
+        "on-primary-fixed-variant": "#004395",
+        "surface-container": "#151e3c",
+        "on-tertiary-container": "#00311e",
+        "on-tertiary": "#003824",
+        "on-background": "#dce1ff",
+        "outline-variant": "#424753",
+        "on-secondary": "#4a2800",
+        "error": "#ffb4ab",
+        "error-container": "#93000a",
+        "background": "#07112f",
+        "secondary-fixed-dim": "#ffb872",
+        "on-secondary-container": "#fffbff",
+        "on-secondary-fixed": "#2d1600",
+        "tertiary-container": "#00a571",
+        "tertiary": "#4bdfa1",
+        "surface": "#07112f",
+        "primary-fixed-dim": "#aec6ff",
+        "secondary": "#ffb872",
+        "tertiary-fixed-dim": "#4bdfa1",
+        "on-tertiary-fixed-variant": "#005236",
+        "surface-container-lowest": "#030c2a",
+        "outline": "#8c909f",
+        "on-error-container": "#ffdad6",
+        "inverse-surface": "#dce1ff",
+        "surface-tint": "#aec6ff",
+        "secondary-container": "#ab6302",
+        "surface-container-low": "#101a38",
+        "surface-dim": "#07112f",
+        "primary": "#aec6ff",
+        "primary-fixed": "#d8e2ff",
+        "on-secondary-fixed-variant": "#6a3b00",
+        "on-tertiary-fixed": "#002113",
+        "on-primary": "#002e6a",
+        "on-surface": "#dce1ff",
+        "inverse-primary": "#005ac3",
+        "surface-container-high": "#1f2847",
+        "tertiary-fixed": "#6cfcbb",
+        "secondary-fixed": "#ffdcbf"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      "spacing": {
+        "space-md": "1rem",
+        "margin": "1rem",
+        "space-sm": "0.5rem",
+        "nav-bar-height": "4.25rem",
+        "space-lg": "1.5rem",
+        "timer-stack-height": "3.5rem",
+        "space-xl": "2rem",
+        "gutter": "1rem",
+        "space-2xs": "0.125rem",
+        "space-xs": "0.25rem",
+        "space-2xl": "3rem",
+        "gutter-desktop": "1.5rem",
+        "margin-desktop": "2.5rem"
+      },
+      "fontFamily": {
+        "lead-mobile": ["Inter"],
+        "lead": ["Inter"],
+        "display-lg-mobile": ["Inter"],
+        "title-md": ["Inter"],
+        "body-medium": ["Inter"],
+        "display-lg": ["Inter"],
+        "caption": ["Inter"],
+        "tabular-xp": ["Inter"],
+        "display-sm": ["Inter"],
+        "title-lg": ["Inter"],
+        "tabular-timer": ["Inter"],
+        "micro": ["Inter"],
+        "body-default": ["Inter"]
+      },
+      "fontSize": {
+        "lead-mobile": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+        "lead": ["18px", {"lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "500"}],
+        "display-lg-mobile": ["32px", {"lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "800"}],
+        "title-md": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+        "body-medium": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+        "display-lg": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+        "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+        "tabular-xp": ["12px", {"lineHeight": "16px", "fontWeight": "700"}],
+        "display-sm": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+        "title-lg": ["24px", {"lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+        "tabular-timer": ["14px", {"lineHeight": "18px", "fontWeight": "600"}],
+        "micro": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+        "body-default": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+      }
+    }
+  }
+}</script></head><body class="bg-surface font-body-default text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-md flex items-center gap-space-sm bg-surface-container-lowest/40"><div class="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shadow-[0_0_16px_rgba(76,141,255,0.35)]"><span class="material-symbols-outlined text-[20px]">explore</span></div><div class="flex flex-col"><span class="font-title-md text-title-md tracking-tight text-on-surface leading-none">QuestLog</span><span class="font-micro text-micro uppercase tracking-wider text-primary mt-space-2xs">LOGBOOK OS</span></div></div><div class="p-space-sm"><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-body-medium shadow-[0_0_16px_rgba(76,141,255,0.35)]"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant font-body-medium text-body-medium hover:bg-surface-container-high hover:text-on-surface transition-all duration-150" data-path="today" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span><span>Today</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant font-body-medium text-body-medium hover:bg-surface-container-high hover:text-on-surface transition-all duration-150" data-path="threads" href="#"><span class="material-symbols-outlined text-[20px]">alt_route</span><span>Threads</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant font-body-medium text-body-medium hover:bg-surface-container-high hover:text-on-surface transition-all duration-150" data-path="areas" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span>Areas</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant font-body-medium text-body-medium hover:bg-surface-container-high hover:text-on-surface transition-all duration-150" data-path="progress" href="#"><span class="material-symbols-outlined text-[20px]">trending_up</span><span>Progress</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant font-body-medium text-body-medium hover:bg-surface-container-high hover:text-on-surface transition-all duration-150" data-path="quests" href="#"><span class="material-symbols-outlined text-[20px]">military_tech</span><span>Quests</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-all duration-150 bg-primary-container text-on-primary-container font-body-medium shadow-[0_0_16px_rgba(76,141,255,0.35)]" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Settings</span></a></nav></div><div class="flex-1 px-space-sm overflow-y-auto min-h-0 flex flex-col gap-space-xs mt-space-sm"><div class="px-space-sm py-space-2xs flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-micro text-micro uppercase tracking-wider text-on-surface-variant font-semibold">IN PROGRESS (3)</span></div><span class="font-caption text-caption text-primary">Orbitals</span></div><div class="flex flex-col gap-space-xs"><div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group"><div class="flex items-center justify-between gap-space-xs"><span class="font-body-medium text-body-medium text-on-surface truncate">Finalize ARR metrics table</span><button class="flex items-center justify-center w-6 h-6 rounded bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors flex-shrink-0"><span class="material-symbols-outlined text-[16px]">pause</span></button></div><div class="flex items-center justify-between mt-space-2xs font-caption text-caption"><span class="text-secondary font-semibold">P1 High</span><span class="font-tabular-timer text-tabular-timer text-tertiary">18:42</span></div></div><div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors group"><div class="flex items-center justify-between gap-space-xs"><span class="font-body-medium text-body-medium text-on-surface-variant truncate">Refactor auth middleware</span><button class="flex items-center justify-center w-6 h-6 rounded bg-surface-variant text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0"><span class="material-symbols-outlined text-[16px]">play_arrow</span></button></div><div class="flex items-center justify-between mt-space-2xs font-caption text-caption"><span class="text-outline">P2 Med</span><span class="text-outline">paused</span></div></div><div class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors group"><div class="flex items-center justify-between gap-space-xs"><span class="font-body-medium text-body-medium text-on-surface-variant truncate">Clean pantry &amp; restock oats</span><button class="flex items-center justify-center w-6 h-6 rounded bg-surface-variant text-on-surface hover:bg-surface-container-high transition-colors flex-shrink-0"><span class="material-symbols-outlined text-[16px]">play_arrow</span></button></div><div class="flex items-center justify-between mt-space-2xs font-caption text-caption"><span class="text-outline">P3</span><span class="text-outline">paused</span></div></div><a class="px-space-sm py-space-2xs font-caption text-caption text-primary hover:text-on-primary-container transition-colors" data-path="quests" href="#">+2 more in backlog</a></div></div></div><div class="p-space-sm bg-surface-container-lowest/60 flex flex-col gap-space-xs"><div class="p-space-sm rounded-lg bg-surface-container-high shadow-[0_0_14px_rgba(76,141,255,0.25)]"><div class="flex items-center justify-between mb-space-2xs"><div class="flex items-center gap-space-2xs"><span class="material-symbols-outlined text-secondary text-[16px]">timelapse</span><span class="font-micro text-micro uppercase tracking-wider text-secondary">Sprint Active</span></div><span class="font-tabular-timer text-tabular-timer text-on-surface font-semibold">18:42 / 25m</span></div><div class="font-body-medium text-body-medium text-on-surface font-semibold truncate">Deep Cartography</div><div class="w-full bg-surface-variant h-1.5 rounded-full mt-space-xs overflow-hidden"><div class="bg-secondary h-full rounded-full" style="width: 74%"></div></div></div><div class="p-space-xs rounded-lg flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col min-w-0"><span class="font-body-medium text-body-medium text-on-surface truncate font-semibold">@Captain Mery</span><span class="font-caption text-caption text-on-surface-variant truncate">Rank VII Pioneer</span></div></div><span class="material-symbols-outlined text-outline text-[18px]">shield</span></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm text-on-surface-variant font-caption text-caption"><span class="hover:text-on-surface cursor-pointer">Cosmos</span><span class="text-outline">/</span><span class="hover:text-on-surface cursor-pointer">Captain's Log</span><span class="text-outline">/</span><span class="text-on-surface font-semibold">Settings &amp; Preferences</span></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high shadow-[0_0_14px_rgba(255,168,76,0.3)]"><span class="material-symbols-outlined text-secondary text-[16px]">local_fire_department</span><span class="font-caption text-caption text-secondary font-bold">12d Streak</span><span class="text-outline font-caption text-caption">·</span><span class="font-caption text-caption text-on-surface-variant">2 Shields</span></div><div class="flex items-center gap-space-2xs px-space-sm py-space-2xs rounded-full bg-surface-container-high"><span class="material-symbols-outlined text-tertiary text-[16px]">stars</span><span class="font-tabular-xp text-tabular-xp text-tertiary">+48 XP</span></div><button class="flex items-center gap-space-xs px-space-sm py-space-2xs rounded-lg bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors font-body-medium text-body-medium font-semibold"><span class="material-symbols-outlined text-[18px]">add</span><span>Quick Add</span><kbd class="font-micro text-micro px-1 py-0.5 rounded bg-on-primary-container/20 text-on-primary-container ml-space-2xs">⌘K</kbd></button><div class="flex items-center gap-space-xs pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<!-- Interactive Modals / Overlays Showcase Tier -->
+<div class="relative w-full px-space-lg lg:px-margin-desktop py-space-xl flex flex-col gap-space-2xl">
+<!-- Top Visual Alert / Notification Strip -->
+<div class="w-full flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md p-space-md rounded-xl bg-surface-container-high shadow-lg">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-tertiary-container/30 text-tertiary flex items-center justify-center flex-shrink-0 shadow-[0_0_16px_rgba(75,223,161,0.25)]">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface">Settings &amp; System Orbit</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container text-tertiary font-micro text-micro uppercase tracking-wider">Synced v4.12</span>
+</div>
+<span class="font-body-medium text-body-medium text-on-surface-variant">Tune your focus sanctuary, cadence notifications, telemetry exports, and cognitive load controls.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm w-full lg:w-auto justify-end">
+<button class="px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant transition-colors font-body-medium text-body-medium" id="discardBtn">
+          Discard
+        </button>
+<button class="flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_16px_rgba(78,142,255,0.4)] font-body-medium text-body-medium font-semibold" id="saveBtn">
+<span class="material-symbols-outlined text-[18px]">cloud_done</span>
+<span>Save Changes</span>
+</button>
+</div>
+</div>
+<!-- GLOBAL COMPONENTS SHOWCASE GRID (Interactive Demonstration Deck) -->
+<div class="w-full flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">layers</span>
+<span class="font-micro text-micro uppercase tracking-wider text-primary font-bold">Active Global Interaction Sheets</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Live state previews triggered via <kbd class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-micro">⌘K</kbd> and Share Orbits</span>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- COMPONENT A: Global Quick Add Modal / Sheet -->
+<div class="xl:col-span-7 flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-xl relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-title-md text-title-md text-on-surface flex items-center gap-space-xs">
+<span>⚡ Global Quick Add</span>
+<span class="font-caption text-caption text-secondary font-medium">(Auto-saves in 8s)</span>
+</span>
+</div>
+<!-- Live Circular Countdown SVG -->
+<div class="flex items-center gap-space-xs">
+<div class="relative w-7 h-7 flex items-center justify-center">
+<svg class="w-7 h-7 -rotate-90" viewbox="0 0 32 32">
+<circle class="text-surface-variant" cx="16" cy="16" fill="none" r="13" stroke="currentColor" stroke-width="2.5"></circle>
+<circle class="text-secondary stroke-current" cx="16" cy="16" fill="none" r="13" stroke="currentColor" stroke-dasharray="81.68" stroke-dashoffset="20.4" stroke-linecap="round" stroke-width="2.5"></circle>
+</svg>
+<span class="absolute font-micro text-micro text-secondary font-bold">8s</span>
+</div>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Quick Text Input -->
+<div class="relative mb-space-md">
+<input class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-lead text-lead focus:outline-none focus:ring-1 focus:ring-primary shadow-inner" placeholder="What needs your attention? (e.g. 'Audit cloud billing #craft P1')" type="text" value="Audit cloud telemetry billing clusters #craft P1"/>
+<span class="absolute right-3 top-3 text-primary material-symbols-outlined text-[20px]">auto_fix_high</span>
+</div>
+<!-- Quick Pickers Multi-Bar -->
+<div class="flex flex-col gap-space-sm bg-surface-container p-space-sm rounded-lg">
+<!-- Area & Project selector row -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider mr-1">Area:</span>
+<button class="px-space-xs py-space-2xs rounded bg-primary-container text-on-primary-container font-caption text-caption font-semibold shadow-[0_0_10px_rgba(78,142,255,0.35)]">#CRAFT</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant hover:text-on-surface font-caption text-caption">#SANCTUARY</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant hover:text-on-surface font-caption text-caption">#FORGE</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant hover:text-on-surface font-caption text-caption">#GROWTH</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant hover:text-on-surface font-caption text-caption">#VITALITY</button>
+<div class="h-4 w-px bg-outline-variant mx-1"></div>
+<div class="flex items-center gap-space-2xs px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface font-caption text-caption cursor-pointer">
+<span>Q2 ARR Expansion</span>
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+</div>
+</div>
+<!-- Size / Difficulty & Priority row -->
+<div class="flex flex-wrap items-center justify-between gap-space-xs pt-space-2xs border-t-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider mr-1">T-Shirt XP:</span>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface font-tabular-xp text-tabular-xp hover:bg-surface-bright">S · 15 XP</button>
+<button class="px-space-xs py-space-2xs rounded bg-tertiary-container text-on-tertiary-container font-tabular-xp text-tabular-xp font-bold shadow-[0_0_8px_rgba(0,165,113,0.3)]">M · 25 XP</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface font-tabular-xp text-tabular-xp hover:bg-surface-bright">L · 50 XP</button>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider mr-1">Urgency:</span>
+<button class="px-space-xs py-space-2xs rounded bg-secondary-container text-on-secondary-container font-caption text-caption font-bold">P1 High</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant font-caption text-caption">P2 Med</button>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant font-caption text-caption">P3 Normal</button>
+</div>
+</div>
+</div>
+<!-- Footer Action Hints -->
+<div class="flex items-center justify-between mt-space-md text-on-surface-variant font-caption text-caption">
+<span class="flex items-center gap-space-2xs text-secondary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Auto-persisting in 8s...
+            </span>
+<div class="flex items-center gap-space-sm">
+<span>Press <kbd class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-micro">↵ Enter</kbd> to launch immediately</span>
+<span>or <kbd class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-micro">Esc</kbd> to dismiss</span>
+</div>
+</div>
+</div>
+<!-- COMPONENT B: Project Share Dialog Sheet -->
+<div class="xl:col-span-5 flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-xl">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-on-surface font-bold">Share Project</span>
+<span class="px-space-xs py-space-2xs rounded bg-primary-container/20 text-primary font-micro text-micro font-bold">#CRAFT</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Q2 ARR Expansion</span>
+</div>
+<!-- Invite by Email -->
+<div class="flex items-center gap-space-xs mb-space-md">
+<div class="relative flex-1">
+<input class="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-medium text-body-medium focus:outline-none" placeholder="Invite collaborator by email..." type="text"/>
+</div>
+<div class="flex items-center gap-space-2xs px-space-xs py-space-xs rounded-lg bg-surface-container text-on-surface font-caption text-caption cursor-pointer">
+<span>Can Edit</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</div>
+<button class="px-space-sm py-space-xs rounded-lg bg-primary-container text-on-primary-container font-caption text-caption font-bold hover:bg-primary transition-colors">
+              Invite
+            </button>
+</div>
+<!-- Public Constellation Link Switch -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container mb-space-md">
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-semibold">Public Constellation Link</span>
+<span class="font-caption text-caption text-on-surface-variant">Anyone with read-only link can view progress nodes</span>
+</div>
+<button class="flex items-center gap-space-2xs px-space-xs py-space-2xs rounded bg-surface-variant hover:bg-surface-bright text-on-surface font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">link</span>
+<span>Copy Link</span>
+</button>
+</div>
+<!-- Active Members List -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-micro text-micro uppercase tracking-wider text-on-surface-variant font-semibold">Active Members (3)</span>
+<div class="flex items-center justify-between p-space-xs rounded-lg hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-on-primary font-micro font-bold">M</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-medium leading-none">Captain Mery (You)</span>
+<span class="font-caption text-caption text-on-surface-variant">mery@questlog.dev</span>
+</div>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface-variant font-micro text-micro uppercase">Owner</span>
+</div>
+<div class="flex items-center justify-between p-space-xs rounded-lg hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-micro font-bold">SJ</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-medium leading-none">Sarah Jenkins</span>
+<span class="font-caption text-caption text-on-surface-variant">@sarah · Editor</span>
+</div>
+</div>
+<button class="font-caption text-caption text-error hover:underline">Revoke</button>
+</div>
+<div class="flex items-center justify-between p-space-xs rounded-lg hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-micro font-bold">ER</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-medium leading-none">Elena Rostov</span>
+<span class="font-caption text-caption text-on-surface-variant">@elena · Viewer</span>
+</div>
+</div>
+<button class="font-caption text-caption text-error hover:underline">Revoke</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- COMPONENT C: Desktop & Mobile Telemetry Parity Callout -->
+<div class="p-space-md rounded-xl bg-surface-container-high/60 flex flex-col md:flex-row items-center justify-between gap-space-md shadow-md">
+<div class="flex items-center gap-space-md">
+<div class="w-9 h-9 rounded-full bg-primary/20 text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">chevron_forward</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-bold">In-Progress Task Orbit Synchronization</span>
+<span class="font-caption text-caption text-on-surface-variant">Active desk items mirror directly into the Stacked Mobile TimerBar &amp; Rail In-Progress deck in real-time.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-space-2xs px-space-sm py-space-xs rounded-full bg-surface-container-lowest text-tertiary font-tabular-timer text-tabular-timer">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-ping"></span>
+<span>● 3 running active threads</span>
+</div>
+<span class="font-micro text-micro text-on-surface-variant uppercase tracking-wider">Zero drift guarantee</span>
+</div>
+</div>
+<!-- MAIN SETTINGS FORM DECK (Bento-style structured sections) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Profile, Appearance, Focus Audio (7 cols) -->
+<div class="xl:col-span-7 flex flex-col gap-space-xl">
+<!-- SECTION 1: Profile & Identity -->
+<section class="flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">badge</span>
+<h2 class="font-title-lg text-title-lg text-on-surface">1. Profile &amp; Identity</h2>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container text-secondary font-caption text-caption font-semibold">Rank VII Pioneer</span>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg mb-space-lg">
+<!-- Custom callsign avatar with cosmic orbit ring -->
+<div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-primary/40 animate-[spin_12s_linear_infinite]"></div>
+<div class="w-20 h-20 rounded-full bg-gradient-to-tr from-primary-container via-surface-variant to-tertiary-container p-0.5 shadow-[0_0_20px_rgba(78,142,255,0.4)]">
+<div class="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Futuristic celestial commander portrait avatar with holographic starry glints, neo-indigo atmospheric reflections, clean minimal cyberpunk cyberware on brow, hyper-detailed digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnDqUwR86mJS5Khqh8b0TYP4PJIqM1DJWlZ5hucMMNzd3TUGtgMrUVfCUEJ9pRsJZubXJY1T-lpH0IC2ERT5nvC2wU7rAPrBB5LgwCYqzxXknfTjb9yG1He9iyjRqgN-dgSjQF18jX-36qE8y-sNt4Cp3ytXnT-wqVZKGFr0sguU5ZP7f3wd52EBHKnJmKczkodpCrHFGaA-17kFXLERRxCZIZVQCu4Jau6sY5s3zrz560WvZ7FLn3"/>
+</div>
+</div>
+<button class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[14px]">photo_camera</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-xs flex-1 w-full">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-title-md text-title-md text-on-surface font-bold">@Captain Mery</span>
+<span class="px-space-xs py-space-2xs rounded bg-tertiary-container/30 text-tertiary font-micro text-micro uppercase tracking-wider font-bold">Orbital Commander</span>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-caption text-caption">
+<span>Callsign ID: ORBIT-8849-ALPHA</span>
+<span>·</span>
+<span>Level 42 Constellation</span>
+</div>
+<div class="flex items-center gap-space-xs mt-space-2xs">
+<span class="font-micro text-micro uppercase tracking-wider text-outline">Affiliations:</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container text-primary font-caption text-caption">#CRAFT</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container text-tertiary font-caption text-caption">#GROWTH</span>
+</div>
+</div>
+</div>
+<!-- Form Fields Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md mb-space-md">
+<div class="flex flex-col gap-space-2xs">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Display Name</label>
+<input class="px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-body-medium text-body-medium focus:outline-none focus:ring-1 focus:ring-primary" type="text" value="Captain Mery"/>
+</div>
+<div class="flex flex-col gap-space-2xs">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Callsign Handle</label>
+<input class="px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-body-medium text-body-medium focus:outline-none focus:ring-1 focus:ring-primary" type="text" value="@captainmery"/>
+</div>
+<div class="flex flex-col gap-space-2xs sm:col-span-2">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Primary Telemetry Email</label>
+<input class="px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-body-medium text-body-medium focus:outline-none focus:ring-1 focus:ring-primary" type="email" value="mery@questlog.dev"/>
+</div>
+<div class="flex flex-col gap-space-2xs sm:col-span-2">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Personal North Star / Guiding Maxim</label>
+<textarea class="px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-body-medium text-body-medium focus:outline-none focus:ring-1 focus:ring-primary resize-none" rows="2">Deliberate momentum over guilt-driven velocity.</textarea>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Appearance & Atmosphere (Quest vs Calm Modes) -->
+<section class="flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">palette</span>
+<h2 class="font-title-lg text-title-lg text-on-surface">2. Appearance &amp; Atmosphere</h2>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Theme &amp; Optics</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md mb-space-lg">
+<!-- Card A: Quest Mode (ACTIVE) -->
+<div class="p-space-md rounded-xl bg-surface-container-high relative flex flex-col justify-between cursor-pointer group shadow-[0_0_20px_rgba(78,142,255,0.25)]">
+<div class="absolute top-3 right-3 flex items-center gap-1 px-space-xs py-space-2xs rounded-full bg-primary-container text-on-primary-container font-micro text-micro font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>ACTIVE</span>
+</div>
+<div class="flex flex-col mb-space-md">
+<div class="flex items-center gap-space-xs mb-space-2xs">
+<span class="material-symbols-outlined text-primary text-[20px]">nights_stay</span>
+<span class="font-title-md text-title-md text-on-surface font-bold">Quest Mode</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant leading-relaxed">
+                  Gamified celestial landscape with floating XP flares, orbit streaks, constellation ranks, and luminous neon indigo indicators.
+                </p>
+</div>
+<!-- Mini visual mock of Quest mode -->
+<div class="h-24 w-full rounded-lg bg-surface-container-lowest p-space-xs flex flex-col justify-between overflow-hidden relative">
+<div class="absolute inset-0 bg-[radial-gradient(#4e8eff_1px,transparent_1px)] [background-size:12px_12px] opacity-25"></div>
+<div class="flex items-center justify-between relative z-10">
+<span class="px-1.5 py-0.5 rounded bg-primary-container text-on-primary-container font-micro text-[9px] font-bold">+45 XP</span>
+<span class="text-secondary font-micro text-[10px]">🔥 12d Streak</span>
+</div>
+<div class="flex items-center gap-2 relative z-10">
+<div class="h-2 w-16 bg-primary rounded-full"></div>
+<div class="h-2 w-8 bg-tertiary rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Card B: Calm Mode -->
+<div class="p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high relative flex flex-col justify-between cursor-pointer transition-colors">
+<div class="flex flex-col mb-space-md">
+<div class="flex items-center gap-space-xs mb-space-2xs">
+<span class="material-symbols-outlined text-outline text-[20px]">light_mode</span>
+<span class="font-title-md text-title-md text-on-surface font-bold">Calm Mode</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant leading-relaxed">
+                  Zen paper aesthetic. Zero XP badges, hidden ranks, quiet typography, clean editorial margins for pure serene task orchestration.
+                </p>
+</div>
+<!-- Mini visual mock of Calm mode -->
+<div class="h-24 w-full rounded-lg bg-surface-container-highest p-space-xs flex flex-col justify-between overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-micro text-micro text-on-surface font-medium">Daily Focus</span>
+<span class="text-outline font-micro text-[10px]">Quiet session</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-1.5 w-full bg-outline-variant rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Density & Accent Sliders -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-space-sm">
+<div class="flex flex-col gap-space-xs">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Layout Density</label>
+<div class="grid grid-cols-2 p-1 rounded-lg bg-surface-container">
+<button class="py-space-2xs rounded bg-surface-container-high text-on-surface font-caption text-caption font-semibold shadow-sm">Comfortable</button>
+<button class="py-space-2xs rounded text-on-surface-variant hover:text-on-surface font-caption text-caption">Compact (Tactical)</button>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Atmospheric Neon Glow</label>
+<span class="font-micro text-micro text-primary font-bold">75% Intensity</span>
+</div>
+<div class="h-7 flex items-center">
+<input class="w-full accent-primary bg-surface-container rounded-lg h-1.5 cursor-pointer" max="100" min="0" type="range" value="75"/>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Focus & Timer Audio -->
+<section class="flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">headphones</span>
+<h2 class="font-title-lg text-title-lg text-on-surface">3. Focus &amp; Timer Audio</h2>
+</div>
+<span class="font-caption text-caption text-tertiary flex items-center gap-1 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+              Audio Engine Active
+            </span>
+</div>
+<!-- Sound Toggle -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container mb-space-md">
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-semibold">Timer Sounds &amp; Haptic Pings</span>
+<span class="font-caption text-caption text-on-surface-variant">Gentle Tibetan bells at sprint completion and periodic 15-minute soft chimes</span>
+</div>
+<!-- Toggle switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Soundtrack Selector -->
+<div class="flex flex-col gap-space-xs mb-space-md">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Ambient Focus Atmosphere</label>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs">
+<button class="p-space-sm rounded-lg bg-primary-container text-on-primary-container flex flex-col items-center gap-1 text-center shadow-[0_0_12px_rgba(78,142,255,0.3)]">
+<span class="material-symbols-outlined text-[20px]">satellite_alt</span>
+<span class="font-caption text-caption font-semibold">Cosmic Deep</span>
+</button>
+<button class="p-space-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-[20px]">water_drop</span>
+<span class="font-caption text-caption">Rain Skylight</span>
+</button>
+<button class="p-space-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-[20px]">graphic_eq</span>
+<span class="font-caption text-caption">White Noise</span>
+</button>
+<button class="p-space-sm rounded-lg bg-surface-container text-on-surface hover:bg-surface-variant flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+<span class="font-caption text-caption">Muted Bell</span>
+</button>
+</div>
+</div>
+<!-- Sprint Defaults (Focus, Short, Long) -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Default Sprint Intervals</label>
+<div class="grid grid-cols-3 gap-space-sm">
+<div class="p-space-sm rounded-lg bg-surface-container flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant">Focus Sprint</span>
+<div class="flex items-center justify-between mt-space-2xs">
+<span class="font-tabular-timer text-tabular-timer text-primary font-bold">25 min</span>
+<span class="material-symbols-outlined text-[16px] text-outline">tune</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant">Short Rest</span>
+<div class="flex items-center justify-between mt-space-2xs">
+<span class="font-tabular-timer text-tabular-timer text-tertiary font-bold">5 min</span>
+<span class="material-symbols-outlined text-[16px] text-outline">tune</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container flex flex-col">
+<span class="font-caption text-caption text-on-surface-variant">Deep Orbit Rest</span>
+<div class="flex items-center justify-between mt-space-2xs">
+<span class="font-tabular-timer text-tabular-timer text-secondary font-bold">15 min</span>
+<span class="material-symbols-outlined text-[16px] text-outline">tune</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN: Notifications, Friction, Sovereign Data (5 cols) -->
+<div class="xl:col-span-5 flex flex-col gap-space-xl">
+<!-- SECTION 4: Notifications & Digest Rhythm -->
+<section class="flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">notifications</span>
+<h2 class="font-title-lg text-title-lg text-on-surface">4. Digest Rhythm</h2>
+</div>
+<span class="font-caption text-caption text-secondary font-bold">Cadence</span>
+</div>
+<!-- Morning Briefing Card -->
+<div class="p-space-sm rounded-lg bg-surface-container flex flex-col gap-space-sm mb-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">wb_twilight</span>
+<span class="font-body-medium text-body-medium text-on-surface font-semibold">Daily Morning Briefing</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-caption text-caption text-on-surface-variant">Scheduled Departure:</span>
+<div class="flex items-center gap-space-2xs px-space-xs py-space-2xs rounded bg-surface-container-high text-on-surface font-tabular-timer text-tabular-timer font-semibold">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>08:30 AM</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-2xs">
+<span class="font-caption text-caption text-on-surface-variant">Channel Dispatch:</span>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container-high text-primary font-caption text-caption font-medium">In-app + Email Digest</span>
+</div>
+</div>
+<!-- Push sub-options -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-micro text-micro uppercase tracking-wider text-on-surface-variant font-semibold">Push Telemetry Triggers</span>
+<div class="flex items-center justify-between py-space-2xs">
+<span class="font-body-medium text-body-medium text-on-surface">Thread decay warnings</span>
+<input checked="" class="w-4 h-4 accent-primary rounded cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between py-space-2xs">
+<span class="font-body-medium text-body-medium text-on-surface">Sprint timer completions</span>
+<input checked="" class="w-4 h-4 accent-primary rounded cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between py-space-2xs">
+<span class="font-body-medium text-body-medium text-on-surface">Collaborator mentions &amp; shares</span>
+<input checked="" class="w-4 h-4 accent-primary rounded cursor-pointer" type="checkbox"/>
+</div>
+</div>
+</section>
+<!-- SECTION 5: Cognitive Friction & Stale Thresholds -->
+<section class="flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">psychology</span>
+<h2 class="font-title-lg text-title-lg text-on-surface">5. Cognitive Load</h2>
+</div>
+<span class="font-caption text-caption text-tertiary font-bold">Sanctuary Filter</span>
+</div>
+<!-- Stale Decay -->
+<div class="flex flex-col gap-space-2xs mb-space-md">
+<div class="flex items-center justify-between">
+<label class="font-body-medium text-body-medium text-on-surface font-semibold">Stale Thread Decay Threshold</label>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container text-primary font-tabular-timer text-tabular-timer font-bold">7 Days</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">Untouched threads transition to gentle muted stardust instead of high-stress red alarms.</p>
+</div>
+<!-- Snooze Presets -->
+<div class="flex flex-col gap-space-xs mb-space-md">
+<label class="font-caption text-caption text-on-surface-variant font-semibold">Default Snooze Durations</label>
+<div class="flex flex-wrap gap-space-xs">
+<span class="px-space-sm py-space-2xs rounded-lg bg-surface-container text-on-surface font-caption text-caption">Until Tomorrow</span>
+<span class="px-space-sm py-space-2xs rounded-lg bg-surface-container text-on-surface font-caption text-caption">This Weekend</span>
+<span class="px-space-sm py-space-2xs rounded-lg bg-surface-container text-primary font-caption text-caption font-semibold">Next Orbit (2 Weeks)</span>
+</div>
+</div>
+<!-- Zero-Shame Resilience Toggle -->
+<div class="p-space-sm rounded-lg bg-surface-container flex items-center justify-between">
+<div class="flex flex-col pr-space-sm">
+<div class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-tertiary text-[18px]">health_and_safety</span>
+<span class="font-body-medium text-body-medium text-on-surface font-semibold">Zero-Shame Resilience</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Automatically pause and freeze streak resets during identified rest intervals.</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary"></div>
+</label>
+</div>
+</section>
+<!-- SECTION 6: Data Sovereign & Session -->
+<section class="flex flex-col p-space-lg rounded-xl bg-surface-container-low shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">database</span>
+<h2 class="font-title-lg text-title-lg text-on-surface">6. Data Sovereignty</h2>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Telemetry Orbit</span>
+</div>
+<!-- Cloud sync status -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-2.5 h-2.5 rounded-full bg-tertiary"></div>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium text-on-surface font-semibold">Cloud Orbit Telemetry</span>
+<span class="font-caption text-caption text-on-surface-variant">Connected · Synced 2m ago</span>
+</div>
+</div>
+<button class="px-space-xs py-space-2xs rounded bg-surface-variant text-on-surface font-caption text-caption hover:bg-surface-bright transition-colors">
+              Force Sync
+            </button>
+</div>
+<!-- Data Export -->
+<div class="flex flex-col gap-space-xs mb-space-lg">
+<span class="font-caption text-caption text-on-surface-variant font-semibold">Local Archive Download</span>
+<button class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">download</span>
+<div class="flex flex-col text-left">
+<span class="font-body-medium text-body-medium font-semibold">Export Complete QuestLog Atlas</span>
+<span class="font-caption text-caption text-on-surface-variant">Portable .JSON telemetry &amp; Markdown notes</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-outline">arrow_forward</span>
+</button>
+</div>
+<!-- Sign Out Action -->
+<div class="pt-space-sm">
+<button class="w-full flex items-center justify-center gap-space-xs py-space-sm rounded-lg bg-error-container/20 text-error hover:bg-error-container hover:text-on-error transition-all font-body-medium text-body-medium font-semibold">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span>Sign Out of Captain's Log</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple toast trigger interaction for Save Changes
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Saving Atlas...</span>';
+      setTimeout(() => {
+        saveBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span><span>Saved to Cosmos!</span>';
+        setTimeout(() => {
+          saveBtn.innerHTML = originalText;
+        }, 2000);
+      }, 700);
+    });
+  }
+</script></main></div></body></html>

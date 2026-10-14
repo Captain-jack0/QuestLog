@@ -16,7 +16,7 @@ export function StatusChip({ status }: { status: ItemStatus }) {
   // let a flex row squeeze the pill narrower than its own text.
   return (
     <span
-      className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-2xs font-semibold ${className}`}
+      className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-micro font-semibold ${className}`}
     >
       {label}
     </span>

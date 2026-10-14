@@ -1,114 +1,123 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
-import { CardSkeleton } from '../components/ui/Skeleton'
-import { BottomSheet } from '../components/ui/BottomSheet'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
-import { StatusChip } from '../components/ui/StatusChip'
+import { Icon } from '../components/ui/Icon'
 import { ItemTypeChip, itemTypeLabel } from '../components/ui/ItemTypeChip'
+import { CardSkeleton } from '../components/ui/Skeleton'
+import { StatusChip } from '../components/ui/StatusChip'
 import { useToast } from '../components/ui/Toast'
-import { FocusPickerSheet } from '../features/focus/FocusPickerSheet'
-import { useFocusItems, usePickFocus, useToggleFocusItem } from '../features/focus/queries'
+import { useShell } from '../components/shellContext'
+import { FocusPickerSheet, MAX_FOCUS } from '../features/focus/FocusPickerSheet'
+import {
+  useFocusItems,
+  useFocusNextSteps,
+  usePickFocus,
+  useToggleFocusItem,
+  type FocusRow,
+} from '../features/focus/queries'
 import { useProfile, useStreak, useTodayXp } from '../features/gamification/queries'
-import { groupThreads } from '../features/threads/groupThreads'
-import { SNOOZE_OPTIONS, useHangingThreads, useSnooze } from '../features/threads/queries'
-import { UpdateStatusSheet, type PendingStatusChange } from '../features/status/UpdateStatusSheet'
-import { dropChange } from '../features/status/drop'
-import { useUpdateStatus } from '../features/status/useUpdateStatus'
-import { localDateKey, relativeTime } from '../lib/time'
+import { effectiveStreak } from '../features/gamification/aggregate'
+import { ThreadList } from '../features/threads/ThreadList'
+import { HANGING_THREADS_LIMIT, useHangingThreads } from '../features/threads/queries'
+import { formatMinutes } from '../features/timer/pomodoro'
+import { useProjectTotals, useRunningTimer, useTaskTotals } from '../features/timer/queries'
+import { runningOn } from '../features/timer/stack'
+import { TimerButton } from '../features/timer/TimerButton'
+import { LOCALE, localDateKey, stardate } from '../lib/time'
+import { focusLeadId, isQuiet, isResume, waitingLine } from './todayLogic'
 
 export function TodayScreen() {
   const today = localDateKey()
   const toast = useToast()
+  const shell = useShell()
 
   const profile = useProfile()
-  const streak = useStreak()
-  const todayXp = useTodayXp()
   const focus = useFocusItems(today)
   const threads = useHangingThreads()
 
   const pickFocus = usePickFocus(today)
-  const toggleFocus = useToggleFocusItem(today)
-  const snooze = useSnooze()
-  const updateStatus = useUpdateStatus()
-
   const [pickerOpen, setPickerOpen] = useState(false)
-  const [pending, setPending] = useState<PendingStatusChange | null>(null)
-  const [snoozeFor, setSnoozeFor] = useState<{
-    itemType: 'task' | 'project'
-    itemId: string
-  } | null>(null)
 
   const name = profile.data?.display_name ?? 'Captain'
-  const weekday = new Date().toLocaleDateString(undefined, { weekday: 'long' })
-
-  // Two lists, not one: work in motion on top, deliberately parked work below with its status
-  // spelled out — a paused project should not queue alongside what actually needs picking up.
-  // An empty list drops its heading with it.
-  const { active, parked } = groupThreads(threads.data ?? [])
-  const threadSections = [
-    { key: 'active', heading: 'Active', threads: active, showStatus: false },
-    { key: 'parked', heading: 'Paused & blocked', threads: parked, showStatus: true },
-  ].filter((section) => section.threads.length > 0)
+  const waiting = threads.data?.length
 
   return (
     <div>
       <header className="mb-6">
-        <p className="text-sm text-muted">{weekday}</p>
-        <h1 className="text-2xl font-bold">Welcome back, {name}</h1>
-        <div className="mt-2 flex items-center gap-3 text-sm">
-          <span className="rounded-full bg-flame/10 px-3 py-1 font-semibold text-flame-ink tabular">
-            🔥 {streak.data?.current ?? 0}-day streak
+        <p className="flex flex-wrap items-center gap-x-2 text-micro uppercase text-muted">
+          {/* Decoration (CEO, Clarify): the stardate is never the only date on screen. */}
+          <span aria-hidden className="text-accent-ink">
+            Stardate {stardate()}
           </span>
-          <span className="rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent tabular">
-            ✨ {todayXp.data ?? 0} XP today
-          </span>
-        </div>
+          <span aria-hidden>·</span>
+          <time dateTime={today}>
+            {new Date().toLocaleDateString(LOCALE, {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </time>
+        </p>
+        <h1 className="mt-1 text-title-lg md:text-display-sm">Welcome back, {name}</h1>
+        {waiting !== undefined && (
+          <p className="mt-1 text-lead text-muted">{waitingLine(waiting, HANGING_THREADS_LIMIT)}</p>
+        )}
+        <Standing />
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-start">
-        <section className="mb-6 lg:mb-0">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
-            Today&apos;s focus
-          </h2>
+      {/* Looks like a field, opens the shell's Quick add sheet — one capture form, not two. The
+          name is the visible prompt behind a hidden "Capture a thread:", so it contains what you
+          see; it never says "Quick add", which is the top bar's button (e2e matches that name as a
+          substring). No aria-label on purpose: getByLabel matches those, and the prompt shares
+          words with the resume sheet's "What's the next step?" field. Opens on click only — a
+          dialog that opened on focus would trap anyone tabbing past. */}
+      {shell && (
+        <button
+          type="button"
+          onClick={shell.openQuickAdd}
+          className="btn-quiet mb-6 flex min-h-[52px] w-full items-center gap-3 rounded-card border border-line bg-surface-sunken px-4 text-left"
+        >
+          <Icon name="add" className="icon-xl text-accent-ink" />
+          <span className="min-w-0 flex-1 truncate text-body text-muted">
+            <span className="sr-only">Capture a thread: </span>
+            Where did you pause? What&apos;s the next step?
+          </span>
+        </button>
+      )}
 
-          {focus.data?.length === 0 ? (
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-start">
+        <section aria-labelledby="today-focus" className="mb-6 lg:mb-0">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <h2
+              id="today-focus"
+              className="text-body font-semibold uppercase tracking-wide text-muted"
+            >
+              Today&apos;s focus
+            </h2>
+            {focus.data && (
+              <span className="text-caption text-muted tabular">
+                {focus.data.length} / {MAX_FOCUS} pinned
+              </span>
+            )}
+          </div>
+
+          {focus.isPending && <CardSkeleton rows={1} />}
+          {focus.isError && (
+            <p className="text-body text-muted">Today&apos;s focus could not load.</p>
+          )}
+
+          {focus.data?.length === 0 && (
             <EmptyState
               title="Pick up to 3 things to focus on today"
               description="+5 ✨ for choosing"
               onAction={() => setPickerOpen(true)}
             />
-          ) : (
-            <div className="space-y-2">
-              {focus.data?.map((item) => {
-                const title = item.tasks?.title ?? item.projects?.title ?? 'Untitled'
-                // focus_items holds exactly one of the two ids (rpc_pick_focus rejects
-                // anything else, focus_snooze_views.sql:34), so project_id alone decides.
-                const itemType = item.project_id ? 'project' : 'task'
-                const titleClass = item.completed ? 'text-muted line-through' : 'font-medium'
-                return (
-                  <Card key={item.id}>
-                    <label className="flex min-h-[44px] items-center gap-3">
-                      {/* The chip at the end of the row is real text, but an explicit
-                          aria-label outranks the wrapping <label>, so the kind has to be
-                          repeated in the name — otherwise someone tabbing the list hears
-                          "Redesign" without ever learning which Redesign they are ticking. */}
-                      <input
-                        type="checkbox"
-                        aria-label={`Done: ${title} — ${itemTypeLabel(itemType)}`}
-                        checked={item.completed}
-                        onChange={(e) =>
-                          toggleFocus.mutate({ id: item.id, completed: e.target.checked })
-                        }
-                        className="h-6 w-6 shrink-0 accent-accent"
-                      />
-                      <span className={`min-w-0 flex-1 ${titleClass}`}>{title}</span>
-                      <ItemTypeChip itemType={itemType} />
-                    </label>
-                  </Card>
-                )
-              })}
+          )}
+
+          {focus.data && focus.data.length > 0 && (
+            <div className="space-y-3">
+              <FocusCards items={focus.data} today={today} />
               <Button variant="ghost" block onClick={() => setPickerOpen(true)}>
                 Change focus
               </Button>
@@ -117,183 +126,10 @@ export function TodayScreen() {
         </section>
 
         <section>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          <h2 className="mb-2 text-body font-semibold uppercase tracking-wide text-muted">
             Hanging threads
           </h2>
-
-          {threads.isPending && <CardSkeleton rows={2} />}
-
-          {threads.data?.length === 0 && (
-            <EmptyState
-              title="No threads yet 🎉"
-              description="When you pause something, its next step will wait for you right here."
-            />
-          )}
-
-          {threadSections.map((section) => (
-            <section
-              key={section.key}
-              aria-labelledby={`threads-${section.key}`}
-              className="mb-4 last:mb-0"
-            >
-              <h3
-                id={`threads-${section.key}`}
-                className="mb-2 text-2xs font-semibold uppercase tracking-wide text-muted"
-              >
-                {section.heading}
-              </h3>
-              <div className="grid gap-3 xl:grid-cols-2">
-                {section.threads.map((thread) => {
-                  // Every thread is a task (#44); this says which area and project it belongs to.
-                  const context = [thread.area_name, thread.project_title]
-                    .filter(Boolean)
-                    .join(' · ')
-
-                  return (
-                    <Card
-                      key={`${thread.item_type}-${thread.item_id}`}
-                      edgeColor={thread.area_color}
-                      className="pl-5"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        {/* inline-flex, not a bare min-height: min-height does not apply to an inline
-                        box, so on an <a> the utility alone would change nothing. `items-start`
-                        rather than centring, because a one-line title centred in a 44px box drops
-                        ~12px away from the timestamp it sits opposite; this keeps the two tops
-                        level exactly as they were and spends the added height below the text. */}
-                        <Link
-                          to={`/projects/${thread.project_id}`}
-                          className="inline-flex min-h-[44px] items-start font-semibold leading-tight"
-                        >
-                          {thread.title}
-                        </Link>
-                        <span className="shrink-0 text-xs text-muted">
-                          {relativeTime(thread.last_activity_at)}
-                        </span>
-                      </div>
-                      <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-                        <ItemTypeChip itemType={thread.item_type} />
-                        {section.showStatus && <StatusChip status={thread.display_status} />}
-                        {context && <span>{context}</span>}
-                      </p>
-
-                      {/* Not when the prose is only the picked task's title: the RPC snapshots the
-                      title into next_step so every other reader still has words to show, and
-                      here that would print the same line twice. */}
-                      {thread.next_step && thread.next_step !== thread.next_step_task_title && (
-                        <p className="mt-2 text-sm font-medium">
-                          <span className="font-normal text-muted">Next: </span>
-                          {thread.next_step}
-                        </p>
-                      )}
-
-                      {/* The pointed-at task, live. Finishing it does not clear the reference — the
-                      log is a record of what you decided, not a to-do that tidies itself — so the
-                      chip is how you see it is already done. */}
-                      {thread.next_step_task_id && thread.next_step_task_status && (
-                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                          <Link
-                            to={`/projects/${thread.next_step_task_project_id}`}
-                            className="inline-flex min-h-[44px] items-center font-medium text-accent"
-                          >
-                            ↳ {thread.next_step_task_title}
-                          </Link>
-                          <StatusChip status={thread.next_step_task_status} />
-                        </p>
-                      )}
-
-                      <div className="mt-3 flex gap-2">
-                        <Button
-                          className="flex-1 px-2 py-2 text-sm"
-                          onClick={() =>
-                            setPending({
-                              itemType: thread.item_type,
-                              itemId: thread.item_id,
-                              title: thread.title,
-                              status: 'done',
-                              leftOff: thread.left_off,
-                              nextStep: thread.next_step,
-                              nextStepTaskId: thread.next_step_task_id,
-                              nextStepTaskTitle: thread.next_step_task_title,
-                            })
-                          }
-                        >
-                          Done ✓
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="flex-1 px-2 py-2 text-sm"
-                          onClick={() =>
-                            setPending({
-                              itemType: thread.item_type,
-                              itemId: thread.item_id,
-                              title: thread.title,
-                              status: 'in_progress',
-                              leftOff: thread.left_off,
-                              nextStep: thread.next_step,
-                              nextStepTaskId: thread.next_step_task_id,
-                              nextStepTaskTitle: thread.next_step_task_title,
-                            })
-                          }
-                        >
-                          Update ✎
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="flex-1 px-2 py-2 text-sm"
-                          onClick={() =>
-                            setSnoozeFor({ itemType: thread.item_type, itemId: thread.item_id })
-                          }
-                        >
-                          Snooze 💤
-                        </Button>
-                      </div>
-
-                      {/* Its own line, and not a fourth button in the row above. At 390px the card's
-                      inner width is 322px, so four `flex-1` buttons get 74.5px each — 58.5px of
-                      it usable after the padding — while "Update ✎" measures 64.3px and
-                      "Snooze 💤" 69.5px in Inter 600 at 14px: two of the four labels would wrap
-                      and the row would grow 44px → 53px anyway. The same 44px as a fixed-width
-                      icon leaves 68.7px, still 0.9px short of Snooze.
-
-                      Weight, not only width, decides the rest: those three keep the thread — this
-                      one ends it — and an equal-width button sitting against "Done ✓" is the one
-                      a thumb hits by mistake. So it is the quiet pill the edit sheet already uses
-                      for this exact action (TaskSheet.tsx:140-151), right-aligned and auto-width,
-                      which is both the smaller mis-tap target and the same word in the same tone
-                      wherever you meet it. */}
-                      <div className="mt-2 flex justify-end">
-                        <button
-                          type="button"
-                          // Every card in the list renders one of these, so the bare word would read
-                          // as a list of identical "Drop" buttons. Same shape as the sheet's label.
-                          aria-label={`Drop ${itemTypeLabel(thread.item_type).toLowerCase()}: ${thread.title}`}
-                          disabled={updateStatus.isPending}
-                          onClick={() =>
-                            updateStatus.mutate(
-                              // `dropped` is outside needsResumeContext, so it goes straight to the
-                              // RPC with no sheet — the same call ProjectDetail.tsx:130 already makes
-                              // for it. The variables live in drop.ts because nothing else guards
-                              // them: no sheet collects them and there is no render test in this
-                              // project to catch it if they change (drop.test.ts).
-                              dropChange(thread.item_type, thread.item_id),
-                              // The card just disappears, and the hook's own toast only says "+8 ✨".
-                              // This is the one that answers "did I just delete it?" — same place the
-                              // snooze confirmation below already speaks from.
-                              { onSuccess: () => toast('Dropped — its history stays.') },
-                            )
-                          }
-                          className="btn-quiet min-h-[44px] rounded-full border border-line px-4 text-xs font-semibold text-muted disabled:opacity-40"
-                        >
-                          Drop
-                        </button>
-                      </div>
-                    </Card>
-                  )
-                })}
-              </div>
-            </section>
-          ))}
+          <ThreadList />
         </section>
       </div>
 
@@ -311,55 +147,141 @@ export function TodayScreen() {
           })
         }
       />
+    </div>
+  )
+}
 
-      <UpdateStatusSheet
-        pending={pending}
-        saving={updateStatus.isPending}
-        onClose={() => setPending(null)}
-        onSubmit={({ leftOff, nextStep, note, nextStepTaskId }) =>
-          pending &&
-          updateStatus.mutate(
-            {
-              itemType: pending.itemType,
-              itemId: pending.itemId,
-              status: pending.status,
-              leftOff,
-              nextStep,
-              nextStepTaskId,
-              note,
-            },
-            { onSuccess: () => setPending(null) },
-          )
-        }
-      />
+/**
+ * Streak, shields and today's XP — the same numbers the top bar and the rail show. The streak is
+ * the effective one and waits for the profile's timezone; the rest wait for their own data.
+ */
+function Standing() {
+  const profile = useProfile()
+  const streak = useStreak()
+  const todayXp = useTodayXp()
+  const chip = 'flex items-center gap-1.5 rounded-full px-3 py-1 text-body font-semibold tabular'
 
-      {snoozeFor && (
-        <BottomSheet open onClose={() => setSnoozeFor(null)} title="Snooze until…">
-          <div className="space-y-2">
-            {SNOOZE_OPTIONS.map((option) => (
-              <Button
-                key={option.days}
-                variant="ghost"
-                block
-                onClick={() =>
-                  snooze.mutate(
-                    { ...snoozeFor, days: option.days },
-                    {
-                      onSuccess: () => {
-                        setSnoozeFor(null)
-                        toast(`Snoozed for ${option.label}`)
-                      },
-                      onError: (error) => toast(error.message, 'error'),
-                    },
-                  )
-                }
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </BottomSheet>
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {!profile.isPending && !streak.isPending && (
+        <span className={`${chip} bg-flame/10 text-flame-ink`}>
+          <Icon name="local_fire_department" />
+          {effectiveStreak(streak.data ?? null, profile.data?.timezone)}-day streak
+        </span>
+      )}
+      {streak.data && (
+        // The idea chip's pair (StatusChip), already held to AA in both themes.
+        <span className={`${chip} bg-line/30 text-muted`}>
+          <Icon name="shield" />
+          {streak.data.freeze_tokens} {streak.data.freeze_tokens === 1 ? 'shield' : 'shields'}
+        </span>
+      )}
+      {todayXp.data !== undefined && (
+        <span className={`${chip} bg-success/10 text-success-ink`}>+{todayXp.data} XP today</span>
       )}
     </div>
+  )
+}
+
+/**
+ * The picked items, each led by its next step. Only the first open card gets the filled start,
+ * and only while no card's clock runs (then the filled button is that clock's Stop): Today keeps
+ * one filled button, and that is the one to press.
+ */
+function FocusCards({ items, today }: { items: FocusRow[]; today: string }) {
+  const toggleFocus = useToggleFocusItem(today)
+  const nextSteps = useFocusNextSteps(items)
+  const running = useRunningTimer()
+  const taskTotals = useTaskTotals(items.flatMap((item) => (item.task_id ? [item.task_id] : [])))
+  const projectTotals = useProjectTotals(
+    items.flatMap((item) => (item.project_id ? [item.project_id] : [])),
+  )
+
+  const clocks = running.data ?? []
+  const itemOf = (row: FocusRow) =>
+    row.project_id
+      ? { itemType: 'project' as const, itemId: row.project_id }
+      : { itemType: 'task' as const, itemId: row.task_id ?? '' }
+  const leadId = focusLeadId(items, clocks)
+
+  return (
+    <>
+      {items.map((item) => {
+        // focus_items holds exactly one of the two ids (rpc_pick_focus rejects anything else,
+        // focus_snooze_views.sql:34), so project_id alone decides.
+        const { itemType, itemId } = itemOf(item)
+        const title = item.tasks?.title ?? item.projects?.title ?? 'Untitled'
+        const status = item.tasks?.status ?? item.projects?.status
+        const area = item.tasks?.projects?.life_areas ?? item.projects?.life_areas ?? null
+        const where = [area?.name, item.tasks?.projects?.title].filter(Boolean).join(' · ')
+        const nextStep = nextSteps.data?.[item.id] ?? null
+        const banked =
+          (itemType === 'task' ? taskTotals.data?.[itemId] : projectTotals.data?.[itemId]) ?? 0
+        const titleTone = item.completed ? 'text-muted line-through' : ''
+
+        return (
+          <Card key={item.id} edgeColor={area?.color} className="pl-5">
+            <div className="flex items-start justify-between gap-2">
+              <p className="min-w-0 truncate text-micro uppercase text-muted">{where}</p>
+              {status && <StatusChip status={status} />}
+            </div>
+
+            {nextStep && (
+              <p className="mt-1 text-lead">
+                <span className="text-muted">Next: </span>
+                {nextStep}
+              </p>
+            )}
+
+            <label className="mt-1 flex min-h-[44px] items-center gap-3">
+              {/* The chip at the end of the row is real text, but an explicit aria-label outranks
+                  the wrapping <label>, so the kind has to be repeated in the name — otherwise
+                  someone tabbing the list hears "Redesign" without ever learning which Redesign
+                  they are ticking. */}
+              <input
+                type="checkbox"
+                aria-label={`Done: ${title} — ${itemTypeLabel(itemType)}`}
+                checked={item.completed}
+                onChange={(e) => toggleFocus.mutate({ id: item.id, completed: e.target.checked })}
+                className="h-6 w-6 shrink-0 accent-accent"
+              />
+              <span
+                className={`min-w-0 flex-1 ${
+                  nextStep ? 'text-body-medium' : 'text-lead font-semibold'
+                } ${titleTone}`}
+              >
+                {title}
+              </span>
+              <ItemTypeChip itemType={itemType} />
+            </label>
+
+            {!item.completed && (
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-caption text-muted tabular">
+                  {isResume(banked) && (
+                    <>
+                      <Icon name="schedule" /> {formatMinutes(banked)} focused
+                    </>
+                  )}
+                </span>
+                {runningOn(clocks, itemType, itemId) ? (
+                  // Its clock runs: the plain button is this clock's Stop.
+                  <TimerButton itemType={itemType} itemId={itemId} title={title} />
+                ) : (
+                  <TimerButton
+                    focus
+                    resume={isResume(banked)}
+                    quiet={isQuiet(item.id, leadId)}
+                    itemType={itemType}
+                    itemId={itemId}
+                    title={title}
+                  />
+                )}
+              </div>
+            )}
+          </Card>
+        )
+      })}
+    </>
   )
 }

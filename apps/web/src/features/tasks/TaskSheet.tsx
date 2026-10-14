@@ -92,15 +92,15 @@ export function TaskSheet({
     <BottomSheet open={open} onClose={onClose} title={mode === 'create' ? 'Add task' : 'Edit task'}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
-          <label htmlFor="task-title" className="mb-1 block text-sm font-medium">
+          <label htmlFor="task-title" className="mb-1 block text-body font-medium">
             Title
           </label>
           <input id="task-title" autoFocus {...register('title')} className={fieldClass} />
-          {errors.title && <p className="mt-1 text-sm text-alert-ink">{errors.title.message}</p>}
+          {errors.title && <p className="mt-1 text-body text-alert-ink">{errors.title.message}</p>}
         </div>
 
         <div>
-          <label htmlFor="task-description" className="mb-1 block text-sm font-medium">
+          <label htmlFor="task-description" className="mb-1 block text-body font-medium">
             Description
           </label>
           <textarea
@@ -110,13 +110,13 @@ export function TaskSheet({
             className={fieldClass}
           />
           {errors.description && (
-            <p className="mt-1 text-sm text-alert-ink">{errors.description.message}</p>
+            <p className="mt-1 text-body text-alert-ink">{errors.description.message}</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="task-difficulty" className="mb-1 block text-sm font-medium">
+            <label htmlFor="task-difficulty" className="mb-1 block text-body font-medium">
               Difficulty
             </label>
             {/* The sheet has the room the card lacks, so the label spells out what the letter buys. */}
@@ -129,7 +129,7 @@ export function TaskSheet({
             </select>
           </div>
           <div>
-            <label htmlFor="task-priority" className="mb-1 block text-sm font-medium">
+            <label htmlFor="task-priority" className="mb-1 block text-body font-medium">
               Priority
             </label>
             <select id="task-priority" {...register('priority')} className={fieldClass}>
@@ -146,7 +146,7 @@ export function TaskSheet({
           {saving ? 'Saving…' : mode === 'create' ? 'Add task' : 'Save changes'}
         </Button>
         {unsaved && (
-          <p className="text-sm text-muted">This task is still saving. Try again in a moment.</p>
+          <p className="text-body text-muted">This task is still saving. Try again in a moment.</p>
         )}
 
         {/* The whole set, not a single toggle. The Drop/Reopen pair this replaces could reach
@@ -163,7 +163,7 @@ export function TaskSheet({
             both state updates land in one commit, so nothing flickers in between. */}
         {task && (
           <div className="mt-4 border-t border-line pt-4">
-            <p className="mb-2 text-sm font-medium">Status</p>
+            <p className="mb-2 text-body font-medium">Status</p>
             <StatusPicker
               compact
               label="Status"

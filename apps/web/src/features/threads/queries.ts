@@ -31,6 +31,9 @@ export const threadKeys = {
   all: ['threads'] as const,
 }
 
+/** Rows useHangingThreads reads; a list this long may have more behind it. */
+export const HANGING_THREADS_LIMIT = 20
+
 /** v_hanging_threads holds tasks only (#44), already excludes snoozed items and sorts by oldest
  *  activity. */
 export function useHangingThreads() {
@@ -43,9 +46,40 @@ export function useHangingThreads() {
           'item_type, item_id, title, status, display_status, project_id, project_title, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at',
         )
         .order('last_activity_at', { ascending: true })
-        .limit(20)
+        .limit(HANGING_THREADS_LIMIT)
       if (error) throw error
       return data as unknown as HangingThread[]
+    },
+  })
+}
+
+export interface AreaThread {
+  area_id: string | null
+  project_id: string
+  project_title: string
+  title: string
+  left_off: string | null
+  next_step: string | null
+  last_activity_at: string
+}
+
+/**
+ * The same view, slimmer and without Today's 20-row cut: the Areas cards count every waiting
+ * thread per area, and a cut taken oldest-first would leave a busy user's newer areas at zero.
+ * Under the `threads` prefix, so everything that refreshes Today's list refreshes this too.
+ * ponytail: 1000 is config.toml's max_rows; a count-per-area RPC is the upgrade past that.
+ */
+export function useAreaThreads() {
+  return useQuery({
+    queryKey: [...threadKeys.all, 'by-area'],
+    queryFn: async (): Promise<AreaThread[]> => {
+      const { data, error } = await supabase
+        .from('v_hanging_threads')
+        .select('area_id, project_id, project_title, title, left_off, next_step, last_activity_at')
+        .order('last_activity_at', { ascending: true })
+        .limit(1000)
+      if (error) throw error
+      return data as unknown as AreaThread[]
     },
   })
 }

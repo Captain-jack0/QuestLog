@@ -1,8 +1,11 @@
 import { useEffect, useState, type MouseEvent, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { BottomSheet } from '../../components/ui/BottomSheet'
 import { Button } from '../../components/ui/Button'
+import { Icon } from '../../components/ui/Icon'
 import { onPageWake } from '../../lib/pageWake'
+import { localTime } from '../../lib/time'
 import type { AwaitingPomodoro } from './autoStop'
 import { formatDuration, pomodoroPhase } from './pomodoro'
 import { useRunningTimer, useStopTimer, useTimerSafetyNet, type RunningTimer } from './queries'
@@ -10,15 +13,18 @@ import { timerDeck } from './stack'
 import { timerBarSeconds } from './totals'
 
 /**
- * The running clocks, pinned above the tab bar so they are visible from every screen. Elapsed
- * time is derived from started_at on every tick, so a sleeping tab cannot drift.
+ * The running clocks, visible from every screen: pinned above the tab bar on a phone, and
+ * `docked` at the foot of the desktop rail as its Focus deck. Elapsed time is derived from
+ * started_at on every tick, so a sleeping tab cannot drift.
  *
  * Up to three clocks run at once (issue #45). Closed, they sit as a deck: the newest whole on
  * top, the others as edges peeking out above it, and a "+N" badge — one card tall, so the tab
  * bar stays clear. A tap on the deck opens it into a list where every card has its own Stop;
  * another tap closes it.
+ *
+ * Mount it once (App.tsx picks the place): it also runs the timer heartbeat.
  */
-export function TimerBar() {
+export function TimerBar({ docked = false }: { docked?: boolean }) {
   const running = useRunningTimer()
   const stop = useStopTimer()
   const safetyNet = useTimerSafetyNet(running.data ?? [])
@@ -49,18 +55,28 @@ export function TimerBar() {
   }, [hidden])
 
   // The awaiting pomodoro is off v_running_timers, so it may be the only clock: ask either way.
+  // Portalled to the body: docked, this component lives inside the sticky rail, whose stacking
+  // context would otherwise trap the sheet's z-index under the top bar.
   const awaiting = safetyNet.awaiting
-  const question = awaiting && (
-    <PomodoroQuestion
-      key={awaiting.id}
-      pomodoro={awaiting}
-      busy={safetyNet.answering}
-      onAnswer={(continued) => safetyNet.answer(awaiting.id, continued)}
-    />
-  )
+  const question =
+    awaiting &&
+    createPortal(
+      <PomodoroQuestion
+        key={awaiting.id}
+        pomodoro={awaiting}
+        busy={safetyNet.answering}
+        onAnswer={(continued) => safetyNet.answer(awaiting.id, continued)}
+      />,
+      document.body,
+    )
 
   if (!ticking) return question || null
 
+  // Docked: in flow at the rail's foot. Otherwise 64px clears the tab bar (56px) with a gap, and
+  // the inset keeps it off the home indicator the tab bar pads for.
+  const placement = docked
+    ? 'border-t border-line p-3'
+    : 'fixed inset-x-0 bottom-[calc(64px_+_env(safe-area-inset-bottom))] z-20 px-4'
   const expanded = open && hidden > 0
   const toggle = () => setOpen((o) => !o)
   // The card's own link and Stop keep their meaning; a tap anywhere else on it is a tap on the
@@ -84,7 +100,7 @@ export function TimerBar() {
       aria-expanded={expanded}
       aria-label={expanded ? 'Stack the timers' : `Show all ${cards.length} timers`}
       onClick={toggle}
-      className="absolute -right-2 -top-2 min-h-[24px] min-w-[24px] rounded-full border border-ink/55 bg-accent px-1.5 text-xs font-semibold text-paper"
+      className="absolute -right-2 -top-2 min-h-[24px] min-w-[24px] rounded-full border border-ink/55 bg-accent px-1.5 text-caption font-semibold text-paper"
     >
       {expanded ? '−' : `+${hidden}`}
     </button>
@@ -93,10 +109,13 @@ export function TimerBar() {
   return (
     <>
       {question}
-      <section
-        aria-label="Running timers"
-        className="fixed inset-x-0 bottom-[72px] z-20 px-4 md:bottom-4 md:left-auto md:right-4 md:w-80 md:px-0"
-      >
+      <section aria-label="Running timers" className={placement}>
+        {/* mb-3, not less: the deck's back edges and the "+N" badge rise ~10px above the card. */}
+        {docked && (
+          <p className="mb-3 flex items-center gap-1.5 text-micro uppercase text-muted">
+            <Icon name="timer" className="icon-md" /> Focus deck
+          </p>
+        )}
         {expanded ? (
           <ul className="mx-auto flex max-w-md flex-col gap-2">
             {cards.map((timer, i) => (
@@ -114,7 +133,7 @@ export function TimerBar() {
                   key={timer.id}
                   aria-hidden
                   onClick={toggle}
-                  className="absolute inset-0 rounded-card border border-line bg-surface shadow-quest"
+                  className="absolute inset-0 rounded-card border border-line bg-surface-raised"
                   style={{
                     transform: `translateY(-${(i + 1) * 5}px) scale(${1 - (i + 1) * 0.04})`,
                   }}
@@ -143,15 +162,12 @@ function PomodoroQuestion({
   busy: boolean
   onAnswer: (continued: boolean) => void
 }) {
-  const lastSeen = new Date(pomodoro.last_seen_at).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const lastSeen = localTime(pomodoro.last_seen_at)
   const name = pomodoro.task_title ?? pomodoro.project_title
 
   return (
     <BottomSheet open onClose={() => {}} title="Did your pomodoro keep going?">
-      <p className="mb-4 text-sm text-muted">
+      <p className="mb-4 text-body text-muted">
         {name ? `🍅 ${name} — ` : '🍅 '}the app lost sight of it at {lastSeen}, likely when the
         screen locked.
       </p>
@@ -188,9 +204,11 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
   const seconds = timerBarSeconds(timer, elapsed)
 
   return (
+    // Raised plane, hairline, and the accent glow that says "running" — Calm swaps the glow for
+    // a ring through the token (index.css).
     <div
       onClick={onClick}
-      className="relative flex items-center gap-3 rounded-card bg-surface p-3 shadow-quest"
+      className="relative flex items-center gap-3 rounded-card border border-line bg-surface-raised p-3 shadow-glow-accent"
     >
       <span
         aria-hidden
@@ -198,10 +216,10 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
         style={{ backgroundColor: timer.area_color ?? 'rgb(var(--accent))' }}
       />
       {/* Each line is a name that truncates and a clock that does not: `min-w-0` lets the
-          name give way, `shrink-0` keeps the digits whole. Two lines of `text-sm` + `text-xs`
+          name give way, `shrink-0` keeps the digits whole. Two lines of `text-body` + `text-caption`
           is the height the bar already had, so it sits where it sat above the tab bar. */}
       <div className="min-w-0 flex-1">
-        <p className="flex items-baseline gap-2 text-sm font-semibold">
+        <p className="flex items-baseline gap-2 text-body font-semibold">
           <Link to={`/projects/${timer.project_id}`} className="min-w-0 flex-1 truncate">
             {timer.project_title}
           </Link>
@@ -211,7 +229,7 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
           </span>
         </p>
         {(seconds.task !== null || pomodoro) && (
-          <p className="flex items-baseline gap-2 text-xs text-muted">
+          <p className="flex items-baseline gap-2 text-caption text-muted">
             {seconds.task !== null && (
               <span className="min-w-0 flex-1 truncate">{timer.task_title}</span>
             )}
@@ -234,7 +252,7 @@ function TimerCard({ timer, now, stopping, onStop, onClick, badge }: TimerCardPr
       </div>
       <Button
         variant="ghost"
-        className="shrink-0 px-3 py-2 text-sm"
+        className="shrink-0 px-3 py-2 text-body"
         disabled={stopping}
         onClick={onStop}
       >

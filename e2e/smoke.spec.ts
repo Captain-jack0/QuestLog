@@ -18,6 +18,20 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible()
   })
 
+  await test.step('the tab bar holds the five places; Quick add is up top', async () => {
+    const tabs = page.getByRole('navigation', { name: 'Main' })
+    await expect(tabs.getByRole('link')).toHaveText([
+      'Today',
+      'Threads',
+      'Areas',
+      'Progress',
+      'Settings',
+    ])
+    // The old raised "+" tab is gone: nothing in the bar but the five links.
+    await expect(tabs.getByRole('button')).toHaveCount(0)
+    await expect(page.getByRole('banner').getByRole('button', { name: 'Quick add' })).toBeVisible()
+  })
+
   await test.step('create an area', async () => {
     await page.getByRole('link', { name: 'Areas' }).click()
     await page.getByRole('button', { name: '+ New' }).click()
@@ -79,6 +93,53 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('status').filter({ hasText: '+8 ✨' })).toBeVisible()
   })
 
+  await test.step('the project page takes a micro-note and a focus timer', async () => {
+    // The park step's +8 toast is still up (Toast.tsx:29); wait it out so the micro-note's own +8
+    // below is the only one on screen.
+    await expect(page.getByRole('status').filter({ hasText: '+8 ✨' })).toHaveCount(0)
+
+    // The resume box's next step: the <p> right under its heading (History repeats the words
+    // as "Next: ...", so a bare getByText would match twice).
+    const nextStep = page
+      .getByRole('heading', { name: 'Next step', exact: true })
+      .locator('xpath=following-sibling::p[1]')
+    await expect(nextStep).toHaveText('plan the second one')
+
+    await page.getByRole('button', { name: /Micro-note/ }).click()
+    await page.getByLabel('Micro-note').fill('rigged the mainsail')
+    await page.getByRole('button', { name: 'Save note' }).click()
+
+    // A micro-note is a progress update: the flat 8, the check-in having fired long ago.
+    const noted = page.getByRole('status').filter({ hasText: '+8 ✨' })
+    await expect(noted).toBeVisible()
+    await expect(noted).toHaveCount(0)
+
+    await expect(
+      page.getByRole('region', { name: 'History' }).getByText('rigged the mainsail'),
+    ).toBeVisible()
+    // The note rides along; it must not rewrite the context it was added beside.
+    await expect(nextStep).toHaveText('plan the second one')
+    // The header's XP chip reads this user's own events on the project (sr-only wording): check-in
+    // 10 + M task 25 + three progress updates (in progress, pause, this note) 8 each = 59.
+    await expect(page.getByText('You earned 59 XP here')).toHaveCount(1)
+
+    // The resume box's focus start swaps for the header's Stop on the same clock. A stop this
+    // soon discards the session (too short, no XP), so nothing leaks into the steps after.
+    await page.getByRole('button', { name: 'Start 25m focus on Test project' }).click()
+    await expect(page.getByRole('button', { name: 'Stop the timer on Test project' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Start 25m focus on Test project' })).toHaveCount(
+      0,
+    )
+
+    await page.getByRole('button', { name: 'Stop the timer on Test project' }).click()
+    await expect(page.getByRole('button', { name: 'Stop the timer on Test project' })).toHaveCount(
+      0,
+    )
+    await expect(
+      page.getByRole('button', { name: 'Start 25m focus on Test project' }),
+    ).toBeVisible()
+  })
+
   await test.step('Today shows the task, parked with its project', async () => {
     await page.getByRole('link', { name: 'Today' }).click()
     await expect(page.getByRole('heading', { name: /Welcome back/ })).toBeVisible()
@@ -109,6 +170,31 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('status').filter({ hasText: '+5 ✨' })).toBeVisible()
   })
 
+  await test.step('Today leads the focus card with its next step and a start button', async () => {
+    // Scoped to the focus region: the hanging list above never shows the project's own next step.
+    const focus = page.getByRole('region', { name: "Today's focus" })
+    await expect(focus.getByText('plan the second one')).toBeVisible()
+    await expect(
+      focus.getByRole('button', { name: 'Start 25m focus on Test project' }),
+    ).toBeVisible()
+
+    // The capture field opens the shell's Quick add sheet and Escape closes it again.
+    await page.getByRole('button', { name: /Capture a thread/ }).click()
+    const quickAdd = page.getByRole('dialog', { name: 'Quick add' })
+    await expect(quickAdd).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(quickAdd).toHaveCount(0)
+  })
+
+  // After the focus pick, before the sheet step (which navigates from Areas by name itself): the
+  // paused project's hanging task is what the Work card offers to resume.
+  await test.step('the area card resumes its waiting thread', async () => {
+    await page.getByRole('link', { name: 'Areas' }).click()
+    await expect(page.getByRole('link', { name: /Work/ })).toHaveCount(1)
+    await page.getByRole('button', { name: 'Resume Test project' }).click()
+    await expect(page.getByRole('heading', { name: 'Test project' })).toBeVisible()
+  })
+
   // Last, not beside 'add a task': a second task here would turn the '1/1 done' the completion
   // step asserts into '1/2'. The quick row is exercised above; this is the other door, and the
   // only check that the description the sheet collects actually reaches the row.
@@ -116,6 +202,9 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await page.getByRole('link', { name: 'Areas' }).click()
     await page.getByRole('link', { name: /Work/ }).click()
     await page.getByRole('link', { name: 'Test project' }).click()
+    // Still 59 although the account now holds 64: pick_focus carries no project, so this only
+    // passes while the chip sums the project's own events rather than the user's total.
+    await expect(page.getByText('You earned 59 XP here')).toHaveCount(1)
 
     // Typed in the quick row first: the sheet is supposed to carry it over, not start empty.
     await page.getByRole('textbox', { name: 'New task' }).fill('Second task')

@@ -4,12 +4,15 @@ import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { Icon } from '../components/ui/Icon'
 import { StatusChip } from '../components/ui/StatusChip'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { useToast } from '../components/ui/Toast'
 import { useAuth } from '../auth/AuthProvider'
 import { AreaSheet } from '../features/areas/AreaSheet'
+import { LevelRing } from '../features/areas/LevelRing'
 import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/queries'
+import { useAreaStats } from '../features/gamification/queries'
 import { projectCardView } from '../features/projects/cardView'
 import { orderProjects } from '../features/projects/projectOrder'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
@@ -24,6 +27,7 @@ export function AreaDetailScreen() {
   const toast = useToast()
 
   const area = useArea(areaId)
+  const areaXp = useAreaStats().data?.find((s) => s.area_id === areaId)?.total_xp
   const projects = useProjects(areaId)
   // Server order is "least recently touched first" for every row; the grid keeps that for open
   // projects and sends done / dropped ones to the end (projectOrder.ts).
@@ -44,18 +48,22 @@ export function AreaDetailScreen() {
 
   return (
     <div>
-      <Link to="/areas" className="text-sm font-medium text-muted">
-        ← Areas
+      {/* From md the top bar's breadcrumb (and the rail) take over. */}
+      <Link to="/areas" className="text-body font-medium text-muted md:hidden">
+        <Icon name="arrow_back" /> Areas
       </Link>
 
       <header className="mb-4 mt-2 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {area.data?.icon} {area.data?.name ?? 'Area'}
-          </h1>
-          <p className="text-sm text-muted">
-            {projects.data?.length ?? 0} project{projects.data?.length === 1 ? '' : 's'}
-          </p>
+        <div className="flex items-center gap-3">
+          {areaXp !== undefined && <LevelRing totalXp={areaXp} />}
+          <div>
+            <h1 className="text-title-lg font-bold">
+              {area.data?.icon} {area.data?.name ?? 'Area'}
+            </h1>
+            <p className="text-body text-muted">
+              {projects.data?.length ?? 0} project{projects.data?.length === 1 ? '' : 's'}
+            </p>
+          </div>
         </div>
         <Button variant="ghost" className="px-3 py-2" onClick={() => setAreaSheet(true)}>
           Edit
@@ -92,7 +100,7 @@ export function AreaDetailScreen() {
             <Card
               key={project.id}
               edgeColor={isDone ? 'rgb(var(--success))' : area.data?.color}
-              className="aspect-square pl-5"
+              className="h-full pl-5"
             >
               {/* Done cards fade via a local opacity on the title and the progress bar only —
                   never on the Card itself. A card-wide opacity composites every pixel in it
@@ -110,7 +118,7 @@ export function AreaDetailScreen() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <span
-                    className={`font-semibold leading-tight line-clamp-2 ${
+                    className={`text-body font-semibold line-clamp-2 ${
                       isDone
                         ? 'text-ink opacity-75 line-through transition group-hover:opacity-100 group-focus-within:opacity-100'
                         : ''
@@ -121,11 +129,12 @@ export function AreaDetailScreen() {
                   <StatusChip status={project.status} />
                 </div>
                 <div className="mt-auto">
+                  {/* Resume-first: the next step outweighs the title (lead vs body). */}
                   {view.showNext && stat?.nextStep && (
-                    <p className="mt-2 text-sm line-clamp-1">
-                      <span className="text-muted">Next: </span>
-                      {stat.nextStep}
-                    </p>
+                    <div className="mt-3">
+                      <p className="text-micro uppercase text-muted">Next step</p>
+                      <p className="text-lead line-clamp-2">{stat.nextStep}</p>
+                    </div>
                   )}
                   {view.showStats && (
                     <div className="mt-3">
@@ -145,15 +154,17 @@ export function AreaDetailScreen() {
                           />
                         </div>
                       )}
-                      {view.label && <p className="mt-1 text-xs text-muted">{view.label}</p>}
+                      {view.label && <p className="mt-1 text-caption text-muted">{view.label}</p>}
                     </div>
                   )}
                   {/* Outside `showStats`: a project with no tasks can still have time clocked on
                       it. Plain `text-muted` with no fade on a Done card, for the reason given
                       for "Completed" above. */}
                   {focusSeconds ? (
-                    <p className="mt-1 text-xs text-muted">
-                      <span aria-hidden>⏱ {formatMinutes(focusSeconds)}</span>
+                    <p className="mt-1 text-caption text-muted">
+                      <span aria-hidden>
+                        <Icon name="timer" /> {formatMinutes(focusSeconds)}
+                      </span>
                       <span className="sr-only">{formatMinutes(focusSeconds)} focused</span>
                     </p>
                   ) : null}

@@ -4,7 +4,7 @@ export interface ProjectStats {
   nextStep: string | null
 }
 
-/** Pure part of useProjectStats: logs must arrive newest first. */
+/** Pure part of useProjectStats: logs must arrive newest first; blank next steps are skipped. */
 export function aggregateProjectStats(
   projectIds: string[],
   tasks: { project_id: string; status: string }[],
@@ -21,7 +21,7 @@ export function aggregateProjectStats(
   }
   for (const log of logs) {
     const entry = stats[log.project_id]
-    if (entry && entry.nextStep === null) entry.nextStep = log.next_step
+    if (entry && entry.nextStep === null && log.next_step) entry.nextStep = log.next_step
   }
   return stats
 }

@@ -1,3 +1,5 @@
+import { Button } from '../../components/ui/Button'
+import { Icon } from '../../components/ui/Icon'
 import { useToast } from '../../components/ui/Toast'
 import { useRunningTimer, useStartTimer, useStopTimer } from './queries'
 import { atTimerLimit, runningOn, TIMER_LIMIT_REASON } from './stack'
@@ -8,6 +10,18 @@ interface TimerButtonProps {
   title: string
   /** Offers the 25/5 pomodoro alongside the open-ended timer. */
   withPomodoro?: boolean
+  /**
+   * The resume box's start: the pomodoro alone, as the screen's one filled button and named for
+   * what it says ("Start 25m focus on X" contains its visible text). Draws nothing while this
+   * item's clock runs — its Stop is the plain timer's, and two Stops for one clock would be two
+   * controls with one name.
+   */
+  focus?: boolean
+  /** Focus mode only: says "Resume" instead of "Start" — the item already has time banked. */
+  resume?: boolean
+  /** Focus mode only: ghost instead of filled, for a screen that already has its one filled
+   *  button (Today's focus cards after the first). */
+  quiet?: boolean
   disabled?: boolean
 }
 
@@ -17,6 +31,9 @@ export function TimerButton({
   itemId,
   title,
   withPomodoro = false,
+  focus = false,
+  resume = false,
+  quiet = false,
   disabled,
 }: TimerButtonProps) {
   const running = useRunningTimer()
@@ -34,6 +51,25 @@ export function TimerButton({
   const begin = (mode?: 'pomodoro') =>
     full ? toast(TIMER_LIMIT_REASON) : start.mutate({ itemType, itemId, mode })
 
+  if (focus) {
+    if (thisOne) return null
+    const verb = resume ? 'Resume' : 'Start'
+    return (
+      <Button
+        type="button"
+        variant={quiet ? 'ghost' : 'primary'}
+        aria-label={`${verb} 25m focus on ${title}`}
+        disabled={busy || disabled}
+        aria-disabled={full || undefined}
+        title={full ? TIMER_LIMIT_REASON : undefined}
+        onClick={() => begin('pomodoro')}
+        className="aria-disabled:opacity-40"
+      >
+        <Icon name="play_arrow" /> {verb} 25m focus
+      </Button>
+    )
+  }
+
   if (thisOne) {
     return (
       <button
@@ -41,9 +77,9 @@ export function TimerButton({
         aria-label={`Stop the timer on ${title}`}
         disabled={busy}
         onClick={() => stop.mutate(thisOne.id)}
-        className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-xs font-semibold text-accent disabled:opacity-50"
+        className="btn-primary min-h-[44px] shrink-0 rounded-full border border-accent px-3 text-caption font-semibold disabled:opacity-50"
       >
-        ⏹ Stop
+        <Icon name="stop" /> Stop
       </button>
     )
   }
@@ -57,9 +93,9 @@ export function TimerButton({
         aria-disabled={full || undefined}
         title={full ? TIMER_LIMIT_REASON : undefined}
         onClick={() => begin()}
-        className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
+        className="min-h-[44px] rounded-full bg-paper px-3 text-caption font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
       >
-        ▶ Timer
+        <Icon name="play_arrow" /> Timer
       </button>
       {withPomodoro && (
         <button
@@ -69,7 +105,7 @@ export function TimerButton({
           aria-disabled={full || undefined}
           title={full ? TIMER_LIMIT_REASON : undefined}
           onClick={() => begin('pomodoro')}
-          className="min-h-[44px] rounded-full bg-paper px-3 text-xs font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
+          className="min-h-[44px] rounded-full bg-paper px-3 text-caption font-semibold text-muted hover:bg-line/40 disabled:opacity-40 aria-disabled:opacity-40"
         >
           🍅 25m
         </button>
