@@ -71,6 +71,7 @@ export function useCreateTask(projectId: string, userId: string | undefined) {
           status: 'idea',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          status_changed_at: new Date().toISOString(),
           completed_at: null,
           snoozed_until: null,
         }
