@@ -7,7 +7,6 @@ function input(over: Partial<NewTask> = {}): NewTask {
     userId: 'u1',
     title: 'Write the thing',
     difficulty: 'M',
-    sortOrder: 3,
     ...over,
   }
 }
@@ -40,7 +39,6 @@ describe('newTaskRow', () => {
       description: 'why',
       difficulty: 'M',
       priority: 'med',
-      sort_order: 3,
     })
   })
 })
