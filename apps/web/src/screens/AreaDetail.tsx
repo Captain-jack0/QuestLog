@@ -12,6 +12,7 @@ import { AreaSheet } from '../features/areas/AreaSheet'
 import { useArchiveArea, useArea, useUpdateArea } from '../features/areas/queries'
 import { projectCardView } from '../features/projects/cardView'
 import { orderProjects } from '../features/projects/projectOrder'
+import { ProjectRemoval } from '../features/projects/ProjectRemoval'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import { useCreateProject, useProjectStats, useProjects } from '../features/projects/queries'
 import { formatMinutes } from '../features/timer/pomodoro'
@@ -120,7 +121,8 @@ export function AreaDetailScreen() {
                   </span>
                   <StatusChip status={project.status} />
                 </div>
-                <div className="mt-auto">
+                {/* pr-9 keeps the bottom lines clear of the delete / leave button below. */}
+                <div className="mt-auto pr-9">
                   {view.showNext && stat?.nextStep && (
                     <p className="mt-2 text-sm line-clamp-1">
                       <span className="text-muted">Next: </span>
@@ -159,6 +161,11 @@ export function AreaDetailScreen() {
                   ) : null}
                 </div>
               </Link>
+              {/* A sibling of the link, not inside it: a button nested in a link is invalid
+                  and a screen reader would announce the two as one control. */}
+              {!isOptimistic(project.id) && (
+                <ProjectRemoval project={project} className="absolute bottom-1 right-1" />
+              )}
             </Card>
           )
         })}

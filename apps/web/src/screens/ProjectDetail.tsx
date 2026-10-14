@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { CardSkeleton } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
@@ -13,6 +13,7 @@ import { compactFieldClass, rowFieldClass } from '../components/ui/field'
 import { useAuth } from '../auth/AuthProvider'
 import { useArea, useAreas } from '../features/areas/queries'
 import { useProfile } from '../features/gamification/queries'
+import { removedRedirect, useProjectRemoval } from '../features/projects/ProjectRemoval'
 import { ProjectSheet } from '../features/projects/ProjectSheet'
 import {
   useMoveProject,
@@ -59,6 +60,7 @@ export function ProjectDetailScreen() {
   const { projectId = '' } = useParams()
   const { session } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
 
   const project = useProject(projectId)
   const area = useArea(project.data?.area_id ?? undefined)
@@ -86,6 +88,11 @@ export function ProjectDetailScreen() {
   const moveTask = useMoveTask()
   const projectOptions = useProjectOptions()
   const profile = useProfile()
+  // In the edit sheet, not the header: that row has no room for a third button at 320px
+  // (project-detail-overflow.spec.ts).
+  const removal = useProjectRemoval(project.data, (kind) =>
+    navigate(removedRedirect(kind, project.data?.area_id), { replace: true }),
+  )
 
   const [editing, setEditing] = useState(false)
   const [pending, setPending] = useState<PendingStatusChange | null>(null)
@@ -476,6 +483,8 @@ export function ProjectDetailScreen() {
         </ol>
       </details>
 
+      {removal.sheet}
+
       <PickerSheet
         open={movingProject}
         title="Move project to…"
@@ -534,6 +543,13 @@ export function ProjectDetailScreen() {
         project={project.data}
         onClose={() => setEditing(false)}
         saving={updateProject.isPending}
+        removeLabel={removal.label}
+        // Closes this sheet and opens the confirm in one commit, as TaskSheet hands over to the
+        // resume sheet; BottomSheet's ref-counted lock keeps the body pinned across it.
+        onRemove={() => {
+          setEditing(false)
+          removal.start()
+        }}
         onSubmit={(values) =>
           updateProject.mutate(
             { ...values, id: projectId },
