@@ -1,5 +1,62 @@
 import { describe, expect, it } from 'vitest'
-import { localDateKey, relativeTime, startOfLocalDay } from './time'
+import {
+  dayLabel,
+  formatDateKey,
+  groupByLocalDay,
+  localDateKey,
+  relativeTime,
+  startOfLocalDay,
+} from './time'
+
+describe('timeline day labels', () => {
+  const now = new Date(2026, 7, 19, 9, 0)
+
+  it('names today and yesterday by local midnight, not by 24-hour distance', () => {
+    expect(dayLabel(new Date(2026, 7, 19, 0, 5).toISOString(), now)).toBe('Today')
+    // 10 hours ago, but before midnight: that is yesterday.
+    expect(dayLabel(new Date(2026, 7, 18, 23, 0).toISOString(), now)).toBe('Yesterday')
+    expect(dayLabel(new Date(2026, 7, 18, 0, 1).toISOString(), now)).toBe('Yesterday')
+  })
+
+  it('falls back to a date that keeps its own day of the month', () => {
+    expect(dayLabel(new Date(2026, 7, 12, 22, 0).toISOString(), now)).toMatch(/12/)
+  })
+})
+
+describe('groupByLocalDay', () => {
+  const at = (...args: [number, number, number, number, number]) => ({
+    created_at: new Date(...args).toISOString(),
+  })
+
+  it('splits at local midnight: 23:59 and 00:01 are different days', () => {
+    const rows = [at(2026, 7, 19, 0, 1), at(2026, 7, 18, 23, 59), at(2026, 7, 18, 8, 0)]
+    const days = groupByLocalDay(rows)
+    expect(days.map((d) => d.key)).toEqual(['2026-08-19', '2026-08-18'])
+    expect(days.map((d) => d.items.length)).toEqual([1, 2])
+  })
+
+  it('keeps the incoming newest-first order inside and across days', () => {
+    const rows = [at(2026, 7, 20, 9, 0), at(2026, 7, 19, 22, 0), at(2026, 7, 19, 7, 0)]
+    const days = groupByLocalDay(rows)
+    expect(days.map((d) => d.key)).toEqual(['2026-08-20', '2026-08-19'])
+    expect(days[1].items).toEqual([rows[1], rows[2]])
+  })
+
+  it('is empty for no rows', () => {
+    expect(groupByLocalDay([])).toEqual([])
+  })
+})
+
+describe('formatDateKey', () => {
+  it('reads a stored date as that calendar day, not UTC midnight', () => {
+    expect(formatDateKey('2026-08-19')).toMatch(/19/)
+    expect(formatDateKey('2026-08-19')).not.toMatch(/18/)
+  })
+
+  it('hands back anything unparsable untouched', () => {
+    expect(formatDateKey('soon')).toBe('soon')
+  })
+})
 
 describe('relativeTime', () => {
   const now = new Date('2026-08-19T12:00:00Z')

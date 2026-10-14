@@ -56,6 +56,25 @@ export function useTotalXp() {
   })
 }
 
+/**
+ * XP this user earned on one project. xp_events is RLS-scoped to its owner, so on a shared project
+ * this is the viewer's own share, not the project's total.
+ */
+export function useProjectXp(projectId: string | undefined) {
+  return useQuery({
+    queryKey: ['gamification', 'project-xp', projectId] as const,
+    enabled: Boolean(projectId),
+    queryFn: async (): Promise<number> => {
+      const { data, error } = await supabase
+        .from('xp_events')
+        .select('xp')
+        .eq('project_id', projectId!)
+      if (error) throw error
+      return data.reduce((sum, row) => sum + row.xp, 0)
+    },
+  })
+}
+
 export interface AreaStat {
   area_id: string
   name: string

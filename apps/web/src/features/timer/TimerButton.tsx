@@ -1,3 +1,4 @@
+import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { useToast } from '../../components/ui/Toast'
 import { useRunningTimer, useStartTimer, useStopTimer } from './queries'
@@ -9,6 +10,13 @@ interface TimerButtonProps {
   title: string
   /** Offers the 25/5 pomodoro alongside the open-ended timer. */
   withPomodoro?: boolean
+  /**
+   * The resume box's start: the pomodoro alone, as the screen's one filled button and named for
+   * what it says ("Start 25m focus on X" contains its visible text). Draws nothing while this
+   * item's clock runs — its Stop is the plain timer's, and two Stops for one clock would be two
+   * controls with one name.
+   */
+  focus?: boolean
   disabled?: boolean
 }
 
@@ -18,6 +26,7 @@ export function TimerButton({
   itemId,
   title,
   withPomodoro = false,
+  focus = false,
   disabled,
 }: TimerButtonProps) {
   const running = useRunningTimer()
@@ -34,6 +43,23 @@ export function TimerButton({
   const full = atTimerLimit(timers)
   const begin = (mode?: 'pomodoro') =>
     full ? toast(TIMER_LIMIT_REASON) : start.mutate({ itemType, itemId, mode })
+
+  if (focus) {
+    if (thisOne) return null
+    return (
+      <Button
+        type="button"
+        aria-label={`Start 25m focus on ${title}`}
+        disabled={busy || disabled}
+        aria-disabled={full || undefined}
+        title={full ? TIMER_LIMIT_REASON : undefined}
+        onClick={() => begin('pomodoro')}
+        className="aria-disabled:opacity-40"
+      >
+        <Icon name="play_arrow" /> Start 25m focus
+      </Button>
+    )
+  }
 
   if (thisOne) {
     return (
