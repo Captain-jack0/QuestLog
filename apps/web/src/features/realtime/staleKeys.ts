@@ -5,8 +5,9 @@
 export const STALE_KEYS: Record<string, string[][]> = {
   tasks: [['tasks'], ['projects'], ['areas'], ['focus'], ['threads']],
   projects: [['project'], ['projects'], ['areas'], ['focus'], ['threads'], ['quick-add']],
-  // ['projects']: the area cards' stats read the latest next step out of progress_logs.
-  progress_logs: [['project'], ['projects'], ['threads']],
+  // ['projects']: the area cards' stats read the latest next step out of progress_logs; ['focus']:
+  // so do Today's focus cards (useFocusNextSteps).
+  progress_logs: [['project'], ['projects'], ['threads'], ['focus']],
   project_members: [['project'], ['projects'], ['tasks'], ['areas']],
   area_members: [['areas'], ['projects']],
 }

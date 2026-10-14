@@ -31,6 +31,9 @@ export const threadKeys = {
   all: ['threads'] as const,
 }
 
+/** Rows useHangingThreads reads; a list this long may have more behind it. */
+export const HANGING_THREADS_LIMIT = 20
+
 /** v_hanging_threads holds tasks only (#44), already excludes snoozed items and sorts by oldest
  *  activity. */
 export function useHangingThreads() {
@@ -43,7 +46,7 @@ export function useHangingThreads() {
           'item_type, item_id, title, status, display_status, project_id, project_title, area_name, area_color, left_off, next_step, next_step_task_id, next_step_task_title, next_step_task_status, next_step_task_project_id, last_activity_at',
         )
         .order('last_activity_at', { ascending: true })
-        .limit(20)
+        .limit(HANGING_THREADS_LIMIT)
       if (error) throw error
       return data as unknown as HangingThread[]
     },

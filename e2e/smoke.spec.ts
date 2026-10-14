@@ -170,6 +170,22 @@ test('a captain can sign up, log a thread and find it waiting on Today', async (
     await expect(page.getByRole('status').filter({ hasText: '+5 ✨' })).toBeVisible()
   })
 
+  await test.step('Today leads the focus card with its next step and a start button', async () => {
+    // Scoped to the focus region: the hanging list above never shows the project's own next step.
+    const focus = page.getByRole('region', { name: "Today's focus" })
+    await expect(focus.getByText('plan the second one')).toBeVisible()
+    await expect(
+      focus.getByRole('button', { name: 'Start 25m focus on Test project' }),
+    ).toBeVisible()
+
+    // The capture field opens the shell's Quick add sheet and Escape closes it again.
+    await page.getByRole('button', { name: /Capture a thread/ }).click()
+    const quickAdd = page.getByRole('dialog', { name: 'Quick add' })
+    await expect(quickAdd).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(quickAdd).toHaveCount(0)
+  })
+
   // After the focus pick, before the sheet step (which navigates from Areas by name itself): the
   // paused project's hanging task is what the Work card offers to resume.
   await test.step('the area card resumes its waiting thread', async () => {

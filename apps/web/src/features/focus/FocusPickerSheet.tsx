@@ -12,7 +12,7 @@ interface FocusPickerSheetProps {
   saving?: boolean
 }
 
-const MAX_FOCUS = 3
+export const MAX_FOCUS = 3
 
 export function FocusPickerSheet({ open, onClose, onSubmit, saving }: FocusPickerSheetProps) {
   const items = usePickableItems(open)

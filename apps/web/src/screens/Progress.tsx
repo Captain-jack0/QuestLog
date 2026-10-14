@@ -32,6 +32,7 @@ import { badgeProgress, type BadgeCounts } from '../features/gamification/badgeP
 import { WeeklyBarChart } from '../features/gamification/WeeklyBarChart'
 import { useDailyFocus } from '../features/timer/queries'
 import { formatMinutes } from '../features/timer/pomodoro'
+import { LOCALE } from '../lib/time'
 import { levelForXp, XP, xpForLevel } from '../lib/xp'
 
 const CALENDAR_WEEKS = 12
@@ -428,7 +429,8 @@ function Badges({ counts }: { counts: BadgeCounts }) {
         {earned.map((badge) => (
           <BadgeCard key={badge.id} badge={badge}>
             <p className="mt-2 flex items-center gap-1 text-caption font-semibold text-success-ink">
-              <Icon name="check_circle" /> Earned {new Date(badge.earned_at!).toLocaleDateString()}
+              <Icon name="check_circle" /> Earned{' '}
+              {new Date(badge.earned_at!).toLocaleDateString(LOCALE)}
             </p>
           </BadgeCard>
         ))}
