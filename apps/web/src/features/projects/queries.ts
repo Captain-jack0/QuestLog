@@ -242,3 +242,27 @@ export function useProjectOptions() {
     },
   })
 }
+
+/**
+ * Soft delete (#60): owner only. Hides the project and everything under it from every reader;
+ * removes nothing, so restoreProject undoes it.
+ */
+export async function deleteProject(id: string) {
+  const { error } = await supabase.rpc('rpc_delete_project', { p_project_id: id })
+  if (error) throw error
+}
+
+export async function restoreProject(id: string) {
+  const { error } = await supabase.rpc('rpc_restore_project', { p_project_id: id })
+  if (error) throw error
+}
+
+/** A member leaves a shared project (#75's rpc_remove_member). The owner cannot leave. */
+export async function leaveProject(id: string, userId: string) {
+  const { error } = await supabase.rpc('rpc_remove_member', {
+    p_target_type: 'project',
+    p_target_id: id,
+    p_user: userId,
+  })
+  if (error) throw error
+}

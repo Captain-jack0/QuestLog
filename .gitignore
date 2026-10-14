@@ -22,3 +22,6 @@ playwright-report/
 backups/
 .cron-secret
 .last-deploy
+
+# crew panosu: canlı ajan kaydı, sürekli değişir
+.context/activity.json
