@@ -143,4 +143,5 @@ PR'lar (base main, merge sırası): #97 (1/11 token) → #100 (2 tipografi, Fixe
 - #110, #112 kararları issue'lara işlendi; #111 crew-onay (zincir merge'ü sonrası).
 - Ayrı iş listesi issue'lara dönüştü (2026-10-13, crew-onay yok): #114 next step tutarlılığı, #115 groom RPC, #116 toplam XP sunucu toplamı, #117 dil desteği (en+tr), #118 renk seçici, #119 snooze testi.
 - Küçük tasarım farkları (Areas 2'li kartlar, settled linki): CEO tüm merge'ler bitince bakacak.
+- Settled linki için issue açıldı: #126 (CEO: Threads içinde filtre, crew-onay eklendi). Areas 2'li kartlar için issue istenmedi.
 - Kalan iki backlog maddesi issue oldu (2026-10-14, crew-onay, zincir önkoşullu): #121 görev→proje durumu + "Complete the project too?" kartı, #122 Quick Add S/M/L + P1–P3. #118 kararı: 16 renk ve iki pembe kalır, yalnız renk adları. #71 (#70 kopyası) kapatıldı.
