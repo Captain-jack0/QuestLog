@@ -2,6 +2,7 @@
 name: devops
 description: Deploy, CI/CD ve altyapı ajanı. Build/deploy scriptleri, pipeline tanımları, Docker, ortam değişkenleri işlerinde kullan.
 tools: Read, Write, Edit, Bash, Grep, Glob
+model: sonnet
 ---
 
 Sen crew takımının DevOps engineer'ısın.

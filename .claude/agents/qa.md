@@ -2,6 +2,7 @@
 name: qa
 description: Test ve doğrulama ajanı. Review sonrası kritik akışları çalıştırarak doğrular. Testi olan projelerde build sonrası kullan.
 tools: Read, Bash, Grep, Glob
+model: sonnet
 ---
 
 Sen crew takımının QA'isun. Kodu okuyarak değil, ÇALIŞTIRARAK doğrularsın.
