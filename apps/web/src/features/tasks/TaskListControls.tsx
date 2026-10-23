@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { Icon, type IconName } from '../../components/ui/Icon'
+import { useRadioGroup } from '../../hooks/useRadioGroup'
 import { statusLabel, statusTone } from '../../components/ui/StatusChip'
 import { DIFFICULTY_LABELS, PRIORITY_LABELS, type ItemStatus } from '../../lib/schemas'
 import { clearedFilters, TASK_VIEWS, type TaskListPrefs, type TaskView } from './listPrefs'
@@ -54,6 +56,7 @@ export function TaskListControls({
   hiddenCount,
   totalCount,
 }: TaskListControlsProps) {
+  const sortContainerRef = useRef<HTMLDivElement>(null)
   // Every filter in the bar, or the "Showing X of Y" line goes missing for the ones left out.
   const filtering =
     prefs.status.length > 0 || prefs.staleOnly || prefs.highPriorityOnly || prefs.quickOnly
@@ -66,6 +69,13 @@ export function TaskListControls({
         : [...prefs.status, status],
     })
   }
+
+  const getSortTabIndex = useRadioGroup(
+    sortContainerRef,
+    prefs.sort,
+    SORT_KEYS,
+    (key) => onChange({ ...prefs, sort: key }),
+  )
 
   return (
     <div className="mb-3 space-y-2">
@@ -142,7 +152,7 @@ export function TaskListControls({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <div role="radiogroup" aria-label="Sort tasks" className="flex rounded-full bg-paper">
+          <div ref={sortContainerRef} role="radiogroup" aria-label="Sort tasks" className="flex rounded-full bg-paper">
             {SORT_KEYS.map((key) => {
               const active = prefs.sort === key
               return (
@@ -151,6 +161,7 @@ export function TaskListControls({
                   type="button"
                   role="radio"
                   aria-checked={active}
+                  tabIndex={getSortTabIndex(key)}
                   onClick={() => !active && onChange({ ...prefs, sort: key })}
                   className={`${PILL} ${active ? 'bg-accent/10 text-accent' : IDLE}`}
                 >
