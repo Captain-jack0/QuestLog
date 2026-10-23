@@ -5,3 +5,9 @@ package-lock.json
 docs/design/stitch/
 # crew orchestration records (directives, lessons), not code.
 .context/
+# graphify knowledge graph output (auto-generated).
+graphify-out/
+# Claude Code agent configuration and instructions.
+.claude/
+CLAUDE.md
+CLAUDE.crew.md
