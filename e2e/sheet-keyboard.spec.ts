@@ -135,6 +135,59 @@ test('a bottom sheet traps Tab, hands focus back, and freezes the page behind it
     const taskSheet = page.getByRole('dialog', { name: 'Edit task' })
     await expect(taskSheet).toBeVisible()
 
+    await test.step('radio groups are a single Tab stop with arrow key navigation', async () => {
+      // The Status radio group has 7 options but should be a single Tab stop.
+      // Tab should land on the selected option, arrows should move between them.
+      const statusGroup = taskSheet.locator('[role="radiogroup"][aria-label*="Status"]')
+
+      // Find the first focusable element in the sheet
+      await page.keyboard.press('Shift+Tab') // go backwards to loop to first
+      await page.keyboard.press('Shift+Tab')
+
+      // Count tabs to reach the Status group - should be just one Tab stop
+      let tabCount = 0
+      const maxTabs = 15
+      while (tabCount < maxTabs) {
+        await page.keyboard.press('Tab')
+        tabCount++
+        const focusedInStatus = await statusGroup.evaluate((group) => {
+          return group.contains(document.activeElement)
+        })
+        if (focusedInStatus) break
+      }
+
+      expect(tabCount, 'Status group was not reachable via Tab').toBeLessThan(maxTabs)
+
+      // Tab again - should leave the group entirely (not land on next status option)
+      const initialStatus = await page.evaluate(() => {
+        const checked = document.querySelector('[role="radio"][aria-checked="true"]')
+        return checked?.textContent?.trim()
+      })
+
+      await page.keyboard.press('Tab')
+      const stillInStatus = await statusGroup.evaluate((group) => {
+        return group.contains(document.activeElement)
+      })
+      expect(stillInStatus, 'Tab landed on another status instead of leaving the group').toBe(false)
+
+      // Go back to Status and test arrow keys
+      await page.keyboard.press('Shift+Tab')
+      await page.keyboard.press('ArrowRight')
+      const afterArrow = await page.evaluate(() => {
+        const checked = document.querySelector('[role="radio"][aria-checked="true"]')
+        return checked?.textContent?.trim()
+      })
+      expect(afterArrow, 'Arrow key did not change selection').not.toBe(initialStatus)
+
+      // Arrow left should go back
+      await page.keyboard.press('ArrowLeft')
+      const afterLeftArrow = await page.evaluate(() => {
+        const checked = document.querySelector('[role="radio"][aria-checked="true"]')
+        return checked?.textContent?.trim()
+      })
+      expect(afterLeftArrow).toBe(initialStatus)
+    })
+
     // Closes the task sheet and opens the resume sheet in one commit.
     await taskSheet.getByRole('radio', { name: 'Status: Paused' }).click()
     await expect(page.getByLabel('Where did you leave off?')).toBeVisible()
