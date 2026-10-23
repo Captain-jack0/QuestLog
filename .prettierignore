@@ -7,3 +7,7 @@ docs/design/stitch/
 .context/
 # graphify knowledge graph output (auto-generated).
 graphify-out/
+# Claude Code agent configuration and instructions.
+.claude/
+CLAUDE.md
+CLAUDE.crew.md
