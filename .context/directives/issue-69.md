@@ -1,7 +1,18 @@
-# issue-69: sort_order sütununu düşür — Adım 1
-durum: done
-pr: https://github.com/Captain-jack0/QuestLog/pull/124
-tarih: 2026-10-14
+# Direktif: issue-69 — sort_order sütunu düşürülsün (okuyan kalmadı)
+- tarih: 2026-10-20
+- durum: build
 
-Adım 1: istemciden sort_order yazımı kaldırıldı (sütun not null default 0). Teftiş GEÇTİ (LOW: tasks/queries.ts `as Task` cast'i Adım 2'de kaldırılmalı).
-Adım 2 açık: PR #124 merge + Vercel dağıtımından sonra drop migration + tip üretimi; issue'ya yeniden crew-onay gerekir. Canlıya migration CEO'da.
+## Plan
+- [x] Adım 1 PR (#124): istemciden sort_order yazımı kaldırıldı — MERGED
+- [x] Adım 2 migration hazırla: drop column + index recreate
+- [x] pgTAP testi ekle
+- [x] Teftiş (GEÇTİ, MEDIUM yorum hatası düzeltildi, HIGH test eklendi)
+- [ ] Commit ve PR aç
+- [ ] CEO migration'u canlıya uygular (devriye işi DEĞİL)
+- [ ] database.types.ts yeniden üret
+- [ ] tasks/queries.ts `as Task` cast'i kaldır
+
+## Notlar
+- Migration geriye uyumlu DEĞİL (issue'da belirtilmiş)
+- Adım 1 PR #124 merge + Vercel deploy sonrası çalıştırılmalı
+- `as Task` cast'i ancak tipler yeniden üretildikten sonra kaldırılabilir
