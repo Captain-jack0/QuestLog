@@ -5,3 +5,5 @@ package-lock.json
 docs/design/stitch/
 # crew orchestration records (directives, lessons), not code.
 .context/
+# graphify knowledge graph output (auto-generated).
+graphify-out/
