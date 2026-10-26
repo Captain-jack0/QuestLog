@@ -159,10 +159,9 @@ test('a bottom sheet traps Tab, hands focus back, and freezes the page behind it
       expect(tabCount, 'Status group was not reachable via Tab').toBeLessThan(maxTabs)
 
       // Tab again - should leave the group entirely (not land on next status option)
-      const initialStatus = await page.evaluate(() => {
-        const checked = document.querySelector('[role="radio"][aria-checked="true"]')
-        return checked?.textContent?.trim()
-      })
+      const initialStatus = await statusGroup.evaluate((group) =>
+        group.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.trim(),
+      )
 
       await page.keyboard.press('Tab')
       const stillInStatus = await statusGroup.evaluate((group) => {
@@ -173,18 +172,16 @@ test('a bottom sheet traps Tab, hands focus back, and freezes the page behind it
       // Go back to Status and test arrow keys
       await page.keyboard.press('Shift+Tab')
       await page.keyboard.press('ArrowRight')
-      const afterArrow = await page.evaluate(() => {
-        const checked = document.querySelector('[role="radio"][aria-checked="true"]')
-        return checked?.textContent?.trim()
-      })
+      const afterArrow = await statusGroup.evaluate((group) =>
+        group.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.trim(),
+      )
       expect(afterArrow, 'Arrow key did not change selection').not.toBe(initialStatus)
 
       // Arrow left should go back
       await page.keyboard.press('ArrowLeft')
-      const afterLeftArrow = await page.evaluate(() => {
-        const checked = document.querySelector('[role="radio"][aria-checked="true"]')
-        return checked?.textContent?.trim()
-      })
+      const afterLeftArrow = await statusGroup.evaluate((group) =>
+        group.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.trim(),
+      )
       expect(afterLeftArrow).toBe(initialStatus)
     })
 

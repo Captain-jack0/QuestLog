@@ -70,11 +70,8 @@ export function TaskListControls({
     })
   }
 
-  const getSortTabIndex = useRadioGroup(
-    sortContainerRef,
-    prefs.sort,
-    SORT_KEYS,
-    (key) => onChange({ ...prefs, sort: key }),
+  const getSortTabIndex = useRadioGroup(sortContainerRef, prefs.sort, SORT_KEYS, (key) =>
+    onChange({ ...prefs, sort: key }),
   )
 
   return (
@@ -152,7 +149,12 @@ export function TaskListControls({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <div ref={sortContainerRef} role="radiogroup" aria-label="Sort tasks" className="flex rounded-full bg-paper">
+          <div
+            ref={sortContainerRef}
+            role="radiogroup"
+            aria-label="Sort tasks"
+            className="flex rounded-full bg-paper"
+          >
             {SORT_KEYS.map((key) => {
               const active = prefs.sort === key
               return (

@@ -52,9 +52,7 @@ export function useRadioGroup<T extends string>(
     const container = containerRef.current
     if (!container) return
 
-    const button = container.querySelector<HTMLElement>(
-      `button[role="radio"][aria-checked="true"]`,
-    )
+    const button = container.querySelector<HTMLElement>(`button[role="radio"][aria-checked="true"]`)
     button?.focus()
     setFocused(null)
   }, [focused, containerRef])
