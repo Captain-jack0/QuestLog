@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useRadioGroup } from '../../hooks/useRadioGroup'
 import { ITEM_STATUSES, type ItemStatus } from '../../lib/schemas'
 import { statusLabel, statusTone } from './StatusChip'
@@ -38,9 +38,14 @@ export function StatusPicker({
   compact = false,
   disabled = false,
 }: StatusPickerProps) {
-  const options = compact ? Array.from(new Set([value, ...QUICK])) : ITEM_STATUSES
+  // Memoised so the radio group's listeners are not re-attached on every render of a long list.
+  const options = useMemo(
+    () => (compact ? Array.from(new Set([value, ...QUICK])) : ITEM_STATUSES),
+    [compact, value],
+  )
   const containerRef = useRef<HTMLDivElement>(null)
-  const getTabIndex = useRadioGroup(containerRef, value, options, onChange, disabled)
+  // followFocus off: an arrow only moves focus; a status write waits for Space/Enter or a tap.
+  const getTabIndex = useRadioGroup(containerRef, value, options, onChange, disabled, false)
 
   return (
     <div ref={containerRef} role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
