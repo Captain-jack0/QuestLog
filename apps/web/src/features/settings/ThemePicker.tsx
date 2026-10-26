@@ -1,11 +1,14 @@
-import { useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { Icon, type IconName } from '../../components/ui/Icon'
+import { useRadioGroup } from '../../hooks/useRadioGroup'
 import { applyTheme, storedTheme, type Theme } from '../../lib/theme'
 
 const OPTIONS: { value: Theme; label: string; hint: string; icon: IconName }[] = [
   { value: 'quest', label: 'Quest', hint: 'Night sky, gamified', icon: 'dark_mode' },
   { value: 'calm', label: 'Calm', hint: 'Daylight, quiet', icon: 'light_mode' },
 ]
+
+const THEME_VALUES: readonly Theme[] = OPTIONS.map((o) => o.value)
 
 // A handful of the sky's stars, so the Quest thumbnail reads as night before it reads as navy.
 const STARS = [
@@ -16,11 +19,6 @@ const STARS = [
   'radial-gradient(1px 1px at 92% 58%, rgb(255 255 255 / 0.8), transparent 100%)',
 ].join(',')
 
-/**
- * Each thumbnail is a tiny card painted in *its own* theme: `data-theme` on the wrapper scopes
- * that theme's tokens (index.css keys them on the attribute, not on <html>), so the preview is
- * the real palette whichever theme is active — no second copy of the colours to drift.
- */
 function Preview({ theme }: { theme: Theme }) {
   return (
     <span
@@ -41,12 +39,19 @@ function Preview({ theme }: { theme: Theme }) {
   )
 }
 
-/** Repaints immediately — no save button, because nothing else is worth a round trip. */
 export function ThemePicker() {
   const [theme, setTheme] = useState<Theme>(() => storedTheme())
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleChange = (value: Theme) => {
+    setTheme(value)
+    applyTheme(value)
+  }
+
+  const getTabIndex = useRadioGroup(containerRef, theme, THEME_VALUES, handleChange)
 
   return (
-    <div role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-3">
+    <div ref={containerRef} role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-3">
       {OPTIONS.map((option) => {
         const active = option.value === theme
         return (
@@ -55,10 +60,8 @@ export function ThemePicker() {
             type="button"
             role="radio"
             aria-checked={active}
-            onClick={() => {
-              setTheme(option.value)
-              applyTheme(option.value)
-            }}
+            tabIndex={getTabIndex(option.value)}
+            onClick={() => handleChange(option.value)}
             className={`rounded-xl border bg-surface-sunken p-3 text-left transition ${
               active ? 'border-accent ring-2 ring-accent' : 'border-line'
             }`}
@@ -67,7 +70,6 @@ export function ThemePicker() {
             <span className="mt-3 flex items-center gap-1.5 text-body-medium">
               <Icon name={option.icon} className="icon-lg text-muted" />
               {option.label}
-              {/* aria-checked already says it; the badge is for eyes only. */}
               {active && (
                 <span
                   aria-hidden

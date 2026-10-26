@@ -1,3 +1,5 @@
+import { useMemo, useRef } from 'react'
+import { useRadioGroup } from '../../hooks/useRadioGroup'
 import { ITEM_STATUSES, type ItemStatus } from '../../lib/schemas'
 import { statusLabel, statusTone } from './StatusChip'
 
@@ -26,7 +28,8 @@ const QUICK: ItemStatus[] = ['in_progress', 'paused', 'blocked', 'done', 'droppe
 
 /**
  * One tap per status instead of open-scroll-pick. Rendered as a radio group so keyboard
- * and screen readers get the same single choice the eye sees.
+ * and screen readers get the same single choice the eye sees. Arrow keys navigate between
+ * options (WAI-ARIA radio group pattern).
  */
 export function StatusPicker({
   value,
@@ -35,10 +38,17 @@ export function StatusPicker({
   compact = false,
   disabled = false,
 }: StatusPickerProps) {
-  const options = compact ? Array.from(new Set([value, ...QUICK])) : ITEM_STATUSES
+  // Memoised so the radio group's listeners are not re-attached on every render of a long list.
+  const options = useMemo(
+    () => (compact ? Array.from(new Set([value, ...QUICK])) : ITEM_STATUSES),
+    [compact, value],
+  )
+  const containerRef = useRef<HTMLDivElement>(null)
+  // followFocus off: an arrow only moves focus; a status write waits for Space/Enter or a tap.
+  const getTabIndex = useRadioGroup(containerRef, value, options, onChange, disabled, false)
 
   return (
-    <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
+    <div ref={containerRef} role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
       {options.map((status) => {
         const active = status === value
         return (
@@ -49,6 +59,7 @@ export function StatusPicker({
             aria-checked={active}
             aria-label={`${label}: ${statusLabel(status)}`}
             disabled={disabled}
+            tabIndex={getTabIndex(status)}
             onClick={() => !active && onChange(status)}
             className={`min-h-[44px] rounded-full px-3 text-caption font-semibold transition disabled:opacity-40 ${
               active

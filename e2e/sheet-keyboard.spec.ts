@@ -135,8 +135,90 @@ test('a bottom sheet traps Tab, hands focus back, and freezes the page behind it
     const taskSheet = page.getByRole('dialog', { name: 'Edit task' })
     await expect(taskSheet).toBeVisible()
 
-    // Closes the task sheet and opens the resume sheet in one commit.
-    await taskSheet.getByRole('radio', { name: 'Status: Paused' }).click()
+    await test.step('radio groups are a single Tab stop with arrow key navigation', async () => {
+      // The Status radio group has several options (six in this compact sheet) but is a single
+      // Tab stop: Tab lands on the selected option, arrows move between them.
+      const statusGroup = taskSheet.locator('[role="radiogroup"][aria-label*="Status"]')
+
+      // Status is the last stop in the sheet: Shift+Tab wraps onto it, a second one steps off
+      // it, and the Tab loop below walks back in from there.
+      await page.keyboard.press('Shift+Tab')
+      await page.keyboard.press('Shift+Tab')
+
+      // Count tabs to reach the Status group - should be just one Tab stop
+      let tabCount = 0
+      const maxTabs = 15
+      while (tabCount < maxTabs) {
+        await page.keyboard.press('Tab')
+        tabCount++
+        const focusedInStatus = await statusGroup.evaluate((group) => {
+          return group.contains(document.activeElement)
+        })
+        if (focusedInStatus) break
+      }
+
+      expect(tabCount, 'Status group was not reachable via Tab').toBeLessThan(maxTabs)
+
+      // Tab again - should leave the group entirely (not land on next status option)
+      const initialStatus = await statusGroup.evaluate((group) =>
+        group.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.trim(),
+      )
+
+      await page.keyboard.press('Tab')
+      const stillInStatus = await statusGroup.evaluate((group) => {
+        return group.contains(document.activeElement)
+      })
+      expect(stillInStatus, 'Tab landed on another status instead of leaving the group').toBe(false)
+
+      // Go back to Status and test arrow keys. A status is a write (XP, the resume sheet), so
+      // an arrow only moves focus; nothing is picked until Space/Enter or a tap.
+      const focusedLabel = () =>
+        statusGroup.evaluate((group) =>
+          group.contains(document.activeElement)
+            ? document.activeElement?.textContent?.trim()
+            : null,
+        )
+      const checkedLabel = () =>
+        statusGroup.evaluate((group) =>
+          group.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.trim(),
+        )
+
+      await page.keyboard.press('Shift+Tab')
+      expect(await focusedLabel(), 'Shift+Tab came back to the checked status').toBe(initialStatus)
+
+      await page.keyboard.press('ArrowRight')
+      const afterArrow = await focusedLabel()
+      expect(afterArrow, 'Arrow key did not move focus').not.toBe(initialStatus)
+      expect(afterArrow, 'Arrow key moved focus out of the group').not.toBeNull()
+      expect(await checkedLabel(), 'Arrow key changed the status by itself').toBe(initialStatus)
+
+      // Arrow left should go back
+      await page.keyboard.press('ArrowLeft')
+      expect(await focusedLabel()).toBe(initialStatus)
+      expect(await checkedLabel()).toBe(initialStatus)
+
+      // The Tab stop travels with focus: after an arrow, Tab leaves the group instead of
+      // landing on the checked status, and Shift+Tab comes back to the checked one.
+      await page.keyboard.press('ArrowRight')
+      await page.keyboard.press('Tab')
+      expect(await focusedLabel(), 'Tab after an arrow stayed inside the group').toBeNull()
+      await page.keyboard.press('Shift+Tab')
+      expect(await focusedLabel(), 'Shift+Tab did not return to the checked status').toBe(
+        initialStatus,
+      )
+
+      // Walk to Paused with the arrows; Space is what picks it.
+      for (let i = 0; i < 8 && (await focusedLabel()) !== 'Paused'; i++) {
+        await page.keyboard.press('ArrowRight')
+      }
+      expect(await focusedLabel()).toBe('Paused')
+      expect(await checkedLabel(), 'walking to Paused picked a status on the way').toBe(
+        initialStatus,
+      )
+    })
+
+    // Space picks Paused, which closes the task sheet and opens the resume sheet in one commit.
+    await page.keyboard.press('Space')
     await expect(page.getByLabel('Where did you leave off?')).toBeVisible()
 
     const pinned = await page.evaluate(() => document.body.style.position)
@@ -150,5 +232,17 @@ test('a bottom sheet traps Tab, hands focus back, and freezes the page behind it
     }))
     expect(after.position, 'the body stayed pinned with no sheet left to unpin it').toBe('')
     expect(after.scrollY).toBe(before)
+  })
+
+  // Sort has no side effect, so there an arrow picks as well as moves (the default mode).
+  await test.step('an arrow in the sort group picks the next order', async () => {
+    const sort = page.getByRole('radiogroup', { name: 'Sort tasks' })
+    const checked = sort.getByRole('radio', { checked: true })
+    const before = (await checked.textContent())?.trim()
+    await checked.focus()
+    await page.keyboard.press('ArrowRight')
+    const now = sort.getByRole('radio', { checked: true })
+    await expect(now).not.toHaveText(before ?? '')
+    await expect(now).toBeFocused()
   })
 })

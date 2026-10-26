@@ -17,6 +17,15 @@ const FOCUSABLE = [
 ].join(',')
 
 /**
+ * The Tab stops among `elements`. FOCUSABLE matches every enabled button, but a roving radio
+ * group parks its unchosen options at tabIndex -1; the trap moves focus itself, so counting
+ * those would walk Tab through every option and the group would never be one stop.
+ */
+export function tabStops<T extends { tabIndex: number }>(elements: T[]): T[] {
+  return elements.filter((el) => el.tabIndex >= 0)
+}
+
+/**
  * Where Tab should land inside a focus trap, given how many focusable elements the sheet
  * holds *right now*. `current` is -1 when focus has escaped the sheet, in which case Tab
  * pulls it back to the near end.
@@ -95,7 +104,8 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
     // Read live on every Tab: sheet content moves under us (PickerSheet grows a search box
     // past 6 options, lists filter as you type), so a list captured on open would go stale.
-    const focusable = () => Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
+    const focusable = () =>
+      tabStops(Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []))
 
     focusable()[0]?.focus()
 
