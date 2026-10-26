@@ -1,11 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { bodyLockStyle, lockBody, nextTrapIndex, unlockBody } from './BottomSheet'
+import { bodyLockStyle, lockBody, nextTrapIndex, tabStops, unlockBody } from './BottomSheet'
 
 /**
  * There is no jsdom here, so the DOM half of the trap (querying focusable elements, focusing
  * them, restoring the opener) is only covered by the e2e sheet spec. This covers the wrap
  * arithmetic, which is where an off-by-one would let Tab out of the sheet.
  */
+describe('tabStops', () => {
+  it("drops a radio group's parked options, so the group is one Tab stop", () => {
+    const chosen = { tabIndex: 0 }
+    const parked = { tabIndex: -1 }
+    const field = { tabIndex: 0 }
+    expect(tabStops([field, parked, chosen, parked])).toEqual([field, chosen])
+  })
+
+  it('keeps a positive tabIndex', () => {
+    expect(tabStops([{ tabIndex: 2 }])).toEqual([{ tabIndex: 2 }])
+  })
+})
+
 describe('nextTrapIndex', () => {
   it('walks forward and wraps at the last element', () => {
     expect(nextTrapIndex(3, 0, false)).toBe(1)
