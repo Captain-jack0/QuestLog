@@ -1,0 +1,9 @@
+name: task-test
+on:
+  issues: { types: [labeled] }
+  pull_request: { types: [opened, synchronize, reopened] }
+permissions: { contents: write, issues: write, pull-requests: write }
+jobs:
+  test:
+    uses: Captain-jack0/task-manager/.github/workflows/task-test.yml@dev
+    secrets: inherit
